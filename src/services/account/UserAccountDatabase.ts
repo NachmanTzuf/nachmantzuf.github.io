@@ -28,6 +28,7 @@ export interface UserProfile {
   onboardingComplete?: boolean;
   progress?: {single: number; melody: number};
   notationPreference?: 'numbers' | 'solfege' | 'notes';
+  hapticsEnabled?: boolean;
 }
 
 export interface TrialLogEntry {
@@ -285,6 +286,14 @@ export class UserAccountDatabase {
     this.persistProfiles();
     this.notify();
     return updated;
+  }
+
+  public isHapticsEnabled(): boolean {
+    return this.getActiveProfile().hapticsEnabled !== false;
+  }
+
+  public setHapticsEnabled(enabled: boolean): void {
+    this.updateActiveProfile({ hapticsEnabled: enabled });
   }
 
   public deleteAccount(userId: string): boolean {

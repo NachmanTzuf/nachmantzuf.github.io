@@ -125,34 +125,26 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Top Header Row */}
-      <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-          <Text style={styles.closeBtnText}>✕ Close</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerTitleContainer}>
+      {/* Floating Minimalist Top Header */}
+      <View style={styles.floatingHeaderRow} pointerEvents="box-none">
+        <View style={styles.headerTitleChip}>
           <Text style={[styles.headerTitle, { color: themeColors.accent }]}>
             {themeColors.title}
           </Text>
           <Text style={styles.headerSubtitle}>
-            Active Level: {activeLevelNumber} of {allLevels.length}
+            Levels {windowStartLevel} – {Math.min(allLevels.length, windowStartLevel + 9)}
           </Text>
         </View>
 
-        {windowStartLevel !== activeLevelNumber ? (
-          <TouchableOpacity
-            style={[styles.jumpActiveBtn, { borderColor: themeColors.accent }]}
-            onPress={handleResetToActive}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.jumpActiveText, { color: themeColors.accent }]}>
-              My level
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholderRight} />
-        )}
+        {/* Clean minimal circular glass X close button */}
+        <TouchableOpacity
+          nativeID="roadmap-close-btn"
+          style={styles.minimalGlassCloseBtn}
+          onPress={onClose}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.minimalCloseBtnText}>✕</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Main Roadmap Area */}
@@ -180,6 +172,12 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
           const isUnlocked = isLevelUnlocked(lvl.levelNumber, activeLevelNumber);
           const isInspected = inspectedLevelId === lvl.id || (isCurrentActive && !inspectedLevelId);
 
+          // Real star calculation based on user trials
+          const userTrials = UserAccountDatabase.getInstance().getUserTrials(UserAccountDatabase.getInstance().getActiveProfile().id).filter(t => t.levelId === lvl.id);
+          const starCount = userTrials.length > 0
+            ? (userTrials.filter(t => t.isCorrect).length / userTrials.length >= 0.9 ? 3 : userTrials.filter(t => t.isCorrect).length / userTrials.length >= 0.7 ? 2 : 1)
+            : (isPassed ? 3 : 0);
+
           return (
             <React.Fragment key={lvl.id}>
               {/* Stepping Stone Node */}
@@ -192,35 +190,42 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
                     borderColor: isCurrentActive
                       ? themeColors.borderActive
                       : isPassed
-                      ? 'rgba(255, 255, 255, 0.4)'
+                      ? 'rgba(245, 158, 11, 0.75)'
                       : isUnlocked
-                      ? 'rgba(255, 255, 255, 0.22)'
-                      : 'rgba(255, 255, 255, 0.10)',
+                      ? 'rgba(255, 255, 255, 0.35)'
+                      : 'rgba(255, 255, 255, 0.12)',
                     backgroundColor: isCurrentActive
                       ? themeColors.stoneActive
                       : isPassed
-                      ? 'rgba(30, 41, 59, 0.92)'
+                      ? 'rgba(26, 38, 30, 0.94)'
                       : isUnlocked
                       ? 'rgba(15, 23, 42, 0.88)'
                       : 'rgba(15, 23, 42, 0.50)',
-                    shadowColor: isCurrentActive ? themeColors.accent : 'transparent',
-                  },
+                    boxShadow: isCurrentActive ? `0 0 16px ${themeColors.accent}` : 'none',
+                  } as any,
                 ]}
                 onPress={() => handleStepstonePress(lvl)}
                 activeOpacity={0.8}
               >
                 {!isUnlocked ? (
                   <CelticBroochLockIcon size={14} color="#94a3b8" />
-                ) : isPassed ? (
-                  <CelticSunburstStarIcon size={14} color="#f59e0b" />
                 ) : (
                   <Text style={styles.activeNodeNumber}>{lvl.levelNumber}</Text>
+                )}
+
+                {/* Stars Row for completed levels */}
+                {isPassed && starCount > 0 && (
+                  <View style={styles.nodeStarsRow}>
+                    {Array.from({ length: starCount }).map((_, sIdx) => (
+                      <CelticSunburstStarIcon key={sIdx} size={8} color="#f59e0b" />
+                    ))}
+                  </View>
                 )}
 
                 {/* Position 1 Indicator Crown */}
                 {isPosition1 && (
                   <View style={[styles.pos1Badge, { backgroundColor: themeColors.accent }]}>
-                    <Text style={styles.pos1BadgeText}>POS 1</Text>
+                    <Text style={styles.pos1BadgeText}>CURRENT</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -284,7 +289,8 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: 90,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#050811',
     position: 'relative',
     overflow: 'hidden',
@@ -314,61 +320,67 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     background:
-      'linear-gradient(180deg, rgba(10, 15, 26, 0.45) 0%, rgba(10, 15, 26, 0.08) 30%, rgba(10, 15, 26, 0.15) 75%, rgba(10, 15, 26, 0.85) 100%)',
+      'linear-gradient(180deg, rgba(10, 15, 26, 0.55) 0%, rgba(10, 15, 26, 0.08) 30%, rgba(10, 15, 26, 0.15) 75%, rgba(10, 15, 26, 0.85) 100%)',
     pointerEvents: 'none',
   } as any,
-  headerRow: {
+  floatingHeaderRow: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    zIndex: 20,
+    zIndex: 35,
+    pointerEvents: 'box-none',
   },
-  closeBtn: {
+  headerTitleChip: {
+    flexDirection: 'column',
+    backgroundColor: 'rgba(15, 23, 42, 0.78)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  closeBtnText: {
-    color: '#e2e8f0',
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-  },
-  headerTitleContainer: {
-    alignItems: 'center',
-  },
+    boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+  } as any,
   headerTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 13,
+    fontSize: 12,
     letterSpacing: 0.8,
   },
   headerSubtitle: {
-    color: '#94a3b8',
+    color: '#cbd5e1',
     fontFamily: 'Inter-Regular',
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 10,
+    marginTop: 1,
   },
-  jumpActiveBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 8,
+  minimalGlassCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(15, 23, 42, 0.80)',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 14px rgba(0,0,0,0.6)',
+  } as any,
+  minimalCloseBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
   },
-  jumpActiveText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 11,
-  },
-  placeholderRight: {
-    width: 60,
+  nodeStarsRow: {
+    position: 'absolute',
+    bottom: -13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 1.5,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    borderRadius: 6,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
   },
   roadmapArea: {
     flex: 1,

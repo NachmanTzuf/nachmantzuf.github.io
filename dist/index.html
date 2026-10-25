@@ -5,52 +5,57 @@
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
     <title>Earpa: 3D Celtic Harp Ear Trainer</title>
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" href="/images/icons/favicon.png" />
-    <link rel="apple-touch-icon" href="/images/icons/apple_touch_icon.png" />
+    <meta name="description" content="Functional Celtic Harp Ear Trainer with 3D Lutherie & Relative Pitch Mastery" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#090d16" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Earpa" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <link rel="icon" type="image/png" href="./images/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="./images/icons/apple_touch_icon.png" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <!-- The react-native-web recommended style reset and mobile touch ergonomics -->
     <style id="expo-reset">
-      /* These styles make the body full-height */
+      /* Full bleed screen without white gaps */
       html,
       body {
         height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #090d16;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
       }
-      /* These styles disable body scrolling if you are using <ScrollView> */
       body {
         overflow: hidden;
       }
-      /* These styles make the root element full-height */
       #root {
         display: flex;
         height: 100%;
         flex: 1;
+        width: 100%;
+      }
+      input, textarea {
+        -webkit-user-select: text !important;
+        user-select: text !important;
       }
     </style>
-  <link rel="shortcut icon" href="/favicon.ico" /></head>
+  </head>
 
   <body>
-    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/_expo/static/js/web/entry-6c4df1355ef891d45fea586cbfabc9fd.js" defer></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js').then(function(reg) {
-          console.log('[Earpa PWA] ServiceWorker registered successfully:', reg.scope);
-        }).catch(function(err) {
-          console.warn('[Earpa PWA] ServiceWorker registration failed:', err);
+    <script src="/_expo/static/js/web/entry-15c9479e6722cae0e271f481b3c5c461.js" defer></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
         });
-      });
-    }
-  </script>
-</body>
+      }
+    </script>
+  </body>
 </html>

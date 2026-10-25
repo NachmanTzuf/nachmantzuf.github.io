@@ -23,6 +23,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { DiatonicMode, PitchClass } from '../../services/theory/types';
 import { ModalShiftEngine } from '../../services/theory/ModalShiftEngine';
+import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 
 export type CameraPreset =
   | 'sanctuary_wide'
@@ -59,6 +60,7 @@ interface CelticHarpCanvasProps {
 const triggerHaptic = (type: 'pluck' | 'lever' = 'pluck') => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
     try {
+      if (!UserAccountDatabase.getInstance().isHapticsEnabled()) return;
       if (type === 'pluck') {
         navigator.vibrate(22); // 22ms crisp physical acoustic string pluck impulse
       } else if (type === 'lever') {
@@ -766,7 +768,8 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         orbitRef.current.lastX = e.clientX;
         orbitRef.current.lastY = e.clientY;
 
-        orbitRef.current.desiredTheta -= dx * 0.0075;
+        // Increased finger touch drag sensitivity so harp spins faster and more fluidly under the finger
+        orbitRef.current.desiredTheta -= dx * 0.018;
         // Strictly lock vertical tilt angle to 1.325 (14.10 deg) matching the Irish stone pedestal
         orbitRef.current.desiredPhi = 1.325;
       };

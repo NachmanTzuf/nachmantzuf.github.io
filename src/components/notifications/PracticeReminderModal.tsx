@@ -8,7 +8,7 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-import { PracticeReminderService, HARP_REMINDER_PROMPTS } from '../../services/notifications/PracticeReminderService';
+import { PracticeReminderService } from '../../services/notifications/PracticeReminderService';
 
 interface PracticeReminderModalProps {
   visible: boolean;
@@ -21,7 +21,6 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
 }) => {
   const [enabled, setEnabled] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [samplePrompt, setSamplePrompt] = useState(HARP_REMINDER_PROMPTS[0]);
   const [testSent, setTestSent] = useState(false);
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
       const cfg = PracticeReminderService.getConfig();
       setEnabled(cfg.enabled);
       setPermission(PracticeReminderService.getPermissionState());
-      setSamplePrompt(PracticeReminderService.getRandomPrompt());
       setTestSent(false);
     }
   }, [visible]);
@@ -53,7 +51,7 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
     const success = await PracticeReminderService.sendTestNotification();
     if (success) {
       setTestSent(true);
-      setTimeout(() => setTestSent(false), 4000);
+      setTimeout(() => setTestSent(false), 3500);
     }
   };
 
@@ -61,52 +59,48 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
+          {/* Header with Title and Close X */}
           <View style={styles.header}>
-            <Text style={styles.title}>DAILY PRACTICE REMINDERS</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <Text style={styles.title}>Daily Practice Reminder</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Text style={styles.closeText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.previewBox}>
-            <View style={styles.previewHeader}>
-              <Text style={styles.previewApp}>EARPA REMINDER PREVIEW</Text>
-              <Text style={styles.previewTime}>Now</Text>
-            </View>
-            <Text style={styles.previewTitle}>{samplePrompt.title}</Text>
-            <Text style={styles.previewBody}>{samplePrompt.body}</Text>
-          </View>
+          {/* Clean Minimal Description */}
+          <Text style={styles.subtitle}>
+            A short, fun daily chime to keep your ear sharp and practice flowing.
+          </Text>
 
+          {/* Toggle Switch Row */}
           <View style={styles.toggleRow}>
             <View style={{ flex: 1, gap: 4 }}>
-              <Text style={styles.toggleLabel}>Enable Daily Notifications</Text>
-              <Text style={styles.toggleSub}>
+              <Text style={styles.toggleLabel}>Daily notifications</Text>
+              <Text style={styles.toggleStatus}>
                 {permission === 'granted'
-                  ? 'Notifications permitted on this device'
+                  ? (enabled ? 'Active · Reminding you once daily' : 'Turned off')
                   : permission === 'denied'
-                  ? 'Notifications blocked in browser settings'
-                  : 'Tap toggle to request permission'}
+                  ? 'Notifications blocked in browser'
+                  : 'Tap toggle to enable'}
               </Text>
             </View>
             <Switch
               value={enabled}
               onValueChange={toggleReminders}
-              trackColor={{ false: '#334155', true: '#c89d58' }}
-              thumbColor={enabled ? '#f0d9ab' : '#94a3b8'}
+              trackColor={{ false: 'rgba(255,255,255,0.15)', true: '#059669' }}
+              thumbColor={enabled ? '#34d399' : '#94a3b8'}
             />
           </View>
 
+          {/* Send Notification Now Button */}
           <TouchableOpacity
             style={[styles.testBtn, testSent && styles.testBtnSuccess]}
             onPress={handleTestNow}
+            activeOpacity={0.8}
           >
             <Text style={styles.testBtnText}>
-              {testSent ? '✓ Notification Sent to Device!' : '🔔 Send Test Notification Now'}
+              {testSent ? '✓ Sent to device' : 'Send notification now'}
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={onClose} style={styles.doneBtn}>
-            <Text style={styles.doneBtnText}>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -117,120 +111,93 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(5, 8, 14, 0.82)',
+    backgroundColor: 'rgba(5, 10, 8, 0.78)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
   },
   card: {
     width: '100%',
-    maxWidth: 440,
-    backgroundColor: 'rgba(20, 26, 38, 0.95)',
-    borderRadius: 20,
+    maxWidth: 420,
+    backgroundColor: '#1b2a1f',
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(200, 157, 88, 0.35)',
-    padding: 22,
-    gap: 18,
-    ...Platform.select({
-      web: { backdropFilter: 'blur(24px)' } as any,
-    }),
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    padding: 24,
+    gap: 20,
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(28px)',
+          WebkitBackdropFilter: 'blur(28px)',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55)',
+        } as any)
+      : {}),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    paddingBottom: 12,
   },
   title: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 16,
-    color: '#ebc47a',
-    letterSpacing: 1.2,
+    fontSize: 22,
+    color: '#fae8c2',
+    letterSpacing: 0.5,
   },
   closeBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeText: {
-    color: '#edddc0',
-    fontSize: 13,
-  },
-  previewBox: {
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(200, 157, 88, 0.25)',
-    gap: 6,
-  },
-  previewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  previewApp: {
-    color: '#c89d58',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  previewTime: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  previewTitle: {
-    color: '#f8fafc',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  previewBody: {
     color: '#cbd5e1',
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#c2b69d',
+    lineHeight: 20,
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
   },
   toggleLabel: {
-    color: '#f0d9ab',
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
   },
-  toggleSub: {
-    color: '#94a3b8',
+  toggleStatus: {
     fontSize: 12,
+    color: '#94a3b8',
   },
   testBtn: {
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: 'rgba(200, 157, 88, 0.18)',
-    borderWidth: 1,
-    borderColor: '#c89d58',
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#059669',
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#34d399',
   },
   testBtnSuccess: {
-    backgroundColor: 'rgba(34, 197, 94, 0.2)',
-    borderColor: '#22c55e',
+    backgroundColor: '#047857',
   },
   testBtnText: {
-    color: '#f0d9ab',
+    color: '#ffffff',
     fontSize: 14,
-    fontWeight: '700',
-  },
-  doneBtn: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  doneBtnText: {
-    color: '#94a3b8',
-    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });

@@ -253,7 +253,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     };
   }, []);
 
-  const totalRounds = activeLevel.rounds || 10;
+  const totalRounds = 15;
   const melodyLength = activeLevel.isHarmonicDyad ? 2 : activeLevel.melodyLength || 1;
   const isSequenceMode = melodyLength > 1;
 
@@ -422,16 +422,22 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     if (notationPreference !== 'notes' || !activeQuestion) return formatDegreeLabel(degree, notationPreference);
     return ['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][noteMidi(degree,activeQuestion)%12];
   };
+  const SOLFEGE_MAP: Record<string, string> = {
+    '1': 'Do', 'b2': 'Ra', '2': 'Re', 'b3': 'Me', '3': 'Mi',
+    '4': 'Fa', '#4': 'Fi', '5': 'Sol', 'b6': 'Le', '6': 'La',
+    'b7': 'Te', '7': 'Ti', '8': 'Do'
+  };
   const answerLabel = (degree: string, q: PromptQuestion) => {
     const i = q.targetDegrees.indexOf(degree);
     const midi = q.targetMidiNotes[Math.max(0, i)];
     const pitch = ['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][midi % 12];
-    return `${pitch} (${degree})`;
+    const solfege = SOLFEGE_MAP[degree] || degree;
+    return `${pitch} · ${solfege}`;
   };
   const finishFeedback = (score: number) => {
-    // Keep the verdict readable without delaying the cadence-paced resolution.
+    // Extended by a split second per user instruction to comfortably absorb insight
     schedule(() => { setAnswerFeedback(null); handleRoundCompletion(score); },
-      Math.max(350, 3200 - (performance.now() - feedbackStartedRef.current)));
+      Math.max(350, 3700 - (performance.now() - feedbackStartedRef.current)));
   };
 
   const evaluateSingleNote = (degree: ScaleDegree) => {
@@ -528,7 +534,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
       musicalInsight: catalogResponse.text,
     });
     const beat = 60000 / (q.tempoBpm || 150);
-    const separationMs = 300; // Configurable 250-350ms settling separation gap per REQ-P3-A02
+    const separationMs = Math.max(700, beat); // Musical silence matching inter-note rhythm before playing correct sequence
     setFeedbackText('Listen to the correct pattern');
     q.targetMidiNotes.forEach((midi, index) => schedule(() => {
       setReplayIndex(activeLevel.isHarmonicDyad ? -2 : index);
@@ -765,8 +771,8 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
           interactiveControls={true}
           fixedInGameAngle={true}
           customAngle={inGameAngle}
-          customScale={0.84}
-          targetY={0.60}
+          customScale={0.96}
+          targetY={0.48}
           minimalHeroMode={true}
         />
       </View>
@@ -874,17 +880,46 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
       </View>
 
       {answerFeedback && (
-        <Reveal style={styles.answerOverlay}><View nativeID="answer-feedback" style={{width:'100%',alignItems:'center',gap:16,maxWidth:520}}>
-          <Animated.Text style={[styles.answerTitle, {opacity: feedbackOpacity}]}>{answerFeedback.correct ? 'Correct' : 'Incorrect'}</Animated.Text>
-          <Text style={{color:'#e9cf9c',fontSize:13,letterSpacing:2}}>THE CORRECT {activeLevel.track==='melody'?'PATTERN':'NOTE'}</Text>
-          {activeLevel.track==='melody' && activeQuestion ? <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:12}}>{activeQuestion.targetDegrees.map((d,i)=><View key={i} style={{minWidth:70,padding:14,borderRadius:16,borderWidth:1,borderColor:replayIndex===i||replayIndex===-2?'#f4dfaf':'#8d826b',backgroundColor:replayIndex===i||replayIndex===-2?'rgba(211,184,125,.32)':'rgba(31,43,33,.5)',alignItems:'center',gap:10}}><Text style={{color:'#c9b997',fontSize:12}}>{activeLevel.isHarmonicDyad?'Together':i+1}</Text><Text style={{color:'#fae8c2',fontFamily:'Cinzel-Bold',fontSize:30}}>{['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][activeQuestion.targetMidiNotes[i]%12]}</Text><Text style={{color:'#e3d1ae',fontSize:17}}>Degree {d}</Text></View>)}</View> : <Text style={styles.answerDetail}>{answerFeedback.text.replace('Correct note: ','')}</Text>}
-          {answerFeedback.musicalInsight ? (
-            <View style={styles.insightBox}>
-              <Text style={styles.insightQuote}>"{answerFeedback.musicalInsight}"</Text>
-            </View>
-          ) : null}
-          <Text accessibilityLiveRegion="polite" style={{ color: "#f4dfaf", fontSize: 20, marginTop: 12 }}>{feedbackText}</Text>
-        </View></Reveal>
+        <Reveal style={styles.answerOverlay}>
+          <View nativeID="answer-feedback" style={styles.unifiedAnswerBox}>
+            <Animated.Text
+              style={[
+                styles.unifiedAnswerTitle,
+                {
+                  opacity: feedbackOpacity,
+                  color: answerFeedback.correct ? '#34d399' : '#f87171',
+                },
+              ]}
+            >
+              {answerFeedback.correct ? 'Correct' : 'Incorrect'}
+            </Animated.Text>
+
+            {activeLevel.track === 'melody' && activeQuestion ? (
+              <View style={styles.unifiedMelodyRow}>
+                {activeQuestion.targetDegrees.map((d, i) => (
+                  <View key={i} style={styles.unifiedMelodyPill}>
+                    <Text style={styles.unifiedMelodyNote}>
+                      {['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'][activeQuestion.targetMidiNotes[i] % 12]}
+                    </Text>
+                    <Text style={styles.unifiedMelodySolfege}>
+                      {SOLFEGE_MAP[d] || d}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.unifiedAnswerNote}>
+                {answerFeedback.text.replace('Correct note: ', '')}
+              </Text>
+            )}
+
+            {answerFeedback.musicalInsight ? (
+              <Text style={styles.unifiedInsightText}>
+                "{answerFeedback.musicalInsight}"
+              </Text>
+            ) : null}
+          </View>
+        </Reveal>
       )}
       {/* 5. Session Complete Debrief Modal with 90% Gate, Reflex Latency & Pedagogical Insights */}
       <SessionInsightsModal
@@ -903,36 +938,76 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
 
 const styles = StyleSheet.create({
   answerOverlay: {
-    ...StyleSheet.absoluteFillObject, zIndex: 90, alignItems: 'center', justifyContent: 'center',
-    padding: 32, backgroundColor: 'rgba(12, 10, 8, 0.25)',
-    ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(180deg, rgba(8,7,6,.04), rgba(15,12,9,.68), rgba(8,7,6,.08))' } as any : {}),
-  },
-  answerTitle: { fontFamily: 'Cinzel-Bold', fontSize: 44, color: '#e9cf9c', textAlign: 'center', marginBottom: 20 },
-  answerDetail: { fontFamily: 'Inter', fontSize: 42, lineHeight: 54, color: '#f0dfbd', textAlign: 'center' },
-  insightBox: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(18, 22, 28, 0.82)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 168, 114, 0.35)',
-    maxWidth: 440,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 90,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(10, 14, 12, 0.72)',
     ...(Platform.OS === 'web'
       ? ({
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         } as any)
       : {}),
   },
-  insightQuote: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 14,
-    lineHeight: 20,
+  unifiedAnswerBox: {
+    width: '100%',
+    maxWidth: 480,
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 20,
+  },
+  unifiedAnswerTitle: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 52,
+    fontWeight: '900',
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  unifiedAnswerNote: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 38,
     color: '#fae8c2',
     textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  unifiedMelodyRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  unifiedMelodyPill: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    minWidth: 68,
+  },
+  unifiedMelodyNote: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 30,
+    color: '#fae8c2',
+  },
+  unifiedMelodySolfege: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontWeight: '700',
+  },
+  unifiedInsightText: {
+    fontFamily: 'Inter',
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#e2e8f0',
+    textAlign: 'center',
+    maxWidth: 380,
+    marginTop: 6,
     fontStyle: 'italic',
   },
   container: {
@@ -991,9 +1066,10 @@ const styles = StyleSheet.create({
   },
   progressPill: {
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 16,
+    maxWidth: 150,
     backgroundColor: 'rgba(15, 23, 42, 0.78)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.18)',
@@ -1007,16 +1083,16 @@ const styles = StyleSheet.create({
   },
   levelCodeBadge: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 9,
+    fontSize: 8,
     color: '#94a3b8',
-    letterSpacing: 0.6,
-    marginBottom: 1,
+    letterSpacing: 0.5,
+    marginBottom: 0,
   },
   progressPillTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 12,
+    fontSize: 10.5,
     color: '#ffffff',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   pipsRow: {
     flexDirection: 'row',

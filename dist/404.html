@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+    <title>Earpa: 3D Celtic Harp Ear Trainer</title>
+    <meta name="description" content="Functional Celtic Harp Ear Trainer with 3D Lutherie & Relative Pitch Mastery" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#090d16" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="./images/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="./images/icons/apple_touch_icon.png" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <!-- The react-native-web recommended style reset and mobile touch ergonomics -->
+    <style id="expo-reset">
+      /* Full bleed screen without white gaps */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #090d16;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+      }
+      body {
+        overflow: hidden;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+        width: 100%;
+      }
+      input, textarea {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root"></div>
+    <script src="/_expo/static/js/web/entry-15c9479e6722cae0e271f481b3c5c461.js" defer></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

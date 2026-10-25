@@ -43,35 +43,21 @@ export const DeviceFramePreview: React.FC<DeviceFramePreviewProps> = ({ children
     return <View style={styles.nativeRoot}>{children}</View>;
   }
 
-  // Check if viewport is already mobile width
-  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 600;
-  if (isMobileScreen || device === 'responsive') {
+  // Check if viewport is mobile width, mobile device user agent, or running as installed PWA / standalone
+  const isMobileScreen =
+    typeof window !== 'undefined' &&
+    (window.innerWidth <= 768 ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      (window.navigator as any).standalone === true ||
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent));
+  if (isMobileScreen) {
+    return <View style={styles.mobileFullBleedRoot}>{children}</View>;
+  }
+
+  if (device === 'responsive') {
     return (
       <View style={styles.responsiveRoot}>
-        {/* Mobile top floating switcher for PWA installation guide */}
-        <View style={styles.mobileInstallBanner}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setShowPwaGuide(true)}
-            style={styles.mobileInstallBtn}
-          >
-            <CelticSolarCrossIcon size={16}/>
-            <Text style={styles.installText}>Install Earpa App (Free PWA)</Text>
-          </TouchableOpacity>
-          {device === 'responsive' && !isMobileScreen && (
-            <TouchableOpacity
-              onPress={() => setDevice('iphone15')}
-              style={styles.deviceTogglePill}
-            >
-              <Text style={styles.deviceToggleText}>Switch to Device Frame</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
         <View style={styles.responsiveContent}>{children}</View>
-
-        {/* PWA Install Guide Modal */}
-        <PwaInstallModal visible={showPwaGuide} onClose={() => setShowPwaGuide(false)} />
       </View>
     );
   }
@@ -342,6 +328,13 @@ const styles = StyleSheet.create({
   },
   responsiveContent: {
     flex: 1,
+  },
+  mobileFullBleedRoot: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#090d16',
+    overflow: 'hidden',
   },
   desktopContainer: {
     width: '100%',

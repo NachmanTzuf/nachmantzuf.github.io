@@ -39,9 +39,10 @@ export interface LevelDefinition {
 export const UNRESTRICTED_DEV_MODE = true;
 
 export function isLevelUnlocked(globalLevel: number, userCompletedLevel: number): boolean {
-  if (UNRESTRICTED_DEV_MODE) return true;
-  // Standard progression rule: current active level and all completed levels are unlocked
-  return globalLevel <= userCompletedLevel + 1;
+  // First 10 levels are 100% open to everyone per user specification
+  if (globalLevel <= 10) return true;
+  // Beyond level 10, unlocked only if the user has reached or completed prior levels
+  return globalLevel <= (userCompletedLevel || 1);
 }
 
 export function isCandidateDegreeAllowed(deg: string, isAllowedInLevel: boolean): boolean {
