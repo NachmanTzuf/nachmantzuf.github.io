@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Celtic Harp 3D Master Gallery & Lutherie Inspector</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #1e2430 0%, #11141a 70%, #0a0c10 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e2e8f0;
+    }
+
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Floating Glass HUD */
+    .hud-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hud-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hud-card {
+      pointer-events: auto;
+      background: rgba(18, 22, 31, 0.82);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 12px 18px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: rgba(59, 130, 246, 0.22);
+      border: 1px solid rgba(96, 165, 250, 0.45);
+      color: #93c5fd;
+      border-radius: 999px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f1f5f9;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.32);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: rgba(59, 130, 246, 0.3);
+      border-color: rgba(96, 165, 250, 0.55);
+      color: #dbeafe;
+    }
+
+    .btn-primary:hover {
+      background: rgba(59, 130, 246, 0.45);
+    }
+
+    .btn-active {
+      background: rgba(16, 185, 129, 0.28);
+      border-color: rgba(52, 211, 153, 0.55);
+      color: #a7f3d0;
+    }
+
+    /* Bottom Control Shelf */
+    .bottom-shelf {
+      max-width: 1040px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preset-scroll-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+    }
+
+    .preset-chip {
+      white-space: nowrap;
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-chip:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .preset-chip.active {
+      background: rgba(59, 130, 246, 0.35);
+      border-color: #60a5fa;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(96, 165, 250, 0.35);
+    }
+
+    .secondary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .hint-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .hint-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .kbd {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 10px;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* Zen Floating Button */
+    #zen-toggle-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      background: rgba(18, 22, 31, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f8fafc;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+
+    #zen-toggle-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.08);
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f1217;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: opacity 0.4s ease;
+    }
+
+    .spinner {
+      width: 46px;
+      height: 46px;
+      border: 3px solid rgba(96, 165, 250, 0.2);
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #loading-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      letter-spacing: 0.5px;
+    }
+
+    #error-box {
+      display: none;
+      max-width: 480px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fca5a5;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+
+  <!-- Dual Map: unpkg CDN with fallback -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="spinner" id="spinner"></div>
+    <div id="loading-text">Loading Celtic Harp 3D Model...</div>
+    <div id="error-box"></div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <!-- Persistent Zen Mode Toggle Button -->
+  <button id="zen-toggle-btn" title="Toggle Clean / Fullscreen View (Key: Z)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  </button>
+
+  <div class="hud-layer" id="hud">
+    <!-- Top Bar -->
+    <div class="top-bar hud-card">
+      <div class="brand-title">
+        <span>Celtic Harp 8-String</span>
+        <span class="brand-badge">Gallery Pedestal Inspector</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn" id="btn-levers" title="Flip Sharping Levers UP/DOWN">
+          <span>Levers:</span> <strong id="lever-status" style="color:#60a5fa;">DOWN</strong>
+        </button>
+
+        <button class="btn" id="btn-autorotate" title="Slow Turntable 360 Spin on Pedestal">
+          <span>Turntable</span>
+        </button>
+
+        <button class="btn" id="btn-theme" title="Switch Exhibition Lighting / Pedestal Style">
+          <span>Obsidian Gallery</span>
+        </button>
+
+        <button class="btn btn-primary" id="btn-reset" title="Reset Camera to Fit">
+          <span>Fit View</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Preset Shelf -->
+    <div class="bottom-shelf hud-card">
+      <div class="preset-scroll-row">
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; margin-right: 4px; text-transform: uppercase;">Angles:</span>
+        <button class="preset-chip active" data-preset="full_lever">Left (Levers)</button>
+        <button class="preset-chip" data-preset="full_tuning">Right (Tuning)</button>
+        <button class="preset-chip" data-preset="front">Front (Pillar)</button>
+        <button class="preset-chip" data-preset="rear">Rear (Soundbox)</button>
+        <button class="preset-chip" data-preset="top_down">Top Down</button>
+        <button class="preset-chip" data-preset="bottom_base">Bottom (Pedestal)</button>
+        <button class="preset-chip" data-preset="crown_joint">Crown Joint</button>
+        <button class="preset-chip" data-preset="knee_joint">Knee Joint</button>
+        <button class="preset-chip" data-preset="soundboard">Soundboard</button>
+        <button class="preset-chip" data-preset="treble_clearance">Treble C</button>
+      </div>
+
+      <div class="secondary-row">
+        <div class="hint-group">
+          <div class="hint-item"><span class="kbd">Left Drag</span> Spin 360°</div>
+          <div class="hint-item"><span class="kbd">Right Drag</span> Pan View</div>
+          <div class="hint-item"><span class="kbd">Scroll / Pinch</span> Zoom In/Out</div>
+          <div class="hint-item"><span class="kbd">Click String</span> Pluck Acoustic Tone</div>
+          <div class="hint-item"><span class="kbd">Z</span> Clean View</div>
+        </div>
+        <div id="stats-info" style="font-size: 10px; color: #94a3b8; font-weight: 600;">100% Fullscreen Exhibition Mode</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    window.THREE = THREE;
+
+    // 1. Scene, Camera, Renderer
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x11141a);
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.05, 50);
+    // Initial camera position fitting entire harp from pedestal to crown
+    camera.position.set(2.15, 1.05, 1.25);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.10;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Studio Environment for lustrous metallic reflections on silver levers & hardware
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+    // 2. Full OrbitControls with Unrestricted Angles
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.target.set(0.0, 0.68, 0.0); // Exact acoustic centroid of harp
+    controls.minDistance = 0.10; // Macro inspection of millimeter details
+    controls.maxDistance = 8.0;  // Zoom far away
+    controls.minPolarAngle = 0.0; // Straight down from top
+    controls.maxPolarAngle = Math.PI; // Straight up from beneath pedestal
+    controls.panSpeed = 0.85;
+    controls.rotateSpeed = 0.85;
+
+    // 3. Exhibition Pedestal Assembly (Zero change to harp model)
+    const pedestalGroup = new THREE.Group();
+    scene.add(pedestalGroup);
+
+    // Main Cylindrical Plinth (dark obsidian slate / ebonized wood)
+    const plinthGeo = new THREE.CylinderGeometry(0.55, 0.58, 0.038, 64);
+    const plinthMat = new THREE.MeshStandardMaterial({
+      color: 0x181c24,
+      roughness: 0.55,
+      metalness: 0.25,
+    });
+    const plinthMesh = new THREE.Mesh(plinthGeo, plinthMat);
+    plinthMesh.position.set(0, -0.019, 0.02);
+    plinthMesh.receiveShadow = true;
+    pedestalGroup.add(plinthMesh);
+
+    // Brushed Brass Trim Ring at edge of plinth
+    const ringGeo = new THREE.TorusGeometry(0.552, 0.005, 24, 80);
+    ringGeo.rotateX(Math.PI / 2);
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0xc89d52,
+      roughness: 0.32,
+      metalness: 0.85,
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.position.set(0, 0.0, 0.02);
+    pedestalGroup.add(ringMesh);
+
+    // Outer Ambient Floor Ring
+    const floorGeo = new THREE.CircleGeometry(1.6, 64);
+    floorGeo.rotateX(-Math.PI / 2);
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0x0c0e12,
+      roughness: 0.85,
+      metalness: 0.05,
+    });
+    const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+    floorMesh.position.set(0, -0.038, 0.02);
+    floorMesh.receiveShadow = true;
+    pedestalGroup.add(floorMesh);
+
+    // 4. Multi Angle Studio Lutherie Lighting
+    const hemiLight = new THREE.HemisphereLight(0xfff8ee, 0x161b24, 0.90);
+    scene.add(hemiLight);
+
+    // Key Light: Low-angle sunlight streaming from the horizon in the upper-right background
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 2.85);
+    keyLight.position.set(2.4, 2.5, -4.0);
+    keyLight.target.position.set(0.0, 0.55, 0.0);
+    scene.add(keyLight.target);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 16.0;
+    keyLight.shadow.camera.left = -2.6;
+    keyLight.shadow.camera.right = 2.6;
+    keyLight.shadow.camera.top = 2.8;
+    keyLight.shadow.camera.bottom = -1.8;
+    keyLight.shadow.bias = -0.0004;
+    scene.add(keyLight);
+
+    // Front-Left Fill Light so front details stay clearly visible while dynamic shadows stream forward
+    const fillLight = new THREE.DirectionalLight(0xd4a574, 0.65);
+    fillLight.position.set(-2.0, 1.6, 2.4);
+    scene.add(fillLight);
+
+    // Gallery Spotlight (softened so it does not overpower the low-angle sunbeam)
+    const spotLight = new THREE.SpotLight(0xfffbeb, 0.60, 8.0, Math.PI / 5, 0.5, 1.5);
+    spotLight.position.set(0.0, 3.2, 0.2);
+    spotLight.target.position.set(0.0, 0.9, 0.0);
+    scene.add(spotLight);
+    scene.add(spotLight.target);
+
+    // Amber Rim Light (silhouette edge separation)
+    const rimLight = new THREE.PointLight(0xfde68a, 1.5, 9.0);
+    rimLight.position.set(-1.8, 1.8, 0.6);
+    scene.add(rimLight);
+
+    // Dedicated Specular Light for Camac Levers on +X side: ensures bright gleam on chrome handles
+    const leverAccentLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    leverAccentLight.position.set(1.6, 1.3, 0.8);
+    leverAccentLight.target.position.set(0.0, 1.05, 0.0);
+    scene.add(leverAccentLight);
+    scene.add(leverAccentLight.target);
+
+    // Physical Smartphone Haptic Feedback
+    function triggerHaptic(type = 'pluck') {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          if (type === 'pluck') {
+            navigator.vibrate(22); // 22ms crisp physical acoustic string pluck impulse
+          } else if (type === 'lever') {
+            navigator.vibrate(10); // 10ms mechanical toggle click
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 5. Professional Physical Plucked Celtic Harp Audio Synthesizer (Open Eb Base Tuning)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Diatonic Eb Major / C natural minor base tuning across the 8 strings:
+    // With all levers DOWN: String 1: C4, 2: D4, 3: Eb4, 4: F4, 5: G4, 6: Ab4, 7: Bb4, 8: C5
+    // With levers UP: each string is raised by one chromatic semitone!
+    const stringTuningEb = [
+      { num: 1, baseName: 'C4',  baseFreq: 261.63, leverUpName: 'C#4', leverUpFreq: 277.18 }, // String 1 (C - Red)
+      { num: 2, baseName: 'D4',  baseFreq: 293.66, leverUpName: 'D#4', leverUpFreq: 311.13 }, // String 2 (D)
+      { num: 3, baseName: 'Eb4', baseFreq: 311.13, leverUpName: 'E4',  leverUpFreq: 329.63 }, // String 3 (Eb - flat in base)
+      { num: 4, baseName: 'F4',  baseFreq: 349.23, leverUpName: 'F#4', leverUpFreq: 369.99 }, // String 4 (F - Blue)
+      { num: 5, baseName: 'G4',  baseFreq: 392.00, leverUpName: 'G#4', leverUpFreq: 415.30 }, // String 5 (G)
+      { num: 6, baseName: 'Ab4', baseFreq: 415.30, leverUpName: 'A4',  leverUpFreq: 440.00 }, // String 6 (Ab - flat in base)
+      { num: 7, baseName: 'Bb4', baseFreq: 466.16, leverUpName: 'B4',  leverUpFreq: 493.88 }, // String 7 (Bb - flat in base)
+      { num: 8, baseName: 'C5',  baseFreq: 523.25, leverUpName: 'C#5', leverUpFreq: 554.37 }, // String 8 (C - Red)
+    ];
+
+    let masterGain = null;
+    let soundboardBloom = null;
+    let soundboardPlate = null;
+    let woodPresence = null;
+    let antiMetallicLP = null;
+    let convolverGain = null;
+
+    function initAudioNodes() {
+      if (masterGain) return;
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+      masterGain.connect(audioCtx.destination);
+
+      // Deep Helmholtz Sitka spruce soundboard body cavity boom at 135Hz
+      soundboardBloom = audioCtx.createBiquadFilter();
+      soundboardBloom.type = 'peaking';
+      soundboardBloom.frequency.value = 135;
+      soundboardBloom.Q.value = 1.3;
+      soundboardBloom.gain.value = 5.5;
+
+      // Primary soundboard spruce wood plate resonance at 240Hz
+      soundboardPlate = audioCtx.createBiquadFilter();
+      soundboardPlate.type = 'peaking';
+      soundboardPlate.frequency.value = 240;
+      soundboardPlate.Q.value = 1.6;
+      soundboardPlate.gain.value = 3.5;
+
+      // Secondary wood bridge presence at 480Hz
+      woodPresence = audioCtx.createBiquadFilter();
+      woodPresence.type = 'peaking';
+      woodPresence.frequency.value = 480;
+      woodPresence.Q.value = 2.0;
+      woodPresence.gain.value = 2.0;
+
+      // Anti-metallic roll-off filter: removes harsh guitar wire ping
+      antiMetallicLP = audioCtx.createBiquadFilter();
+      antiMetallicLP.type = 'lowpass';
+      antiMetallicLP.frequency.value = 2900;
+      antiMetallicLP.Q.value = 0.707;
+
+      // Connect formant filter chain
+      soundboardBloom.connect(soundboardPlate);
+      soundboardPlate.connect(woodPresence);
+      woodPresence.connect(antiMetallicLP);
+
+      // Dry path
+      const dryGain = audioCtx.createGain();
+      dryGain.gain.value = 0.78;
+      antiMetallicLP.connect(dryGain);
+      dryGain.connect(masterGain);
+
+      // Warm wooden sanctuary acoustic reverberation convolver
+      try {
+        const conv = audioCtx.createConvolver();
+        const rate = audioCtx.sampleRate;
+        const length = Math.round(rate * 2.6);
+        const impulse = audioCtx.createBuffer(2, length, rate);
+        const left = impulse.getChannelData(0);
+        const right = impulse.getChannelData(1);
+        const decay = 2.2;
+        for (let i = 0; i < length; i++) {
+          const t = i / rate;
+          const envelope = Math.exp(-t * decay);
+          left[i] = (Math.random() * 2 - 1) * envelope;
+          right[i] = (Math.random() * 2 - 1) * envelope;
+        }
+        conv.buffer = impulse;
+        convolverGain = audioCtx.createGain();
+        convolverGain.gain.value = 0.28;
+        antiMetallicLP.connect(conv);
+        conv.connect(convolverGain);
+        convolverGain.connect(masterGain);
+      } catch (e) {
+        console.warn('Convolver fallback to dry path', e);
+      }
+    }
+
+    function playPluckSound(stringIndex) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      initAudioNodes();
+
+      const tuning = stringTuningEb[stringIndex];
+      if (!tuning) return '';
+
+      // Determine pitch from lever state (DOWN = base Eb scale, UP = sharped semitone)
+      const leverObj = leversMap.get(stringIndex + 1);
+      const isUp = leverObj ? leverObj.isEngaged : false;
+      const freq = isUp ? tuning.leverUpFreq : tuning.baseFreq;
+      const noteName = isUp ? tuning.leverUpName : tuning.baseName;
+
+      const sampleRate = audioCtx.sampleRate;
+      const period = Math.round(sampleRate / freq);
+      const duration = Math.max(3.2, 4.2 - (freq / 600)); // Bass strings sustain 4.2s, treble 3.2s
+      const totalSamples = Math.round(sampleRate * duration);
+
+      const buffer = audioCtx.createBuffer(1, totalSamples, sampleRate);
+      const data = buffer.getChannelData(0);
+
+      const delayLine = new Float32Array(period);
+
+      // Soft fleshy finger pad contact excitation:
+      // Filtered pink noise burst shaped by a Hann window (soft touch, zero guitar pick metallic rasp)
+      const excLen = Math.min(period, Math.round(sampleRate * 0.018));
+      let pinkState = 0;
+      for (let i = 0; i < excLen; i++) {
+        const white = Math.random() * 2 - 1;
+        pinkState = 0.82 * pinkState + 0.18 * white; // Lowpass filtered to ~1200Hz
+        const hann = Math.sin((Math.PI * i) / (excLen - 1));
+        const fund = Math.sin((2 * Math.PI * freq * i) / sampleRate);
+        // 60% pure fundamental displacement + 40% soft finger pad friction
+        delayLine[i] = hann * (0.60 * fund + 0.40 * pinkState);
+      }
+
+      // Celtic nylon string viscoelastic damping in delay loop
+      const feedback = Math.min(0.9965, 0.9925 + (180 / freq) * 0.0035);
+      let p0 = 0, p1 = 0, p2 = 0;
+
+      for (let i = 0; i < totalSamples; i++) {
+        const idx = i % period;
+        const curr = delayLine[idx];
+        // 3-point weighted lowpass filter: preserves warm singing fundamental, eliminates wire ping
+        const filtered = (0.22 * p2 + 0.56 * p1 + 0.22 * curr) * feedback;
+        p2 = p1;
+        p1 = curr;
+        delayLine[idx] = filtered;
+        data[i] = filtered;
+      }
+
+      // Smooth attack ramp (0.5ms) to guarantee zero click
+      const rampSamples = Math.min(24, totalSamples);
+      for (let i = 0; i < rampSamples; i++) {
+        data[i] *= (i / rampSamples);
+      }
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(soundboardBloom);
+      source.start();
+
+      return noteName;
+    }
+
+    const leversMap = new Map();
+    const stringsList = [];
+    const leverHitObjects = [];
+    let leversEngaged = false;
+    let harpModel = null;
+    let isTurntableSpinning = false;
+
+    // Expose references to window for automated testing and inspection
+    window.scene = scene;
+    window.leversMap = leversMap;
+    window.stringsList = stringsList;
+
+    // Load Master 3D Harp Model (GLB untouched)
+    const loader = new GLTFLoader();
+    loader.load(
+      './models/celtic_harp_8string.glb?v=17',
+      (gltf) => {
+        harpModel = gltf.scene;
+        window.harpModel = harpModel;
+        scene.add(harpModel);
+
+        harpModel.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              child.material.needsUpdate = true;
+              if (child.name.startsWith('Lever_Base')) {
+                // High contrast dark gunmetal mounting bracket
+                child.material = child.material.clone();
+                child.material.metalness = 0.92;
+                child.material.roughness = 0.24;
+                child.material.color = new THREE.Color(0x333b47);
+              } else if (child.name.startsWith('Lever_Handle')) {
+                // Mirror-polished brilliant silver chrome handle
+                child.material = child.material.clone();
+                child.material.metalness = 0.99;
+                child.material.roughness = 0.03;
+                child.material.color = new THREE.Color(0xffffff);
+              } else if (child.name.startsWith('Lever_Roller')) {
+                // Polished chrome roller
+                child.material = child.material.clone();
+                child.material.metalness = 0.98;
+                child.material.roughness = 0.05;
+                child.material.color = new THREE.Color(0xf1f5f9);
+              }
+              if (child.name.startsWith('Lever_Band_1') || child.name.startsWith('Lever_Band_8')) {
+                child.material = child.material.clone();
+                child.material.color = new THREE.Color(0xef4444);
+                child.material.emissive = new THREE.Color(0xef4444);
+                child.material.emissiveIntensity = 0.25;
+                child.material.roughness = 0.35;
+                child.material.metalness = 0.02;
+              }
+              if (child.name.startsWith('Lever_Band_4')) {
+                child.material = child.material.clone();
+                child.material.color = new THREE.Color(0x2563eb);
+                child.material.emissive = new THREE.Color(0x2563eb);
+                child.material.emissiveIntensity = 0.25;
+                child.material.roughness = 0.35;
+                child.material.metalness = 0.02;
+              }
+              // Darker, richer figured maple wood tone (less white, warm golden amber)
+              if (child.name.startsWith('Harp_Harmonic_Frame') || child.name.startsWith('Harp_Forepillar') || child.name.startsWith('Harp_Leg') || child.name.startsWith('Harp_Soundbox')) {
+                child.material = child.material.clone();
+                child.material.color = new THREE.Color(0xd4a872);
+                child.material.roughness = 0.30;
+              }
+            }
+          }
+
+          // Capture Lever_Handle_1 .. 8
+          for (let d = 1; d <= 8; d++) {
+            if (child.name === `Lever_Handle_${d}`) {
+              leversMap.set(d, {
+                obj: child,
+                baseQuat: child.quaternion.clone(),
+                targetAngle: 0.0,
+                currentAngle: 0.0,
+                isEngaged: false,
+              });
+            }
+
+            if (child.name === `String_${d}` && child.isMesh) {
+              child.material = child.material.clone();
+              child.material.emissive = new THREE.Color(0x000000);
+              child.material.emissiveIntensity = 0.0;
+              let glowColor = new THREE.Color(0xffaa44); // Rich warm golden amber radiance
+              if (d === 1 || d === 8) glowColor = new THREE.Color(0xff3333); // Vivid red for C
+              else if (d === 4) glowColor = new THREE.Color(0x38bdf8); // Vivid cyan sky-blue for F
+
+              // Compute string top and bottom points for mobile finger plucking proximity
+              const geom = child.geometry;
+              const posAttr = geom.attributes.position;
+              let minY = Infinity, maxY = -Infinity;
+              const botPt = new THREE.Vector3(), topPt = new THREE.Vector3();
+              for (let i = 0; i < posAttr.count; i++) {
+                const y = posAttr.getY(i);
+                if (y < minY) {
+                  minY = y;
+                  botPt.set(posAttr.getX(i), y, posAttr.getZ(i));
+                }
+                if (y > maxY) {
+                  maxY = y;
+                  topPt.set(posAttr.getX(i), y, posAttr.getZ(i));
+                }
+              }
+
+              stringsList.push({
+                index: d - 1,
+                mesh: child,
+                baseGeom: child.geometry.clone(),
+                vibrateAmp: 0.0,
+                glowColor: glowColor,
+                botPt: botPt,
+                topPt: topPt,
+              });
+            }
+          }
+
+          if (child.name.startsWith('Lever_') && child.isMesh) {
+            leverHitObjects.push(child);
+          }
+        });
+
+        // Hide loading screen
+        const overlay = document.getElementById('loading-overlay');
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 400);
+      },
+      (xhr) => {
+        if (xhr.lengthComputable) {
+          const percent = Math.round((xhr.loaded / xhr.total) * 100);
+          document.getElementById('loading-text').innerText = `Loading Celtic Harp: ${percent}%`;
+        }
+      },
+      (error) => {
+        console.error('Failed to load GLB model:', error);
+        document.getElementById('spinner').style.display = 'none';
+        const errBox = document.getElementById('error-box');
+        errBox.style.display = 'block';
+        errBox.innerText = 'Unable to load model file directly. Please verify the local server is running on port 8088.';
+      }
+    );
+
+    // 7. Camera Preset Definitions with Smooth Transitions
+    const presets = {
+      full_lever: {
+        pos: new THREE.Vector3(2.15, 1.05, 1.25),
+        target: new THREE.Vector3(0.0, 0.68, 0.0),
+      },
+      full_tuning: {
+        pos: new THREE.Vector3(-2.15, 1.05, 1.25),
+        target: new THREE.Vector3(0.0, 0.68, 0.0),
+      },
+      front: {
+        pos: new THREE.Vector3(0.0, 0.85, 2.40),
+        target: new THREE.Vector3(0.0, 0.68, 0.0),
+      },
+      rear: {
+        pos: new THREE.Vector3(0.0, 0.85, -2.40),
+        target: new THREE.Vector3(0.0, 0.68, 0.0),
+      },
+      top_down: {
+        pos: new THREE.Vector3(0.0, 2.30, 0.01),
+        target: new THREE.Vector3(0.0, 0.70, 0.0),
+      },
+      bottom_base: {
+        pos: new THREE.Vector3(0.0, -0.55, 0.95),
+        target: new THREE.Vector3(0.0, 0.15, 0.0),
+      },
+      crown_joint: {
+        pos: new THREE.Vector3(0.48, 1.28, 0.38),
+        target: new THREE.Vector3(0.0, 1.25, 0.28),
+      },
+      knee_joint: {
+        pos: new THREE.Vector3(0.48, 1.08, -0.22),
+        target: new THREE.Vector3(0.0, 1.02, -0.20),
+      },
+      soundboard: {
+        pos: new THREE.Vector3(0.78, 0.55, 0.78),
+        target: new THREE.Vector3(0.0, 0.48, 0.05),
+      },
+      treble_clearance: {
+        pos: new THREE.Vector3(0.36, 1.10, -0.05),
+        target: new THREE.Vector3(0.0, 1.04, -0.12),
+      },
+    };
+
+    let targetCamPos = camera.position.clone();
+    let targetLookAt = controls.target.clone();
+    let isTransitioning = false;
+
+    function transitionToPreset(presetKey) {
+      const p = presets[presetKey];
+      if (!p) return;
+      targetCamPos.copy(p.pos);
+      targetLookAt.copy(p.target);
+      isTransitioning = true;
+      controls.autoRotate = false;
+      isTurntableSpinning = false;
+      document.getElementById('btn-autorotate').classList.remove('btn-active');
+
+      document.querySelectorAll('.preset-chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-preset') === presetKey);
+      });
+    }
+
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        transitionToPreset(chip.getAttribute('data-preset'));
+      });
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      if (harpModel) harpModel.rotation.y = 0;
+      transitionToPreset('full_lever');
+    });
+
+    // Lever Management & Automatic Pluck Pitch Feedback
+    const btnLevers = document.getElementById('btn-levers');
+    const leverStatus = document.getElementById('lever-status');
+
+    function updateLeverHUD() {
+      const activeCount = Array.from(leversMap.values()).filter(l => l.isEngaged).length;
+      leverStatus.innerText = activeCount === 8 ? 'ALL UP' : activeCount === 0 ? 'ALL DOWN (Eb)' : `${activeCount}/8 UP`;
+      leverStatus.style.color = activeCount > 0 ? '#34d399' : '#60a5fa';
+      btnLevers.classList.toggle('btn-active', activeCount > 0);
+    }
+
+    // String Plucking with Sound, Visible Excursion, and Mobile Haptics
+    function pluckStringByIndex(index) {
+      if (index < 0 || index >= stringsList.length) return;
+      const strItem = stringsList[index];
+      if (!strItem) return;
+
+      playPluckSound(index);
+      strItem.vibrateAmp = 0.022; // Clearly visible 22mm peak excursion
+      strItem.mesh.material.emissive.copy(strItem.glowColor);
+      strItem.mesh.material.emissiveIntensity = 0.85; // Very thin, delicate, subtle stripe of light strictly on the string itself
+      triggerHaptic('pluck'); // Physical 22ms mobile vibration feedback
+    }
+
+    function setLeverState(d, isUp) {
+      const lev = leversMap.get(d);
+      if (!lev) return;
+      if (lev.isEngaged !== isUp) {
+        lev.isEngaged = isUp;
+        lev.targetAngle = isUp ? 1.75 : 0.0;
+        triggerHaptic('lever');
+        updateLeverHUD();
+      }
+    }
+
+    function toggleSingleLever(d) {
+      const lev = leversMap.get(d);
+      if (!lev) return;
+      setLeverState(d, !lev.isEngaged);
+    }
+
+    window.pluckStringByIndex = pluckStringByIndex;
+    window.toggleSingleLever = toggleSingleLever;
+    window.setLeverState = setLeverState;
+
+    btnLevers.addEventListener('click', () => {
+      leversEngaged = !leversEngaged;
+      for (let d = 1; d <= 8; d++) {
+        const lev = leversMap.get(d);
+        if (lev) {
+          lev.isEngaged = leversEngaged;
+          lev.targetAngle = leversEngaged ? 1.75 : 0.0;
+        }
+      }
+      triggerHaptic('lever');
+      updateLeverHUD();
+    });
+
+    // Turntable Auto-Rotate Button: Spins harp model on pedestal while lighting remains anchored
+    const btnAutoRotate = document.getElementById('btn-autorotate');
+    btnAutoRotate.addEventListener('click', () => {
+      isTurntableSpinning = !isTurntableSpinning;
+      btnAutoRotate.classList.toggle('btn-active', isTurntableSpinning);
+    });
+
+    // Gallery Theme Switcher
+    const themes = [
+      { name: 'Obsidian Gallery', bg: 0x11141a, plinth: 0x181c24, ring: 0xc89d52, key: 0xfff5ea },
+      { name: 'Clean Studio', bg: 0x222733, plinth: 0x2d3445, ring: 0xe2e8f0, key: 0xffffff },
+      { name: 'Warm Luthier', bg: 0x1b1612, plinth: 0x241d18, ring: 0xd97706, key: 0xffeed8 },
+      { name: 'Museum Daylight', bg: 0xf1f5f9, plinth: 0xe2e8f0, ring: 0x94a3b8, key: 0xffffff },
+    ];
+    let currentThemeIdx = 0;
+    const btnTheme = document.getElementById('btn-theme');
+    btnTheme.addEventListener('click', () => {
+      currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+      const t = themes[currentThemeIdx];
+      scene.background.set(t.bg);
+      plinthMat.color.set(t.plinth);
+      ringMat.color.set(t.ring);
+      keyLight.color.set(t.key);
+      btnTheme.innerText = t.name;
+    });
+
+    // Zen Mode Toggle
+    const hud = document.getElementById('hud');
+    const zenBtn = document.getElementById('zen-toggle-btn');
+    let isZen = false;
+
+    function toggleZen() {
+      isZen = !isZen;
+      hud.classList.toggle('hidden', isZen);
+      zenBtn.style.opacity = isZen ? '0.45' : '1.0';
+      zenBtn.setAttribute('title', isZen ? 'Show HUD Controls (Key: Z)' : 'Hide All Controls (Key: Z)');
+    }
+
+    zenBtn.addEventListener('click', toggleZen);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'z' || e.key === 'Z') {
+        toggleZen();
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        transitionToPreset('full_lever');
+      }
+      if (e.key === 'l' || e.key === 'L') {
+        btnLevers.click();
+      }
+      if (e.key === ' ') {
+        btnAutoRotate.click();
+      }
+    });
+
+    // Raycaster for Plucking Strings, Mobile Glissando Strumming, and Lever Swipe Flip
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let isPointerDown = false;
+    let isLeverInteracting = false;
+    let activeLeverNum = -1;
+    let leverTouchStartY = 0;
+    let leverTouchStartX = 0;
+    let leverActionTaken = false;
+    let lastPluckedIndex = -1;
+
+    function checkLeverInteraction(ray) {
+      // 1. Direct mesh hit test on all lever parts
+      if (leverHitObjects.length > 0) {
+        const leverHits = raycaster.intersectObjects(leverHitObjects, false);
+        if (leverHits.length > 0) {
+          for (const hit of leverHits) {
+            const match = hit.object.name.match(/Lever_.*_(\d)/);
+            if (match) {
+              return parseInt(match[1], 10);
+            }
+          }
+        }
+      }
+
+      // 2. 3D Proximity test to each lever handle position (~5cm touch radius)
+      let bestLever = -1;
+      let bestDistSq = 0.0025; // ~5cm radius
+      const worldPos = new THREE.Vector3();
+      for (let d = 1; d <= 8; d++) {
+        const lev = leversMap.get(d);
+        if (lev && lev.obj) {
+          lev.obj.getWorldPosition(worldPos);
+          const distSq = ray.distanceSqToPoint(worldPos);
+          if (distSq < bestDistSq) {
+            bestDistSq = distSq;
+            bestLever = d;
+          }
+        }
+      }
+      return bestLever;
+    }
+
+    function getClosestString(ray) {
+      let bestIndex = -1;
+      let bestDistSq = 0.0025; // ~5cm touch proximity radius in world coordinates
+      const pBot = new THREE.Vector3();
+      const pTop = new THREE.Vector3();
+      const pPlayingTop = new THREE.Vector3();
+
+      stringsList.forEach((s) => {
+        pBot.copy(s.botPt).applyMatrix4(s.mesh.matrixWorld);
+        pTop.copy(s.topPt).applyMatrix4(s.mesh.matrixWorld);
+
+        // SAFE ZONE ENFORCEMENT:
+        // Pluck zone is strictly the bottom/middle 70% of the string (sFrac <= 0.70)
+        // The top 30% near levers and bridge pins is completely safe and cannot be plucked!
+        pPlayingTop.copy(pBot).lerp(pTop, 0.70);
+
+        const distSq = ray.distanceSqToSegment(pBot, pPlayingTop);
+        if (distSq < bestDistSq) {
+          bestDistSq = distSq;
+          bestIndex = s.index;
+        }
+      });
+      return bestIndex;
+    }
+
+    function checkStringPluck(e) {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      // 1. Direct mesh hit test with safe zone height check
+      const meshes = stringsList.map(s => s.mesh);
+      const hits = raycaster.intersectObjects(meshes, false);
+      let pluckedIdx = -1;
+      if (hits.length > 0) {
+        const hit = hits[0];
+        const hitMesh = hit.object;
+        const strItem = stringsList.find(s => s.mesh === hitMesh);
+        if (strItem) {
+          const pBot = new THREE.Vector3().copy(strItem.botPt).applyMatrix4(strItem.mesh.matrixWorld);
+          const pTop = new THREE.Vector3().copy(strItem.topPt).applyMatrix4(strItem.mesh.matrixWorld);
+          const totalLen = pBot.distanceTo(pTop);
+          const hitLen = pBot.distanceTo(hit.point);
+          const sFrac = totalLen > 0 ? hitLen / totalLen : 0;
+          // If hit is in playing zone (bottom 70% and below Y 0.88m), it is valid
+          if (sFrac <= 0.70 && hit.point.y <= 0.88) {
+            pluckedIdx = strItem.index;
+          }
+        }
+      }
+
+      // 2. Proximity test (only within playing zone, ignoring top safe zone)
+      if (pluckedIdx === -1) {
+        pluckedIdx = getClosestString(raycaster.ray);
+      }
+
+      if (pluckedIdx !== -1) {
+        if (pluckedIdx !== lastPluckedIndex) {
+          pluckStringByIndex(pluckedIdx);
+          lastPluckedIndex = pluckedIdx;
+        }
+        return true;
+      }
+      return false;
+    }
+
+    window.checkLeverInteraction = checkLeverInteraction;
+    window.getClosestString = getClosestString;
+    window.checkStringPluck = checkStringPluck;
+
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.hud-card') || e.target.closest('#zen-toggle-btn')) {
+        return;
+      }
+      isPointerDown = true;
+      lastPluckedIndex = -1;
+      isLeverInteracting = false;
+      activeLeverNum = -1;
+      leverActionTaken = false;
+
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      // Priority 1: Check if user touched or is near a Camac lever!
+      const hitLever = checkLeverInteraction(raycaster.ray);
+      if (hitLever > 0) {
+        isLeverInteracting = true;
+        activeLeverNum = hitLever;
+        leverTouchStartY = e.clientY;
+        leverTouchStartX = e.clientX;
+        controls.enabled = false; // Disable orbit controls while swiping lever!
+        return; // STOP! Never pluck string or rotate camera when touching lever
+      }
+
+      // Priority 2: Check if user is plucking strings in the playing zone
+      const plucked = checkStringPluck(e);
+      if (plucked) {
+        controls.enabled = false; // Allow smooth glissando strumming without rotating camera
+      } else {
+        controls.enabled = true; // Orbit camera freely
+      }
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+
+      if (isLeverInteracting && activeLeverNum > 0) {
+        const dy = leverTouchStartY - e.clientY; // dy > 0 is finger moving UP, dy < 0 is finger moving DOWN
+        
+        // Swipe UP gesture (> 14px upward displacement): flip lever UP!
+        if (dy > 14) {
+          setLeverState(activeLeverNum, true);
+          leverActionTaken = true;
+        }
+        // Swipe DOWN gesture (< -14px downward displacement): flip lever DOWN!
+        else if (dy < -14) {
+          setLeverState(activeLeverNum, false);
+          leverActionTaken = true;
+        }
+        return;
+      }
+
+      // If not interacting with levers, check glissando string strumming
+      if (!controls.enabled) {
+        checkStringPluck(e);
+      }
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if (isLeverInteracting && activeLeverNum > 0) {
+        // If the user tapped without swiping (dy magnitude <= 14px), toggle lever state!
+        if (!leverActionTaken) {
+          toggleSingleLever(activeLeverNum);
+        }
+      }
+
+      isPointerDown = false;
+      isLeverInteracting = false;
+      activeLeverNum = -1;
+      leverActionTaken = false;
+      lastPluckedIndex = -1;
+      controls.enabled = true;
+    });
+
+    window.addEventListener('pointercancel', () => {
+      isPointerDown = false;
+      isLeverInteracting = false;
+      activeLeverNum = -1;
+      leverActionTaken = false;
+      lastPluckedIndex = -1;
+      controls.enabled = true;
+    });
+
+    // Responsive Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 8. Main Animation Loop
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+
+      // Smooth camera transition
+      if (isTransitioning) {
+        camera.position.lerp(targetCamPos, 0.08);
+        controls.target.lerp(targetLookAt, 0.08);
+        if (camera.position.distanceTo(targetCamPos) < 0.005 && controls.target.distanceTo(targetLookAt) < 0.005) {
+          camera.position.copy(targetCamPos);
+          controls.target.copy(targetLookAt);
+          isTransitioning = false;
+        }
+      }
+
+      // Turntable spin: harp rotates dynamically on pedestal while sunlight casts real-time moving shadows
+      if (harpModel && isTurntableSpinning) {
+        harpModel.rotation.y += delta * 0.40;
+      }
+
+      // Smooth lever handle rotation
+      leversMap.forEach((lever) => {
+        const diff = lever.targetAngle - lever.currentAngle;
+        if (Math.abs(diff) > 0.001) {
+          lever.currentAngle += diff * Math.min(1.0, delta * 12.0);
+          const flipQuat = new THREE.Quaternion().setFromAxisAngle(
+            new THREE.Vector3(1, 0, 0),
+            lever.currentAngle
+          );
+          lever.obj.quaternion.copy(lever.baseQuat).multiply(flipQuat);
+        }
+      });
+
+      // String oscillation physics with dynamic glowing light feedback and natural acoustic decay
+      stringsList.forEach((s) => {
+        if (s.vibrateAmp > 0.0002) {
+          s.vibrateAmp *= 0.974; // Natural acoustic decay: clearly visible vibration and light for ~2.2 seconds
+
+          // Subtle glowing light strictly on the thin string filament itself, fading in exact lockstep with vibration
+          const decayFrac = Math.max(0.0, Math.min(1.0, s.vibrateAmp / 0.022));
+          s.mesh.material.emissive.copy(s.glowColor);
+          s.mesh.material.emissiveIntensity = decayFrac * 0.85;
+
+          const posAttr = s.mesh.geometry.attributes.position;
+          const baseAttr = s.baseGeom.attributes.position;
+          const timeNow = clock.getElapsedTime() * 48;
+          for (let i = 0; i < posAttr.count; i++) {
+            const yFrac = Math.max(0.0, Math.min(1.0, (baseAttr.getY(i) - 0.18) / 0.82));
+            // Fundamental standing wave sine envelope + 2nd harmonic overtone
+            const waveShape = Math.sin(yFrac * Math.PI) + 0.18 * Math.sin(yFrac * 2 * Math.PI);
+            const dispX = waveShape * Math.sin(timeNow) * s.vibrateAmp;
+            const dispZ = waveShape * Math.cos(timeNow * 1.35) * s.vibrateAmp * 0.45;
+            posAttr.setX(i, baseAttr.getX(i) + dispX);
+            posAttr.setZ(i, baseAttr.getZ(i) + dispZ);
+          }
+          posAttr.needsUpdate = true;
+        } else if (s.vibrateAmp > 0 || s.mesh.material.emissiveIntensity > 0) {
+          s.vibrateAmp = 0;
+          s.mesh.material.emissiveIntensity = 0.0;
+          const posAttr = s.mesh.geometry.attributes.position;
+          const baseAttr = s.baseGeom.attributes.position;
+          for (let i = 0; i < posAttr.count; i++) {
+            posAttr.setX(i, baseAttr.getX(i));
+            posAttr.setZ(i, baseAttr.getZ(i));
+          }
+          posAttr.needsUpdate = true;
+        }
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

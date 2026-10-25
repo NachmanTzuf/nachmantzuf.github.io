@@ -1,12 +1,15 @@
 {
+  "id": "/",
   "name": "Earpa: 3D Celtic Harp Ear Trainer",
   "short_name": "Earpa",
   "description": "Functional Celtic Harp Ear Trainer with 3D Lutherie & Relative Pitch Mastery",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#090d16",
   "theme_color": "#090d16",
   "orientation": "portrait",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/images/icons/earpa_icon_192.png",

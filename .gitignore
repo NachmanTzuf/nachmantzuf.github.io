@@ -1,9 +1,12 @@
 node_modules/
 .expo/
-dist/
 tmp_frames/
 tmp_frames_user/
 __pycache__/
 *.pyc
 .DS_Store
 *.log
+cloudflared.exe
+.env.local
+.env
+.env.*
