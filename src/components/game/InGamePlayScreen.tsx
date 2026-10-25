@@ -175,7 +175,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
   };
   const feedbackOpacity = useRef(new Animated.Value(1)).current;
   const [replayIndex,setReplayIndex]=useState(-1);
-  const [answerFeedback, setAnswerFeedback] = useState<{correct: boolean; text: string} | null>(null);
+  const [answerFeedback, setAnswerFeedback] = useState<{correct: boolean; text: string; musicalInsight?: string} | null>(null);
   const theme = REALM_THEMES[realm] || REALM_THEMES.single;
   const canvasRef = useRef<CelticHarpCanvasRef | null>(null);
   const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('celtic_nylon'));
@@ -466,9 +466,14 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     const newScore = correctCount + (isCorrect ? 1 : 0);
     setCorrectCount(newScore);
     feedbackStartedRef.current = performance.now();
-    setAnswerFeedback({ correct: isCorrect, text: isCorrect
-      ? `Correct note: ${answerLabel(target, q)}`
-      : `Correct note: ${answerLabel(target, q)}` });
+    const catalogResponse = isCorrect
+      ? MusicalResponsesCatalog.getRandomCorrectResponse()
+      : MusicalResponsesCatalog.getRandomIncorrectResponse();
+    setAnswerFeedback({
+      correct: isCorrect,
+      text: `Correct note: ${answerLabel(target, q)}`,
+      musicalInsight: catalogResponse.text,
+    });
     schedule(() => {
       playGuessedResolutionWalk(target, () => { finishFeedback(newScore); });
     }, 0);
@@ -514,9 +519,14 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     const newScore = correctCount + (isCorrect ? 1 : 0);
     setCorrectCount(newScore);
     feedbackStartedRef.current = performance.now();
-    setAnswerFeedback({ correct: isCorrect, text: isCorrect
-      ? `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}`
-      : `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}` });
+    const catalogResponse = isCorrect
+      ? MusicalResponsesCatalog.getRandomCorrectResponse()
+      : MusicalResponsesCatalog.getRandomIncorrectResponse();
+    setAnswerFeedback({
+      correct: isCorrect,
+      text: `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}`,
+      musicalInsight: catalogResponse.text,
+    });
     const beat = 60000 / (q.tempoBpm || 150);
     const separationMs = 300; // Configurable 250-350ms settling separation gap per REQ-P3-A02
     setFeedbackText('Listen to the correct pattern');
@@ -864,11 +874,16 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
       </View>
 
       {answerFeedback && (
-        <Reveal style={styles.answerOverlay}><View nativeID="answer-feedback" style={{width:'100%',alignItems:'center',gap:20}}>
+        <Reveal style={styles.answerOverlay}><View nativeID="answer-feedback" style={{width:'100%',alignItems:'center',gap:16,maxWidth:520}}>
           <Animated.Text style={[styles.answerTitle, {opacity: feedbackOpacity}]}>{answerFeedback.correct ? 'Correct' : 'Incorrect'}</Animated.Text>
-          <Text style={{color:'#e9cf9c',fontSize:14,letterSpacing:2}}>THE CORRECT {activeLevel.track==='melody'?'PATTERN':'NOTE'}</Text>
+          <Text style={{color:'#e9cf9c',fontSize:13,letterSpacing:2}}>THE CORRECT {activeLevel.track==='melody'?'PATTERN':'NOTE'}</Text>
           {activeLevel.track==='melody' && activeQuestion ? <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:12}}>{activeQuestion.targetDegrees.map((d,i)=><View key={i} style={{minWidth:70,padding:14,borderRadius:16,borderWidth:1,borderColor:replayIndex===i||replayIndex===-2?'#f4dfaf':'#8d826b',backgroundColor:replayIndex===i||replayIndex===-2?'rgba(211,184,125,.32)':'rgba(31,43,33,.5)',alignItems:'center',gap:10}}><Text style={{color:'#c9b997',fontSize:12}}>{activeLevel.isHarmonicDyad?'Together':i+1}</Text><Text style={{color:'#fae8c2',fontFamily:'Cinzel-Bold',fontSize:30}}>{['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][activeQuestion.targetMidiNotes[i]%12]}</Text><Text style={{color:'#e3d1ae',fontSize:17}}>Degree {d}</Text></View>)}</View> : <Text style={styles.answerDetail}>{answerFeedback.text.replace('Correct note: ','')}</Text>}
-          <Text accessibilityLiveRegion="polite" style={{ color: "#f4dfaf", fontSize: 24, marginTop: 24 }}>{feedbackText}</Text>
+          {answerFeedback.musicalInsight ? (
+            <View style={styles.insightBox}>
+              <Text style={styles.insightQuote}>"{answerFeedback.musicalInsight}"</Text>
+            </View>
+          ) : null}
+          <Text accessibilityLiveRegion="polite" style={{ color: "#f4dfaf", fontSize: 20, marginTop: 12 }}>{feedbackText}</Text>
         </View></Reveal>
       )}
       {/* 5. Session Complete Debrief Modal with 90% Gate, Reflex Latency & Pedagogical Insights */}
@@ -894,6 +909,32 @@ const styles = StyleSheet.create({
   },
   answerTitle: { fontFamily: 'Cinzel-Bold', fontSize: 44, color: '#e9cf9c', textAlign: 'center', marginBottom: 20 },
   answerDetail: { fontFamily: 'Inter', fontSize: 42, lineHeight: 54, color: '#f0dfbd', textAlign: 'center' },
+  insightBox: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(18, 22, 28, 0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 168, 114, 0.35)',
+    maxWidth: 440,
+    alignItems: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)',
+        } as any)
+      : {}),
+  },
+  insightQuote: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#fae8c2',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
   container: {
     width: '100%',
     height: '100%',

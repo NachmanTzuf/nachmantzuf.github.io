@@ -65,6 +65,7 @@ import { LeversTabScreen } from '../components/tabs/LeversTabScreen';
 import { ProfileTabScreen } from '../components/tabs/ProfileTabScreen';
 import { DeviceFramePreview } from '../components/preview/DeviceFramePreview';
 import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
+import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
 import {
   LevelDefinition,
   SINGLE_NOTE_LEVELS,
@@ -132,6 +133,7 @@ export default function EarpaMasterScreen() {
   const [showJourneyScreen, setShowJourneyScreen] = useState<boolean>(false);
   const [showGarageModal, setShowGarageModal] = useState<boolean>(false);
   const [showSocialModal, setShowSocialModal] = useState<boolean>(false);
+  const [showReminderModal, setShowReminderModal] = useState<boolean>(false);
   const [activeJourneyNode, setActiveJourneyNode] = useState<JourneyNode | null>(null);
 
   // Curriculum Progression State (1 to 68)
@@ -436,6 +438,7 @@ export default function EarpaMasterScreen() {
             onOpenRoadmap={(theme) => handleOpenRoadmapWithTheme(theme || 'single')}
             onOpenProfile={() => setActiveTab('profile')}
             onOpenSocial={() => setShowSocialModal(true)}
+            onOpenReminders={() => setShowReminderModal(true)}
           />
 
           {/* Active Tab View Body: Identical Hero 3D Harp & Pedestal across Single, Melody, and Levers */}
@@ -578,6 +581,10 @@ export default function EarpaMasterScreen() {
             socialEngine={socialEngineRef.current}
             currentUserStreak={streak}
             currentUserTrials={totalTrials}
+          />
+          <PracticeReminderModal
+            visible={showReminderModal}
+            onClose={() => setShowReminderModal(false)}
           />
         </SafeAreaView>
       </DeviceFramePreview>

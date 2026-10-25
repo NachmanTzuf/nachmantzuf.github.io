@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Earpa: 3D Celtic Harp Ear Trainer",
+    "slug": "earpa",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/images/icons/earpa_icon_512.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#090d16"
+    },
+    "web": {
+      "favicon": "./public/images/icons/favicon.png",
+      "bundler": "metro"
+    }
+  }
+}

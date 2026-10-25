@@ -21,6 +21,7 @@ interface TopHeaderBarProps {
   onOpenProfile?: () => void;
   onOpenRoadmap?: (theme?: 'single' | 'melody' | 'levers') => void;
   onOpenSocial?: () => void;
+  onOpenReminders?: () => void;
 }
 
 export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
@@ -31,6 +32,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   nextMilestoneXp = 500,
   onOpenProfile,
   onOpenRoadmap,
+  onOpenReminders,
 }) => {
   const userLvl = Math.max(1, levelNumber);
   const stageNum = Math.floor((userLvl - 1) / 10) + 1;
@@ -113,14 +115,26 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
           <Text style={styles.centerMetricText}>{currentXp} Shards</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={onOpenProfile}
-          style={styles.streakBadge}
-        >
-          <SaintBrigidFlameIcon size={15} />
-          <Text style={styles.streakCountText}>{streakCount}d Streak</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={onOpenProfile}
+            style={styles.streakBadge}
+          >
+            <SaintBrigidFlameIcon size={15} />
+            <Text style={styles.streakCountText}>{streakCount}d Streak</Text>
+          </TouchableOpacity>
+          {onOpenReminders && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={onOpenReminders}
+              style={styles.bellBadge}
+              accessibilityLabel="Daily Practice Reminders"
+            >
+              <Text style={{ fontSize: 13 }}>🔔</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* 2. Standalone Liquid Glass Trail Map Card tailored specifically to the active section */}
@@ -258,4 +272,20 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
+  bellBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        } as any)
+      : {}),
+  } as any,
 });
