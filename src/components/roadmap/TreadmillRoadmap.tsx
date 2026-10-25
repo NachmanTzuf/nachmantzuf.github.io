@@ -19,7 +19,9 @@ import {
   CelticChaliceRelicIcon,
 } from '../common/CelticIcons';
 
-export type RoadmapTrack = 'single' | 'melody';
+import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
+
+export type RoadmapTrack = 'single' | 'melody' | 'levers';
 
 interface TreadmillRoadmapProps {
   track: RoadmapTrack;
@@ -57,7 +59,7 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
 }) => {
   const [mapSize, setMapSize] = useState({width:571,height:1024});
   const points = trailPoints(realm || track).map(p => projectTrailPoint(p,mapSize.width,mapSize.height));
-  const allLevels = realm === 'levers' ? LEVER_LEVELS : getLevelsByTrack(track);
+  const allLevels = (realm === 'levers' || track === 'levers') ? LEVER_LEVELS : getLevelsByTrack(track as 'single' | 'melody');
 
   // Treadmill offset: windowStart indicates which level is currently mapped to Position 1
   // By default, windowStart = activeLevelNumber (Position 1 anchor rule)
@@ -173,9 +175,9 @@ export const TreadmillRoadmap: React.FC<TreadmillRoadmapProps> = ({
           const isInspected = inspectedLevelId === lvl.id || (isCurrentActive && !inspectedLevelId);
 
           // Real star calculation based on user trials
-          const userTrials = UserAccountDatabase.getInstance().getUserTrials(UserAccountDatabase.getInstance().getActiveProfile().id).filter(t => t.levelId === lvl.id);
+          const userTrials = UserAccountDatabase.getInstance().getUserTrials(UserAccountDatabase.getInstance().getActiveProfile().id).filter((t: any) => t.levelId === lvl.id);
           const starCount = userTrials.length > 0
-            ? (userTrials.filter(t => t.isCorrect).length / userTrials.length >= 0.9 ? 3 : userTrials.filter(t => t.isCorrect).length / userTrials.length >= 0.7 ? 2 : 1)
+            ? (userTrials.filter((t: any) => t.isCorrect).length / userTrials.length >= 0.9 ? 3 : userTrials.filter((t: any) => t.isCorrect).length / userTrials.length >= 0.7 ? 2 : 1)
             : (isPassed ? 3 : 0);
 
           return (

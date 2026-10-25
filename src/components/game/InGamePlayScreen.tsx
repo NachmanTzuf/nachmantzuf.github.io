@@ -134,6 +134,22 @@ function formatDegreeLabel(deg: ScaleDegree, pref: NotationPreference): string {
   return deg;
 }
 
+function getSingleDisplaySymbol(deg: string, midi: number, pref: NotationPreference): string {
+  if (pref === 'solfege') {
+    const solfegeMap: Record<string, string> = {
+      '1': 'Do', 'b2': 'Ra', '2': 'Re', 'b3': 'Me', '3': 'Mi',
+      '4': 'Fa', '#4': 'Fi', '5': 'Sol', 'b6': 'Le', '6': 'La',
+      'b7': 'Te', '7': 'Ti', '8': 'Do'
+    };
+    return solfegeMap[deg] || deg;
+  }
+  if (pref === 'notes') {
+    const pitchMap = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    return pitchMap[midi % 12];
+  }
+  return deg; // 'numbers'
+}
+
 function calculateStringFrequency(strNum: number, isLeverUp: boolean): number {
   const openMidiTable = [60, 62, 63, 65, 67, 68, 70, 72];
   const baseMidi = openMidiTable[strNum - 1] || 60;
@@ -771,8 +787,8 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
           interactiveControls={true}
           fixedInGameAngle={true}
           customAngle={inGameAngle}
-          customScale={0.96}
-          targetY={0.48}
+          customScale={0.78}
+          targetY={0.56}
           minimalHeroMode={true}
         />
       </View>
@@ -881,38 +897,50 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
 
       {answerFeedback && (
         <Reveal style={styles.answerOverlay}>
-          <View nativeID="answer-feedback" style={styles.unifiedAnswerBox}>
+          {/* Top Section: Natural Verdict */}
+          <View style={styles.feedbackTopSection}>
             <Animated.Text
               style={[
                 styles.unifiedAnswerTitle,
                 {
                   opacity: feedbackOpacity,
-                  color: answerFeedback.correct ? '#34d399' : '#f87171',
+                  color: answerFeedback.correct ? '#22c55e' : '#dc2626',
                 },
               ]}
             >
               {answerFeedback.correct ? 'Correct' : 'Incorrect'}
             </Animated.Text>
+          </View>
 
+          {/* Middle Section: Clear Large Note Symbol Matching User Preference */}
+          <View style={styles.feedbackMiddleSection}>
             {activeLevel.track === 'melody' && activeQuestion ? (
               <View style={styles.unifiedMelodyRow}>
-                {activeQuestion.targetDegrees.map((d, i) => (
-                  <View key={i} style={styles.unifiedMelodyPill}>
-                    <Text style={styles.unifiedMelodyNote}>
-                      {['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'][activeQuestion.targetMidiNotes[i] % 12]}
-                    </Text>
-                    <Text style={styles.unifiedMelodySolfege}>
-                      {SOLFEGE_MAP[d] || d}
-                    </Text>
-                  </View>
-                ))}
+                {activeQuestion.targetDegrees.map((d, i) => {
+                  const midi = activeQuestion.targetMidiNotes[i];
+                  const sym = getSingleDisplaySymbol(d, midi, notationPreference);
+                  return (
+                    <View key={i} style={styles.unifiedMelodyPill}>
+                      <Text style={styles.unifiedMelodyNote}>{sym}</Text>
+                    </View>
+                  );
+                })}
               </View>
             ) : (
               <Text style={styles.unifiedAnswerNote}>
-                {answerFeedback.text.replace('Correct note: ', '')}
+                {activeQuestion
+                  ? getSingleDisplaySymbol(
+                      activeQuestion.targetDegrees[0],
+                      activeQuestion.targetMidiNotes[0],
+                      notationPreference
+                    )
+                  : answerFeedback.text.replace('Correct note: ', '')}
               </Text>
             )}
+          </View>
 
+          {/* Bottom Section: Short Musical Insight */}
+          <View style={styles.feedbackBottomSection}>
             {answerFeedback.musicalInsight ? (
               <Text style={styles.unifiedInsightText}>
                 "{answerFeedback.musicalInsight}"
@@ -941,74 +969,88 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 90,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(10, 14, 12, 0.72)',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'web' ? 70 : 90,
+    paddingBottom: Platform.OS === 'web' ? 70 : 90,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(8, 14, 10, 0.42)',
     ...(Platform.OS === 'web'
       ? ({
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         } as any)
       : {}),
   },
-  unifiedAnswerBox: {
-    width: '100%',
-    maxWidth: 480,
+  feedbackTopSection: {
     alignItems: 'center',
-    gap: 14,
-    paddingHorizontal: 20,
+    width: '100%',
+  },
+  feedbackMiddleSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingVertical: 20,
+  },
+  feedbackBottomSection: {
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
   },
   unifiedAnswerTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 52,
+    fontSize: 44,
     fontWeight: '900',
     textAlign: 'center',
-    letterSpacing: 1,
+    letterSpacing: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   unifiedAnswerNote: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 38,
-    color: '#fae8c2',
+    fontSize: 64,
+    color: '#fef3c7',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
   unifiedMelodyRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   unifiedMelodyPill: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 14,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    minWidth: 68,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    minWidth: 70,
   },
   unifiedMelodyNote: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 30,
-    color: '#fae8c2',
-  },
-  unifiedMelodySolfege: {
-    fontSize: 13,
-    color: '#94a3b8',
-    marginTop: 2,
-    fontWeight: '700',
+    fontSize: 34,
+    color: '#fef3c7',
+    textAlign: 'center',
   },
   unifiedInsightText: {
     fontFamily: 'Inter',
     fontSize: 16,
     lineHeight: 24,
-    color: '#e2e8f0',
+    color: '#f1f5f9',
     textAlign: 'center',
-    maxWidth: 380,
-    marginTop: 6,
+    maxWidth: 340,
     fontStyle: 'italic',
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   container: {
     width: '100%',

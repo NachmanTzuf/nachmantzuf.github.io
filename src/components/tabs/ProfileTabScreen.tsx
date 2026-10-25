@@ -243,7 +243,9 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
               </View>
               <Switch
                 value={profile.hapticsEnabled !== false}
-                onValueChange={(val) => db.updateActiveProfile({ hapticsEnabled: val })}
+                onValueChange={(val) => {
+                  db.updateActiveProfile({ hapticsEnabled: val });
+                }}
                 trackColor={{ false: 'rgba(255,255,255,0.15)', true: '#059669' }}
                 thumbColor={profile.hapticsEnabled !== false ? '#34d399' : '#94a3b8'}
               />
