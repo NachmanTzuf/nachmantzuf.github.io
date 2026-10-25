@@ -1,11 +1,12 @@
-const CACHE_NAME = 'earpa-pwa-v10';
+const CACHE_NAME = 'earpa-pwa-v11';
 const ASSETS_TO_CACHE = [
   './manifest.json',
   './images/icons/earpa_icon_192.png',
   './images/icons/earpa_icon_512.png',
   './images/icons/apple_touch_icon.png',
   './images/icons/favicon.png',
-  './images/earpa_master_loading_bg.jpg'
+  './images/earpa_master_loading_bg.jpg',
+  './images/earpa_journey_bg.jpg'
 ];
 
 self.addEventListener('install', (event) => {

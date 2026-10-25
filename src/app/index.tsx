@@ -409,6 +409,8 @@ export default function EarpaMasterScreen() {
                   ? '/images/arctic_celtic_sanctuary.jpg'
                   : activeTab === 'levers'
                   ? '/images/desert_celtic_sanctuary.jpg'
+                  : activeTab === 'profile'
+                  ? '/images/earpa_journey_bg.jpg'
                   : '/images/irish_celtic_sanctuary.jpg'
               }
               alt="Ancient Realm Sanctuary"
@@ -423,7 +425,7 @@ export default function EarpaMasterScreen() {
                 pointerEvents: 'none',
               }}
             />
-            {/* Gentle Cinematic Vignette for Edge Depth */}
+            {/* Gentle Cinematic Vignette for Edge Depth / Polarized Sunglasses Black Gradient Tint on Journey */}
             <div
               style={{
                 position: 'absolute',
@@ -433,7 +435,7 @@ export default function EarpaMasterScreen() {
                 height: '100%',
                 background:
                   activeTab === 'profile'
-                    ? 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 65%, rgba(6, 12, 8, 0.20) 100%)'
+                    ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.28) 40%, rgba(0, 0, 0, 0.65) 100%)'
                     : 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(6, 12, 8, 0.32) 100%)',
                 pointerEvents: 'none',
               }}

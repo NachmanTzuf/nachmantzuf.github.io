@@ -54,6 +54,35 @@ full_composite.save(f"{BRAIN_DIR}/verified_master_loading_bg.png", "PNG")
 print(f"Saved full loading background: {out_loading_public}")
 
 # =========================================================================
+# 1B. JOURNEY TAB BACKGROUND (571 x 1024)
+# Exact same loading screen image, but through a dark sunglasses lens with black gradient tint!
+# All text and metrics on Journey page become vividly readable.
+# =========================================================================
+journey_bright = ImageEnhance.Brightness(full_composite).enhance(0.46)
+journey_contrast = ImageEnhance.Contrast(journey_bright).enhance(1.20)
+journey_color = ImageEnhance.Color(journey_contrast).enhance(1.10)
+
+arr_j = np.array(journey_color, dtype=np.float32)
+y_coords_j, x_coords_j = np.ogrid[:bg_h, :bg_w]
+norm_y_j = y_coords_j / float(bg_h)
+vert_factor_j = 1.0 - (0.35 * np.clip(1.0 - norm_y_j * 2.2, 0, 1) + 0.55 * np.clip((norm_y_j - 0.45) * 1.8, 0, 1))
+cx_j, cy_j = bg_w / 2.0, bg_h / 2.0
+max_d_j = math.sqrt(cx_j**2 + cy_j**2)
+dist_j = np.sqrt((x_coords_j - cx_j)**2 + (y_coords_j - cy_j)**2) / max_d_j
+radial_factor_j = 1.0 - 0.20 * (dist_j ** 1.8)
+combined_factor_j = np.clip(vert_factor_j * radial_factor_j, 0.15, 1.0)
+
+for ch in range(3):
+    arr_j[:, :, ch] = arr_j[:, :, ch] * combined_factor_j
+
+arr_j = np.clip(arr_j, 0, 255).astype(np.uint8)
+journey_bg = Image.fromarray(arr_j, "RGBA")
+journey_bg.convert("RGB").save("public/images/earpa_journey_bg.jpg", "JPEG", quality=96)
+journey_bg.convert("RGB").save("dist/images/earpa_journey_bg.jpg", "JPEG", quality=96)
+journey_bg.save(f"{BRAIN_DIR}/verified_master_journey_bg.png", "PNG")
+print("Saved journey sunglasses background: public/images/earpa_journey_bg.jpg")
+
+# =========================================================================
 # 2. MASTER SQUARE APP LOGO / ICON (1024 x 1024)
 # Background through sharp dark sunglasses lens (polarized dark & crisp)
 # Cherry brown harp on top: fully bright, crisp, centered, zero darkening!
