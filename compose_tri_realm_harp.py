@@ -1,9 +1,11 @@
 import os
-from PIL import Image, ImageFilter, ImageDraw
+import math
+from PIL import Image, ImageFilter, ImageDraw, ImageEnhance
+import numpy as np
 
 BRAIN_DIR = "C:/Users/Hp/.gemini/antigravity/brain/71677e65-ddd0-4156-bd73-ec960d83fd95"
 bg_path = "public/images/tri_realm_sanctuary.jpg"
-harp_path = f"{BRAIN_DIR}/angle_th_neg_1_15.png"
+harp_path = f"{BRAIN_DIR}/cherry_balanced.png"
 
 bg = Image.open(bg_path).convert("RGBA")
 harp = Image.open(harp_path).convert("RGBA")
@@ -12,12 +14,14 @@ harp = Image.open(harp_path).convert("RGBA")
 bbox = harp.getbbox()
 harp_cutout = harp.crop(bbox)
 hw, hh = harp_cutout.size
-print(f"Dark Walnut Harp Cutout Size: {hw}x{hh}")
+print(f"Cherry Brown Harp Cutout Size: {hw}x{hh}")
 
 bg_w, bg_h = bg.size # 571 x 1024
 
 # =========================================================================
-# 1. FULL-BLEED LOADING BACKGROUND (571 x 1024) - Clean natural background
+# 1. FULL-BLEED LOADING BACKGROUND (571 x 1024)
+# Natural, crisp, crystal-clear background with NO gradient / NO darkening!
+# Cherry brown harp centered on mossy pedestal with flat floor grounding.
 # =========================================================================
 target_h = 472
 scale = target_h / float(hh)
@@ -51,36 +55,43 @@ print(f"Saved full loading background: {out_loading_public}")
 
 # =========================================================================
 # 2. MASTER SQUARE APP LOGO / ICON (1024 x 1024)
-# With Black Matte Finish Tint & Dark Gradient Background!
-# Entire harp 100% visible, 100% centered inside Android adaptive safe zone!
+# Background through sharp dark sunglasses lens (polarized dark & crisp)
+# Cherry brown harp on top: fully bright, crisp, centered, zero darkening!
 # =========================================================================
 crop_y0 = 220
 crop_h = 571
 bg_square = bg.crop((0, crop_y0, 571, crop_y0 + crop_h)).resize((1024, 1024), Image.Resampling.LANCZOS)
 
-# Create Black Matte Finish Tint with Dark Gradient Overlay
-gradient_mask = Image.new("L", (256, 256), 0)
-g_draw = ImageDraw.Draw(gradient_mask)
-for r in range(180, 0, -2):
-    dist = r / 180.0
-    alpha = int(75 + (135 - 75) * (dist ** 1.3))
-    g_draw.ellipse((128 - r, 128 - r, 128 + r, 128 + r), fill=alpha)
+# Optical sunglasses effect: dark, high contrast, razor-sharp details
+enhancer_bright = ImageEnhance.Brightness(bg_square)
+dark_lens = enhancer_bright.enhance(0.48)
 
-gradient_mask_1024 = gradient_mask.resize((1024, 1024), Image.Resampling.BICUBIC)
-tint_black = Image.new("RGBA", (1024, 1024), (8, 10, 14, 0))
-tint_black.putalpha(gradient_mask_1024)
+enhancer_contrast = ImageEnhance.Contrast(dark_lens)
+sharp_lens = enhancer_contrast.enhance(1.20)
 
-# Apply matte black tint to background
-tinted_bg = bg_square.copy()
-tinted_bg.paste(tint_black, (0, 0), tint_black)
+enhancer_color = ImageEnhance.Color(sharp_lens)
+vivid_lens = enhancer_color.enhance(1.10)
 
-# Size and center dark walnut harp
+# Full-res smooth radial dark gradient falloff towards edges
+y_coords, x_coords = np.ogrid[:1024, :1024]
+cx, cy = 512, 512
+max_dist = math.sqrt(512**2 + 512**2)
+dist = np.sqrt((x_coords - cx)**2 + (y_coords - cy)**2) / max_dist
+grad_factor = 1.0 - 0.28 * (dist ** 1.5)
+grad_factor = np.clip(grad_factor, 0.0, 1.0)
+
+arr = np.array(vivid_lens, dtype=np.float32)
+for c in range(3):
+    arr[:, :, c] = arr[:, :, c] * grad_factor
+arr = np.clip(arr, 0, 255).astype(np.uint8)
+sunglasses_bg = Image.fromarray(arr, "RGBA")
+
+# Place Cherry Brown Harp on Top (Fully bright cherry wood, zero darkening!)
 icon_target_h = 630
 icon_scale = icon_target_h / float(hh)
 icon_target_w = int(hw * icon_scale)
 icon_harp = harp_cutout.resize((icon_target_w, icon_target_h), Image.Resampling.LANCZOS)
 
-# EXACT 100% DEAD CENTER in the 1024x1024 square:
 icon_harp_x = int((1024 - icon_target_w) / 2.0)
 icon_harp_y = int((1024 - icon_target_h) / 2.0)
 icon_feet_y = icon_harp_y + icon_target_h
@@ -92,12 +103,12 @@ isw = int(icon_target_w * 0.82)
 ish = int(isw * 0.22)
 isx0 = int(512 - isw / 2.0)
 isy0 = icon_feet_y - int(ish * 0.50)
-is_draw.ellipse((isx0, isy0, isx0 + isw, isy0 + ish), fill=(5, 8, 8, 220))
+is_draw.ellipse((isx0, isy0, isx0 + isw, isy0 + ish), fill=(4, 6, 8, 230))
 icon_shadow = icon_shadow.filter(ImageFilter.GaussianBlur(14))
 
-tinted_bg.paste(icon_shadow, (0, 0), icon_shadow)
-tinted_bg.paste(icon_harp, (icon_harp_x, icon_harp_y), icon_harp)
+sunglasses_bg.paste(icon_shadow, (0, 0), icon_shadow)
+sunglasses_bg.paste(icon_harp, (icon_harp_x, icon_harp_y), icon_harp)
 
 out_square_path = f"{BRAIN_DIR}/verified_master_square_logo.png"
-tinted_bg.save(out_square_path, "PNG")
-print(f"Saved matte tinted square logo: {out_square_path} (centered at {icon_harp_x}, {icon_harp_y}, size {icon_target_w}x{icon_target_h})")
+sunglasses_bg.save(out_square_path, "PNG")
+print(f"Saved sunglasses master square logo: {out_square_path} (centered at {icon_harp_x}, {icon_harp_y}, size {icon_target_w}x{icon_target_h})")
