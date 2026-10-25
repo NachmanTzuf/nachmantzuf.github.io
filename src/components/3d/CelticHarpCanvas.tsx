@@ -1081,7 +1081,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           {interactiveControls && !minimalHeroMode && (
             <View style={styles.leverOverlayBottom}>
               <View style={styles.leverQuickRow}>
-                <Text style={styles.leverHintText}>3D CAMAC LEVERS:</Text>
+                <Text style={styles.leverHintText}>3D SHARPING LEVERS:</Text>
                 <TouchableOpacity onPress={() => setAllLeversPattern('down')} style={styles.leverMacroBtn}>
                   <Text style={styles.leverMacroText}>All Down</Text>
                 </TouchableOpacity>

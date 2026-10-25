@@ -243,6 +243,9 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
       window.addEventListener('click', unlockAudio, { passive: true });
     }
     return () => {
+      aliveRef.current = false;
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current.clear();
       if (typeof window !== 'undefined') {
         window.removeEventListener('pointerdown', unlockAudio);
         window.removeEventListener('click', unlockAudio);
@@ -256,6 +259,8 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
 
   // Start new trial round using CurriculumRandomizer
   const startNewTrial = (roundNum: number, currentLevelDef: LevelDefinition) => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.clear();
     setIsRoundResolved(false);
     isRoundResolvedRef.current = false;
     setLastGuessedDegree(null);
@@ -380,6 +385,9 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     if (isRoundResolvedRef.current || isPlayingAudioRef.current || !activeQuestionRef.current) return;
 
     if (isSequenceMode) {
+      // Guard against duplicate or extraneous submissions once required melody length is reached
+      if (guessesRef.current.length >= melodyLength) return;
+
       // Sequence collection mode: play note audio immediately on tap/pluck
       const degNum = degreeToStringNumber(degree);
       const isUp = leverStates[degNum - 1] ?? false;
@@ -509,14 +517,18 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     setAnswerFeedback({ correct: isCorrect, text: isCorrect
       ? `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}`
       : `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}` });
-    const beat=60000/(q.tempoBpm || 150);
+    const beat = 60000 / (q.tempoBpm || 150);
+    const separationMs = 300; // Configurable 250-350ms settling separation gap per REQ-P3-A02
     setFeedbackText('Listen to the correct pattern');
-    q.targetMidiNotes.forEach((midi,index)=>schedule(()=>{
+    q.targetMidiNotes.forEach((midi, index) => schedule(() => {
       setReplayIndex(activeLevel.isHarmonicDyad ? -2 : index);
       canvasRef.current?.triggerLightStrike(degreeToStringNumber(targets[index] as ScaleDegree));
-      synthRef.current.playPluck(440*Math.pow(2,(midi-69)/12),Math.max(900,beat*2),.9);
-    },180+(activeLevel.isHarmonicDyad?0:index*beat)));
-    schedule(()=>{setReplayIndex(-1);finishFeedback(newScore);},180+(activeLevel.isHarmonicDyad?1:targets.length)*beat);
+      synthRef.current.playPluck(440 * Math.pow(2, (midi - 69) / 12), Math.max(900, beat * 2), 0.9);
+    }, separationMs + (activeLevel.isHarmonicDyad ? 0 : index * beat)));
+    schedule(() => {
+      setReplayIndex(-1);
+      finishFeedback(newScore);
+    }, separationMs + (activeLevel.isHarmonicDyad ? 1 : targets.length) * beat);
 
   };
 

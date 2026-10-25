@@ -734,7 +734,7 @@ export class UserAccountDatabase {
     } catch {}
   }
 
-  private getUserSessions(userId: string): SessionLogEntry[] {
+  public getUserSessions(userId: string): SessionLogEntry[] {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const data = localStorage.getItem(`${STORAGE_KEY_SESSIONS}${userId}`);
@@ -780,17 +780,59 @@ export class UserAccountDatabase {
 
   public openCloudProfile(id: string, remote: UserProfile | undefined, records: Array<{kind:string;payload:any}>) {
     const existing = this.profiles.get(id);
-    const profile: UserProfile = existing || {...DEFAULT_PROFILE, ...remote, id, username:remote?.username || 'harper',displayName:remote?.displayName || 'My Harper',onboardingComplete:true};
-    this.profiles.set(id,profile); this.activeUserId=id;
-    const merge = (local:any[], remoteRows:any[]) => [...new Map([...remoteRows,...local].map(r=>[r.id,{...r,userId:id}])).values()];
-    const trials=merge(this.getUserTrials(id),records.filter(r=>r.kind==='trial').map(r=>r.payload));
-    const sessions=merge(this.getUserSessions(id),records.filter(r=>r.kind==='session').map(r=>r.payload));
-    this.saveUserTrials(id,trials);this.saveUserSessions(id,sessions);
-    const daily: Record<string,DailyPracticeRecord> = {};
-    for(const t of trials){const dateKey=new Date(t.timestamp).toLocaleDateString('en-CA');const d=daily[dateKey] ||= {dateKey,practiceSeconds:0,sessionsCount:0,trialsCount:0,correctCount:0,accuracyPct:0};d.trialsCount++;if(t.isCorrect)d.correctCount++;d.accuracyPct=Math.round(d.correctCount/d.trialsCount*100);}
-    for(const t of sessions){const dateKey=new Date(t.timestamp).toLocaleDateString('en-CA');const d=daily[dateKey] ||= {dateKey,practiceSeconds:0,sessionsCount:0,trialsCount:0,correctCount:0,accuracyPct:0};d.sessionsCount++;d.practiceSeconds+=t.durationSeconds;}
-    this.saveUserDailyRecords(id,daily);
-    this.updateActiveProfile({totalTrialsAttempted:trials.length,totalSessionsPlayed:sessions.length,totalPracticeTimeSeconds:sessions.reduce((n,s)=>n+s.durationSeconds,0),overallAccuracyPct:trials.length?Math.round(trials.filter(t=>t.isCorrect).length/trials.length*100):0});
+    let profile: UserProfile;
+    if (existing && remote) {
+      // Two-device conflict resolution: preserve maximum progress achieved across devices
+      const remoteNewer = (remote.lastActiveTimestamp || 0) >= (existing.lastActiveTimestamp || 0);
+      profile = {
+        ...existing,
+        ...remote,
+        progress: {
+          single: Math.max(existing.progress?.single || 1, remote.progress?.single || 1),
+          melody: Math.max(existing.progress?.melody || 1, remote.progress?.melody || 1),
+        },
+        leverStage: Math.max(existing.leverStage || 0, remote.leverStage || 0),
+        highestStreak: Math.max(existing.highestStreak || 0, remote.highestStreak || 0),
+        lastActiveTimestamp: Math.max(existing.lastActiveTimestamp || 0, remote.lastActiveTimestamp || 0),
+        displayName: remoteNewer ? (remote.displayName || existing.displayName) : existing.displayName,
+        avatarPhoto: remoteNewer ? (remote.avatarPhoto || existing.avatarPhoto) : (existing.avatarPhoto || remote.avatarPhoto),
+        onboardingComplete: true,
+      };
+    } else if (remote) {
+      profile = { ...DEFAULT_PROFILE, ...remote, id, onboardingComplete: true };
+    } else {
+      profile = existing || { ...DEFAULT_PROFILE, id, username: 'harper', displayName: 'My Harper', onboardingComplete: true };
+    }
+    this.profiles.set(id, profile);
+    this.activeUserId = id;
+
+    const merge = (local: any[], remoteRows: any[]) => [...new Map([...remoteRows, ...local].map(r => [r.id, { ...r, userId: id }])).values()];
+    const trials = merge(this.getUserTrials(id), records.filter(r => r.kind === 'trial').map(r => r.payload));
+    const sessions = merge(this.getUserSessions(id), records.filter(r => r.kind === 'session').map(r => r.payload));
+    this.saveUserTrials(id, trials);
+    this.saveUserSessions(id, sessions);
+
+    const daily: Record<string, DailyPracticeRecord> = {};
+    for (const t of trials) {
+      const dateKey = new Date(t.timestamp).toLocaleDateString('en-CA');
+      const d = daily[dateKey] ||= { dateKey, practiceSeconds: 0, sessionsCount: 0, trialsCount: 0, correctCount: 0, accuracyPct: 0 };
+      d.trialsCount++;
+      if (t.isCorrect) d.correctCount++;
+      d.accuracyPct = Math.round(d.correctCount / d.trialsCount * 100);
+    }
+    for (const t of sessions) {
+      const dateKey = new Date(t.timestamp).toLocaleDateString('en-CA');
+      const d = daily[dateKey] ||= { dateKey, practiceSeconds: 0, sessionsCount: 0, trialsCount: 0, correctCount: 0, accuracyPct: 0 };
+      d.sessionsCount++;
+      d.practiceSeconds += t.durationSeconds;
+    }
+    this.saveUserDailyRecords(id, daily);
+    this.updateActiveProfile({
+      totalTrialsAttempted: trials.length,
+      totalSessionsPlayed: sessions.length,
+      totalPracticeTimeSeconds: sessions.reduce((n, s) => n + s.durationSeconds, 0),
+      overallAccuracyPct: trials.length ? Math.round(trials.filter(t => t.isCorrect).length / trials.length * 100) : 0,
+    });
     TuningMatrixEngine.setActiveTuning(profile.activeTuning);
   }
 

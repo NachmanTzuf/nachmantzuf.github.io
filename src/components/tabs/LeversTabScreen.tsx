@@ -51,7 +51,7 @@ export const LeversTabScreen: React.FC<LeversTabScreenProps> = ({
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       {/* Title & Description */}
       <View style={styles.header}>
-        <Text style={styles.title}>Camac Sharping Levers</Text>
+        <Text style={styles.title}>Celtic Sharping Levers</Text>
         <Text style={styles.subtitle}>
           In Celtic harps, flipping a lever UP raises the string pitch by one semitone.
         </Text>
