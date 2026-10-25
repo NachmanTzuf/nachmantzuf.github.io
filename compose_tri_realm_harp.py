@@ -17,23 +17,19 @@ print(f"Dark Walnut Harp Cutout Size: {hw}x{hh}")
 bg_w, bg_h = bg.size # 571 x 1024
 
 # =========================================================================
-# 1. FULL-BLEED LOADING BACKGROUND (571 x 1024)
+# 1. FULL-BLEED LOADING BACKGROUND (571 x 1024) - Clean natural background
 # =========================================================================
 target_h = 472
 scale = target_h / float(hh)
 target_w = int(hw * scale)
 scaled_harp = harp_cutout.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-# Dead center horizontally:
 harp_x = int((bg_w - target_w) / 2.0)
 feet_y = 783 # Firmly planted on flat mossy stone surface
 harp_y = feet_y - target_h
 
-print(f"Loading Screen Harp: ({harp_x}, {harp_y}), {target_w}x{target_h}, feet at y={feet_y}")
-
 full_composite = bg.copy()
 
-# Contact shadow on flat mossy stone
 shadow_layer = Image.new("RGBA", (bg_w, bg_h), (0, 0, 0, 0))
 draw = ImageDraw.Draw(shadow_layer)
 sw = int(target_w * 0.80)
@@ -54,13 +50,31 @@ full_composite.save(f"{BRAIN_DIR}/verified_master_loading_bg.png", "PNG")
 print(f"Saved full loading background: {out_loading_public}")
 
 # =========================================================================
-# 2. MASTER SQUARE LOGO / ICON (1024 x 1024)
+# 2. MASTER SQUARE APP LOGO / ICON (1024 x 1024)
+# With Black Matte Finish Tint & Dark Gradient Background!
 # Entire harp 100% visible, 100% centered inside Android adaptive safe zone!
 # =========================================================================
 crop_y0 = 220
 crop_h = 571
 bg_square = bg.crop((0, crop_y0, 571, crop_y0 + crop_h)).resize((1024, 1024), Image.Resampling.LANCZOS)
 
+# Create Black Matte Finish Tint with Dark Gradient Overlay
+gradient_mask = Image.new("L", (256, 256), 0)
+g_draw = ImageDraw.Draw(gradient_mask)
+for r in range(180, 0, -2):
+    dist = r / 180.0
+    alpha = int(75 + (135 - 75) * (dist ** 1.3))
+    g_draw.ellipse((128 - r, 128 - r, 128 + r, 128 + r), fill=alpha)
+
+gradient_mask_1024 = gradient_mask.resize((1024, 1024), Image.Resampling.BICUBIC)
+tint_black = Image.new("RGBA", (1024, 1024), (8, 10, 14, 0))
+tint_black.putalpha(gradient_mask_1024)
+
+# Apply matte black tint to background
+tinted_bg = bg_square.copy()
+tinted_bg.paste(tint_black, (0, 0), tint_black)
+
+# Size and center dark walnut harp
 icon_target_h = 630
 icon_scale = icon_target_h / float(hh)
 icon_target_w = int(hw * icon_scale)
@@ -71,8 +85,6 @@ icon_harp_x = int((1024 - icon_target_w) / 2.0)
 icon_harp_y = int((1024 - icon_target_h) / 2.0)
 icon_feet_y = icon_harp_y + icon_target_h
 
-square_composite = bg_square.copy()
-
 # Contact shadow under the feet on the stone
 icon_shadow = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
 is_draw = ImageDraw.Draw(icon_shadow)
@@ -80,12 +92,12 @@ isw = int(icon_target_w * 0.82)
 ish = int(isw * 0.22)
 isx0 = int(512 - isw / 2.0)
 isy0 = icon_feet_y - int(ish * 0.50)
-is_draw.ellipse((isx0, isy0, isx0 + isw, isy0 + ish), fill=(8, 14, 10, 215))
+is_draw.ellipse((isx0, isy0, isx0 + isw, isy0 + ish), fill=(5, 8, 8, 220))
 icon_shadow = icon_shadow.filter(ImageFilter.GaussianBlur(14))
 
-square_composite.paste(icon_shadow, (0, 0), icon_shadow)
-square_composite.paste(icon_harp, (icon_harp_x, icon_harp_y), icon_harp)
+tinted_bg.paste(icon_shadow, (0, 0), icon_shadow)
+tinted_bg.paste(icon_harp, (icon_harp_x, icon_harp_y), icon_harp)
 
 out_square_path = f"{BRAIN_DIR}/verified_master_square_logo.png"
-square_composite.save(out_square_path, "PNG")
-print(f"Saved master square logo: {out_square_path} (centered at {icon_harp_x}, {icon_harp_y}, size {icon_target_w}x{icon_target_h})")
+tinted_bg.save(out_square_path, "PNG")
+print(f"Saved matte tinted square logo: {out_square_path} (centered at {icon_harp_x}, {icon_harp_y}, size {icon_target_w}x{icon_target_h})")
