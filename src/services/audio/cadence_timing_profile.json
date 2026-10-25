@@ -1,0 +1,14 @@
+{
+  "bpm": 96.0,
+  "cadence_chord_1_duration_ms": 650,
+  "cadence_chord_2_duration_ms": 650,
+  "cadence_chord_3_duration_ms": 1100,
+  "anticipation_gap_ms": 420,
+  "single_note_sustain_ms": 850,
+  "melody_note_ioi_ms": 400,
+  "post_guess_feedback_delay_ms": 250,
+  "resolution_cadence_duration_ms": 1200,
+  "finger_roll_arpeggio_ms": 28,
+  "pluck_attack_ms": 5,
+  "soundbox_decay_s": 3.2
+}

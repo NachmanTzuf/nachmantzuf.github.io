@@ -1,0 +1,405 @@
+import os
+import subprocess
+
+DESKTOP_DIR = r"C:\Users\Hp\Desktop\all levels screen shots"
+OUTPUT_PDF = os.path.join(DESKTOP_DIR, "instruction general instructions.pdf")
+TEMP_HTML = os.path.join(r"C:\Users\Hp\.gemini\antigravity\scratch\mobile-app-studio", "instruction_document.html")
+EDGE_EXE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>General Level Mapping and Architecture Instructions</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1a202c;
+    background: #ffffff;
+    line-height: 1.5;
+    font-size: 10.5pt;
+  }
+  .doc-header {
+    border-bottom: 3px solid #2b6cb0;
+    padding-bottom: 15px;
+    margin-bottom: 24px;
+  }
+  .doc-title {
+    font-size: 24pt;
+    font-weight: 800;
+    color: #1a365d;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.5px;
+  }
+  .doc-subtitle {
+    font-size: 13pt;
+    color: #4a5568;
+    margin: 0 0 10px 0;
+    font-weight: 500;
+  }
+  .doc-meta {
+    font-size: 9pt;
+    color: #718096;
+    display: flex;
+    gap: 20px;
+  }
+  .doc-meta strong {
+    color: #2d3748;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #2b6cb0;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #2d3748;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+  p {
+    margin: 0 0 10px 0;
+  }
+  ul, ol {
+    margin: 0 0 12px 0;
+    padding-left: 22px;
+  }
+  li {
+    margin-bottom: 5px;
+  }
+  .callout {
+    background: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    padding: 12px 14px;
+    border-radius: 4px;
+    margin: 14px 0;
+    font-size: 10pt;
+  }
+  .callout-warning {
+    background: #fffaf0;
+    border-left: 4px solid #dd6b20;
+  }
+  .callout-title {
+    font-weight: 700;
+    color: #2b6cb0;
+    margin-bottom: 4px;
+  }
+  .callout-warning .callout-title {
+    color: #c05621;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #cbd5e0;
+    padding: 7px 10px;
+    text-align: left;
+  }
+  th {
+    background: #f7fafc;
+    color: #2d3748;
+    font-weight: 700;
+  }
+  tr:nth-child(even) td {
+    background: #fcfdfe;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+  .badge-blue { background: #e2e8f0; color: #2b6cb0; border: 1px solid #cbd5e0; }
+  .badge-green { background: #c6f6d5; color: #22543d; }
+  .square-matrix {
+    display: inline-flex;
+    gap: 3px;
+    vertical-align: middle;
+  }
+  .sq {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .sq-active { background: #1a365d; }
+  .sq-inactive { background: #cbd5e0; }
+  .code-block {
+    background: #1a202c;
+    color: #edf2f7;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 8.5pt;
+    margin: 10px 0 14px 0;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div class="doc-title">General Level Mapping & Engine Instructions</div>
+  <div class="doc-subtitle">Comprehensive Technical Specification for Screenshot Auditing, Ear Training Curriculum Mapping, and Advanced Harmonic Extension Engine</div>
+  <div class="doc-meta">
+    <span><strong>Target System:</strong> Functional Ear Training / Celtic Harper Core</span>
+    <span><strong>Source Directory:</strong> Desktop / all levels screen shots</span>
+    <span><strong>Scope:</strong> Single Note, Melodic Dictations, 2-Note Foundation & Advanced Dyads</span>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">EXECUTIVE MANDATE FOR THE IMPLEMENTING AI AGENT</div>
+  This document serves as your complete operating manual. Your mission is to analyze every screenshot inside the target folders, systematically decode every metric, map the curriculum sequence without omitting any detail, and implement two critical architectural extensions: (1) a gentle two-note foundation, and (2) a complete 30-level advanced harmonic simultaneous-interval roadmap.
+</div>
+
+<h2>1. Decoding Level Card Metrics and Visual Grammar</h2>
+<p>Each level card in the original application displays distinct visual indicators that govern the game engine rules for that stage. You must strictly decode these four core parameters for every single level:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 22%;">Card Metric</th>
+      <th style="width: 25%;">Visual Appearance</th>
+      <th>Engine Definition and Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rounds per Game</strong></td>
+      <td><span class="badge badge-blue">20:</span> or <span class="badge badge-blue">10:</span></td>
+      <td>Specifies the total number of exercise rounds the user must complete before the session finishes and issues an accuracy score. Single note training uses <strong>20 rounds</strong>; sequence training uses <strong>10 rounds</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>Octave Span</strong></td>
+      <td><span class="badge badge-blue">1 octave</span> or <span class="badge badge-blue">many octaves</span></td>
+      <td><strong>1 octave:</strong> All target notes sound within the middle vocal register (e.g., C4 to C5).<br><strong>many octaves:</strong> Target notes sound across low, middle, and high octaves, training pitch class recognition regardless of register.</td>
+    </tr>
+    <tr>
+      <td><strong>Harmonic Cadence</strong></td>
+      <td><span class="badge badge-blue">I-IV-V-I</span></td>
+      <td>The four-chord establishing progression played before each question to ground the listener's ear in the tonic center. In minor keys, minor cadences (i-iv-V-i) are employed.</td>
+    </tr>
+    <tr>
+      <td><strong>Diatonic Note Matrix</strong></td>
+      <td>8 inline squares:<br>
+        <div class="square-matrix">
+          <span class="sq sq-active"></span><span class="sq sq-active"></span><span class="sq sq-active"></span><span class="sq sq-active"></span>
+          <span class="sq sq-inactive"></span><span class="sq sq-inactive"></span><span class="sq sq-inactive"></span><span class="sq sq-inactive"></span>
+        </div>
+      </td>
+      <td>Represents the 8 scale degrees (Do, Re, Mi, Fa, Sol, La, Ti, Do).<br>
+        • <strong>Dark Squares:</strong> Active pool of notes available for the game to test, and available as clickable user buttons.<br>
+        • <strong>Light Squares:</strong> Inactive scale degrees excluded from this specific stage.</td>
+    </tr>
+    <tr>
+      <td><strong>Key Context</strong></td>
+      <td><code>C major</code>, <code>Not-C major</code>, <code>Random major</code></td>
+      <td>• <strong>C major:</strong> Anchored strictly in C (C=Do).<br>
+        • <strong>Not-C / Random:</strong> The cadence and pitch pool transpose to a random key (e.g. F#, Eb, A), enforcing functional movable-Do degree identification.</td>
+    </tr>
+    <tr>
+      <td><strong>Sequence / Tempo</strong><br><em>(Sequence mode only)</em></td>
+      <td><span class="badge badge-blue">4 notes | 60 bpm</span></td>
+      <td>Specifies the melodic dictation length (number of consecutive tones played) and the playback tempo (progressing through 60, 70, 80 bpm).</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <div class="callout-title">CRITICAL ENGINE BEHAVIOR: TONIC RESOLUTION MECHANISM</div>
+  In functional ear training, after the user submits their answer for a target note, the app does not just mark correct/wrong: it <strong>plays the melodic resolution back to the nearest tonic degree</strong> (e.g. Re (2) resolves down to Do (1); Ti (7) resolves upward to High Do (8); Fa (4) resolves down to Mi (3) then Do (1)). The implementing agent must preserve this acoustic resolution pipeline.
+</div>
+
+<div class="page-break"></div>
+
+<h2>2. Inspection and Audit Protocol for the Screenshot Folders</h2>
+<p>The implementing agent must systematically process all files across the three Desktop subdirectories:</p>
+
+<h3>Folder 1: <code>single note trainig</code> (Single Note Identification)</h3>
+<ul>
+  <li><strong>1.1 The Major Scale (Diatonic):</strong> Starts with partial subsets (e.g. notes 1-4: C, D, E, F), transitions to upper tetrachord (notes 5-8: G, A, B, C), full 1-octave, multi-octave, and transposed (Not-C major).</li>
+  <li><strong>1.2 Chromatics in Major Scale Context:</strong> Progressively introduces non-diatonic semitones (b2, b3, #4, b6, b7) against the established major cadence.</li>
+  <li><strong>1.3 The Minor Scale (Diatonic):</strong> Focuses on natural, harmonic, or melodic minor degree colorations (Me, Le, Te/Se) established via minor cadences.</li>
+  <li><strong>1.4 Chromatics in Minor Scale Context:</strong> Master chromatic ear training against the minor tonal anchor.</li>
+</ul>
+
+<h3>Folder 2: <code>note sequance training</code> (Melodic Dictations)</h3>
+<ul>
+  <li>Starts with smaller sequences (3 tones), advances to 4 tones.</li>
+  <li>BPM tempo ladder: 60 BPM &rarr; 70 BPM &rarr; 80 BPM.</li>
+  <li>Degree subsets expand from lower pentachords to full octaves and randomized keys.</li>
+</ul>
+
+<h3>Folder 3: <code>other instractions and deta</code> (Methodology and Engine Rules)</h3>
+<ul>
+  <li>Contains reference rules for question presentation, cadence timing, accuracy thresholds, and movable-Do solfege syllable mappings.</li>
+</ul>
+
+<h3>Required Data Output Format for the Implementing AI</h3>
+<p>The implementing agent must compile the audit findings into a structured machine-readable catalog following this JSON schema:</p>
+
+<div class="code-block">{
+  "levelId": "single_major_01",
+  "category": "major_scale_single",
+  "title": "C major - Lower Tetrachord",
+  "roundsCount": 20,
+  "octaveSpan": "1 octave",
+  "cadence": "I-IV-V-I",
+  "keyMode": "fixed_C",
+  "activeDegrees": [1, 2, 3, 4],
+  "activeNoteNames": ["C4", "D4", "E4", "F4"],
+  "resolutions": {
+    "2": [1],
+    "3": [1],
+    "4": [3, 1]
+  }
+}</div>
+
+<div class="page-break"></div>
+
+<h2>3. Architecture Extension 1: Gentle Two-Note Entry Foundation</h2>
+<p>In the original application, the very first level begins with 4 notes (Do, Re, Mi, Fa). User feedback confirms this is an intimidating leap for absolute beginners. The new application must prepend a dedicated <strong>Stage 0: Gentle Two-Note Foundation</strong> before the legacy curriculum begins.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 14%;">Stage Level</th>
+      <th style="width: 26%;">Level Name</th>
+      <th style="width: 25%;">Active Degrees</th>
+      <th>Educational & Acoustic Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Level 0.1</strong></td>
+      <td>Bilateral Poles (Do & High Do)</td>
+      <td>Degree 1 (Do) & Degree 8 (High Do)</td>
+      <td>Extreme register difference. Easiest acoustic anchor to distinguish; establishes the octave frame.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 0.2</strong></td>
+      <td>The Gravitational Fifth</td>
+      <td>Degree 1 (Do) & Degree 5 (Sol)</td>
+      <td>The most acoustically stable consonant interval in the harmonic series. Grounding the dominant.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 0.3</strong></td>
+      <td>Stepwise Gravity (Do & Re)</td>
+      <td>Degree 1 (Do) & Degree 2 (Re)</td>
+      <td>Introduces adjacent whole-step tension. Re clearly resolves down to Do.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 0.4</strong></td>
+      <td>Leading Tone Magnet (Do & Ti)</td>
+      <td>Degree 1 (Do) & Degree 7 (Ti)</td>
+      <td>Introduces half-step upward tension. Ti clearly resolves upward into High Do.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 0.5</strong></td>
+      <td>The Major Triad Core</td>
+      <td>Degree 1 (Do), 3 (Mi), 5 (Sol)</td>
+      <td>Expands to 3 consonant triad tones, bridging seamlessly into the legacy 4-note starting point.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Architecture Extension 2: Advanced Harmonic Dyads (30-Level Roadmap)</h2>
+<p>In the original app, "Advanced" was merely an unstructured custom sandbox. In our production application, Advanced is elevated to a premier <strong>Harmonic Dyad Training Track</strong> where the engine plays <strong>two notes simultaneously</strong> (harmonic intervals / chords) for the user to decipher.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 12%;">Phase</th>
+      <th style="width: 15%;">Level Range</th>
+      <th style="width: 33%;">Intervals Tested</th>
+      <th>Pedagogical Strategy & Octaves</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 1: Open Consonances</strong></td>
+      <td>Levels Adv-01 to Adv-06</td>
+      <td>Unisons (1-1), Octaves (1-8), Perfect Fifths (1-5), Perfect Fourths (1-4).</td>
+      <td>1 octave. Clean hollow resonances with zero beating. The user identifies open hollow acoustic intervals.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2: Sweet Consonances</strong></td>
+      <td>Levels Adv-07 to Adv-12</td>
+      <td>Major Thirds (1-3), Minor Thirds (1-b3), Major Sixths (1-6), Minor Sixths (1-b6).</td>
+      <td>1 octave. Warm triad colorations. Introduces major vs minor harmonic dualities over tonic pedals.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3: Mild Dissonances</strong></td>
+      <td>Levels Adv-13 to Adv-18</td>
+      <td>Major Seconds (1-2), Minor Sevenths (1-b7), Suspended Dyads (2-5, 4-5).</td>
+      <td>1 octave. Acoustic friction and gentle beating frequencies. Focuses on resolving energy.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 4: Sharp Dissonances</strong></td>
+      <td>Levels Adv-19 to Adv-24</td>
+      <td>Tritones (1-#4/b5), Minor Seconds (1-b2), Major Sevenths (1-7).</td>
+      <td>1 octave. Extreme acoustic tension. Distinguishing half-step harshness from tritone instability.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 5: Multi-Octave Open Dyads</strong></td>
+      <td>Levels Adv-25 to Adv-30</td>
+      <td>Compound Major/Minor 10ths, Compound 12ths (Octave + 5th), Inverted Dyads.</td>
+      <td>Many octaves. Wide pitch spreads across harp registers, demanding spatial acoustic recognition.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">SUMMARY OF RESPONSIBILITIES FOR IMPLEMENTING AGENT</div>
+  1. Inspect all 35+ screenshots in <code>Desktop/all levels screen shots</code>.<br>
+  2. Transcribe every level into a definitive TypeScript configuration module.<br>
+  3. Prepend the 5-stage Two-Note Foundation (Stage 0).<br>
+  4. Build the complete 30-level Advanced Simultaneous Harmonic Dyad track.<br>
+  5. Ensure UI dynamically displays the exact 8-square pitch pool and note selection buttons.
+</div>
+
+</body>
+</html>
+"""
+
+with open(TEMP_HTML, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"Temporary HTML written to {TEMP_HTML}")
+
+# Generate PDF via Headless Edge
+cmd = f'"{EDGE_EXE}" --headless --no-pdf-header-footer --print-to-pdf="{OUTPUT_PDF}" "file:///{TEMP_HTML.replace(os.sep, "/")}"'
+print(f"Executing: {cmd}")
+
+result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+print("Return code:", result.returncode)
+print("Stdout:", result.stdout)
+print("Stderr:", result.stderr)
+
+if os.path.exists(OUTPUT_PDF) and os.path.getsize(OUTPUT_PDF) > 5000:
+    print(f"SUCCESS: Generated PDF at: {OUTPUT_PDF} ({os.path.getsize(OUTPUT_PDF)} bytes)")
+else:
+    print("FAILED to generate PDF.")

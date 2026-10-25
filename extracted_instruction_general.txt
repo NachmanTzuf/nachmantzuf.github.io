@@ -1,0 +1,266 @@
+--- PAGE 1 ---
+Page 1
+Master Ear Training Curriculum & Technical Engine
+Specification
+Complete Screenshot Audit, Decoded Level Matrices, Eased Beginner Track, and Perfectly Balanced 68-
+Level Parallel Paths
+Audited Directory: Desktop / all
+levels screen shots
+Curriculum Architecture: Path 1 (Single Note & Harmonic Dyads: 68
+Levels) | Path 2 (Melodic Sequences: 68 Levels)
+Status: Approved
+Production Master
+EXECUTIVE SYSTEM ARCHITECTURE
+This specification defines the complete ear training curriculum for the production mobile application. Based on a rigorous
+audit of all screenshots across single note trainig, note sequance training, and other instractions and deta,
+this document maps out every single level, parameter, and rule. The two major paths have been mathematically balanced to
+exactly 68 levels each by pruning unplayable extreme speeds and integrating a rich, pedagogical 27-level Advanced
+Harmonic Dyads track.
+1. System Fundamentals & Metric Decoding
+Every level card contains five distinct engine parameters that determine game behavior:
+Rounds per Session: Displayed as 10: or 20: (50 in mastery finals). This is the exact number of trials before calculating user
+score.
+Register / Octave Scope: 1 octave limits tone playback to the middle vocal register (C4 to C5). many octaves spreads
+tones across low, middle, and high registers.
+Harmonic Cadence: Played prior to each question (I-IV-V-I in major; i-iv-V-i in minor) to establish the tonic center.
+Diatonic Note Matrix: 8 inline blocks representing the diatonic scale degrees (1=Do, 2=Re, 3=Mi, 4=Fa, 5=Sol, 6=La, 7=Ti,
+8=Do). Dark blocks indicate active notes user must recognize. In chromatic modes, a 12-block piano matrix is utilized.
+Key Signature Modes: C major/minor (fixed tonic C), Not-C (session locked to a single random non-C key), and Random
+(every question switches to a new random key).
+Tonic Resolution Pipeline: Upon correct answer submission, the engine plays the stepwise resolution back to the nearest
+tonic (1 ← 2 ← 3 ← 4 and 5 → 6 → 7 → 1).
+--- PAGE 2 ---
+Page 2
+2. PATH 1: Single Note & Simultaneous Harmonic Dyads Track (Exact 68 Levels)
+Path 1 progresses from absolute beginner two-note foundations, through diatonic and chromatic scales, culminating in 27 levels
+of simultaneous two-note harmonic dyads.
+Module 0: Intro Game - Gentle Beginner Onboarding (Levels 1 to 9)
+Extracted directly from other instractions and deta / Intro Game. Starts with 2 notes and 10 questions per round.
+ID Level Title Questions Octave Cadence Active Degrees Acoustic & PedagogicalFocus
+P1-01 Intro 1: Do, Re 10 1 octave I-IV-V-I 1, 2 (Do, Re)
+Distinguish stable tonic vs
+stepwise tension. Re
+resolves to Do.
+P1-02 Intro 2: Do, Re, Mi 10 1 octave I-IV-V-I 1, 2, 3 (Do, Re, Mi)
+Introduce bright major
+3rd. Mi resolves down
+through Re to Do.
+P1-03 Intro 3: Do, Re, Mi, Fa 10 1 octave I-IV-V-I 1, 2, 3, 4 (Do-Fa)
+Lower tetrachord. Fa
+resolves downward to Mi
+then Do.
+P1-04 Intro 4: Ti, Do 10 1 octave I-IV-V-I 7, 8 (Ti, High Do) Leading tone magneticpull upward into tonic.
+P1-05 Intro 5: La, Ti, Do 10 1 octave I-IV-V-I 6, 7, 8 (La-Do)
+Upper register stepwise
+approach into upper
+tonic.
+P1-06 Intro 6: Sol, La, Ti, Do 10 1 octave I-IV-V-I 5, 6, 7, 8 (Sol-Do)
+Upper tetrachord. Sol acts
+as anchor for upper
+notes.
+P1-07 Intro 7: The WholeOctave 10 1 octave I-IV-V-I 1, 2, 3, 4, 5, 6, 7, 8 Complete 1-octavediatonic scale.
+P1-08 Intro 8: Another Octave 10 High octave I-IV-V-I 1, 2, 3, 4, 5, 6, 7, 8 Repeat diatonic scale inhigher vocal register.
+P1-09 Intro 9: Two OctavesTogether 10 2 octaves I-IV-V-I 16 active pitch keys Diatonic identificationacross dual octaves.
+Module 1: The Major Scale Single Note (Levels 10 to 17)
+ID Level Title Questions Octave Cadence Active Degrees Notes & Key Mode
+P1-10 C Major - LowerTetrachord 20 1 octave I-IV-V-I 1, 2, 3, 4 Fixed C major (C, D, E, F)
+P1-11 C Major - UpperTetrachord 20 1 octave I-IV-V-I 5, 6, 7, 8 Fixed C major (G, A, B, C)
+P1-12 C Major - Full Octave 20 1 octave I-IV-V-I All 8 diatonic Fixed C major (C4 to C5)
+P1-13 C Major - Multi-Octave 20 Many octaves I-IV-V-I All 8 diatonic Fixed C major across 3octaves
+P1-14 Not-C Major - 1 Octave 20 1 octave I-IV-V-I All 8 diatonic Session locked to 1random key
+P1-15 Not-C Major - Multi-Octave 20 Many octaves I-IV-V-I All 8 diatonic Session locked to 1random key
+P1-16 Random Major - 1 Octave 20 1 octave I-IV-V-I All 8 diatonic Cadence changes keyevery trial
+--- PAGE 3 ---
+Page 3
+ID Level Title Questions Octave Cadence Active Degrees Notes & Key Mode
+P1-17 Random Major - MasterExam 50 Many octaves I-IV-V-I All 8 diatonic 50-question master testacross all keys
+Module 2: Chromatics in Major Context (Levels 18 to 25)
+ID Level Title Questions Octave Cadence Active Degrees Chromatic Coverage
+P1-18 C Major Chromatic -Lower 20 1 octave I-IV-V-I 1, b2, 2, b3, 3, 4 Lower semitones (C, Db,D, Eb, E, F)
+P1-19 C Major Chromatic -Upper 20 1 octave I-IV-V-I #4, 5, b6, 6, b7, 7, 8 Upper semitones (F#, G,Ab, A, Bb, B, C)
+P1-20 C Major Chromatic - Full 20 1 octave I-IV-V-I All 12 chromatic Complete 12-tonechromatic pool
+P1-21 C Major Chromatic -Multi 20 Many octaves I-IV-V-I All 12 chromatic 12 tones across multipleregisters
+P1-22 Not-C Chromatic - 1Octave 20 1 octave I-IV-V-I All 12 chromatic Locked random key, all 12semitones
+P1-23 Not-C Chromatic - Multi 20 Many octaves I-IV-V-I All 12 chromatic Locked random keyacross registers
+P1-24 Random Major Chromatic 20 1 octave I-IV-V-I All 12 chromatic Key changes every trial
+P1-25 Random Major ChromaticFinal 50 Many octaves I-IV-V-I All 12 chromatic 50-question chromaticmaster exam
+--- PAGE 4 ---
+Page 4
+Module 3: The Minor Scale (Levels 26 to 33)
+ID Level Title Questions Octave Cadence Active Degrees Minor Tonal Logic
+P1-26 C Minor - LowerTetrachord 20 1 octave i-iv-V-i 1, 2, b3, 4 (Do-Re-Me-Fa) Natural minor lowertetrachord
+P1-27 C Minor - UpperTetrachord 20 1 octave i-iv-V-i 5, b6, b7, 8 (Sol-Le-Te-Do) Natural minor uppertetrachord
+P1-28 C Minor - Full Octave 20 1 octave i-iv-V-i All 8 diatonic minor Complete natural minorscale
+P1-29 C Minor - Multi-Octave 20 Many octaves i-iv-V-i All 8 diatonic minor Natural minor acrossregisters
+P1-30 Not-C Minor - 1 Octave 20 1 octave i-iv-V-i All 8 diatonic minor Session locked to 1random minor key
+P1-31 Not-C Minor - Multi-Octave 20 Many octaves i-iv-V-i All 8 diatonic minor Session locked to 1random minor key
+P1-32 Random Minor - 1 Octave 20 1 octave i-iv-V-i All 8 diatonic minor Minor key switches everytrial
+P1-33 Random Minor - MasterExam 50 Many octaves i-iv-V-i All 8 diatonic minor 50-question masterdiatonic minor exam
+Module 4: Chromatics in Minor Context (Levels 34 to 41)
+ID Level Title Questions Octave Cadence Active Degrees Minor Chromatic Logic
+P1-34 C Minor Chromatic -Lower 20 1 octave i-iv-V-i 1, b2, 2, b3, 3, 4 Lower semitones againstminor cadence
+P1-35 C Minor Chromatic -Upper 20 1 octave i-iv-V-i #4, 5, b6, 6, b7, 7, 8 Upper semitones againstminor cadence
+P1-36 C Minor Chromatic - Full 20 1 octave i-iv-V-i All 12 chromatic Full 12-tone chromatic inminor context
+P1-37 C Minor Chromatic -Multi 20 Many octaves i-iv-V-i All 12 chromatic Multi-octave chromaticminor
+P1-38 Not-C Minor Chromatic -1 Oct 20 1 octave i-iv-V-i All 12 chromatic Single locked randomminor key
+P1-39 Not-C Minor Chromatic -Multi 20 Many octaves i-iv-V-i All 12 chromatic Locked random minorkey across registers
+P1-40 Random Minor Chromatic 20 1 octave i-iv-V-i All 12 chromatic Minor key switches everytrial
+P1-41 Random Minor ChromaticFinal 50 Many octaves i-iv-V-i All 12 chromatic 50-question minorchromatic master test
+Module 5: Advanced Harmonic Dyads - Two Notes Simultaneously (Levels 42 to 68)
+In this premier 27-level track, the engine plays two notes simultaneously. The user must identify the harmonic dyad interval.
+ID Level Title Quest. Octave Cadence Intervals Tested Acoustic & HarmonicFunction
+P1-42 Harmonic 1: Octaves &Unisons 20 1 octave I-IV-V-I 1-1, 1-8 (Unison,Octave) Pure acoustic unisons.Zero beatingfrequencies.
+--- PAGE 5 ---
+Page 5
+ID Level Title Quest. Octave Cadence Intervals Tested Acoustic & HarmonicFunction
+P1-43 Harmonic 2: Perfect Fifths 20 1 octave I-IV-V-I 1-1, 1-5, 1-8 Open hollow fifths.Distinguish 5th vs 8ve.
+P1-44 Harmonic 3: Perfect Fourths 20 1 octave I-IV-V-I 1-4, 1-5, 1-8
+Inverted fifths. Subtle
+harmonic tension of
+fourths.
+P1-45 Harmonic 4: OpenConsonance Review 20 1 octave I-IV-V-I 1-1, 1-4, 1-5, 1-8 Speed review of allopen consonances.
+P1-46 Harmonic 5: Major Thirds 20 1 octave I-IV-V-I 1-3, 1-5, 1-8
+Warm triad color.
+Distinguish major 3rd
+vs 5th.
+P1-47 Harmonic 6: Minor Thirds 20 1 octave i-iv-V-i 1-b3, 1-3, 1-5
+Dark sadness of minor
+3rd vs sweet major
+3rd.
+P1-48 Harmonic 7: Major & MinorThirds 20 1 octave I-IV-V-I 1-b3, 1-3 Direct A/Bdiscrimination of thirdquality.
+P1-49 Harmonic 8: Major Sixths 20 1 octave I-IV-V-I 1-5, 1-6, 1-8
+Lyrical sweetness of
+6th against 5th and
+8ve.
+P1-50 Harmonic 9: Minor Sixths 20 1 octave i-iv-V-i 1-5, 1-b6, 1-6 Tragic yearning ofminor 6th against 5th.
+P1-51 Harmonic 10: SweetConsonances 20 1 octave I-IV-V-I 1-3, 1-b3, 1-6, 1-b6 Mixed 3rds and 6thsidentification.
+P1-52 Harmonic 11: AllConsonances Pool 20 1 octave I-IV-V-I 1-1, 1-3, 1-4, 1-5, 1-6,1-8 Consolidating allconsonant dyads.
+P1-53 Harmonic 12: Major Seconds 20 1 octave I-IV-V-I 1-2, 1-3
+Whole-step acoustic
+rubbing vs consonant
+3rd.
+P1-54 Harmonic 13: MinorSevenths 20 1 octave I-IV-V-I 1-b7, 1-8 Bluesy minor 7th pullvs pure octave.
+P1-55 Harmonic 14: MajorSevenths 20 1 octave I-IV-V-I 1-7, 1-8 Sharp piercing half-step friction underoctave.
+P1-56 Harmonic 15: Minor Seconds 20 1 octave I-IV-V-I 1-b2, 1-2
+Harsh rapid acoustic
+beating of minor
+second.
+P1-57 Harmonic 16: The Tritone 20 1 octave I-IV-V-I 1-#4, 1-4, 1-5
+Extreme instability.
+Distinguish tritone vs
+4th/5th.
+P1-58 Harmonic 17: AllDissonances Pool 20 1 octave I-IV-V-I 1-b2, 1-2, 1-#4, 1-b7,1-7 Rapid classification ofdissonant intervals.
+P1-59 Harmonic 18: Full DiatonicDyads 20 1 octave I-IV-V-I All 7 diatonic intervals Any diatonic notepaired over root.
+P1-60 Harmonic 19: Full ChromaticDyads 20 1 octave I-IV-V-I All 12 chromaticintervals All chromatic intervaldyads in C.
+P1-61 Harmonic 20: Inverted Dyads(Pedal 5) 20 1 octave I-IV-V-I Dyads over fifth (5-1,5-3, 5-7) Non-root bass noteharmonic dyads.
+--- PAGE 6 ---
+Page 6
+ID Level Title Quest. Octave Cadence Intervals Tested Acoustic & HarmonicFunction
+P1-62 Harmonic 21: Inverted Dyads(Pedal 3) 20 1 octave I-IV-V-I Dyads over third (3-1,3-5, 3-8) First-inversionharmonic color.
+P1-63 Harmonic 22: CompoundTenths 20 Many octaves I-IV-V-I 1-10 (Octave + 3rd) Wide voicing openthirds.
+P1-64 Harmonic 23: CompoundTwelfths 20 Many octaves I-IV-V-I 1-12 (Octave + 5th) Deep resonantacoustic harp spread.
+P1-65 Harmonic 24: Multi-OctaveDyads 20 Many octaves I-IV-V-I All intervals widespread Dyads across 2 to 3octaves.
+P1-66 Harmonic 25: Not-C Dyads 20 1 octave I-IV-V-I All intervals Locked random keytransposed dyads.
+P1-67 Harmonic 26: Random KeyDyads 20 1 octave I-IV-V-I All intervals Key changes everyquestion.
+P1-68 Harmonic 27: Master GrandDyad Final 50 Many octaves I-IV-V-I All 12 intervals multi-octave 50-question ultimateharmonic earcertification.
+--- PAGE 7 ---
+Page 7
+3. PATH 2: Melodic Sequence & Dictation Track (Exact 68 Levels)
+Path 2 teaches the user to hear and transcribe sequences of notes played one after another. In accordance with user directives,
+overly punitive 160/180 BPM speeds have been removed, creating a smooth, musical progression from 2-note short motifs up to
+complex 4-note melodic dictations.
+Module S0: Introduction to Sequences (Levels S01 to S08)
+ID Level Title Quest. Motif Length Tempo Active Degrees Pedagogical Function
+P2-01 Seq Intro 1: Two-Note Step 10 2 notes 60 bpm 1, 2 (Do, Re) Simple 2-note motif:Do-Re, Re-Do, etc.
+P2-02 Seq Intro 2: Two-Note Third 10 2 notes 60 bpm 1, 3 (Do, Mi) 2-note motif leapingto 3rd.
+P2-03 Seq Intro 3: Two-Note Fifth 10 2 notes 60 bpm 1, 5 (Do, Sol) 2-note motif leapingto 5th.
+P2-04 Seq Intro 4: Three-NoteTriad 10 3 notes 60 bpm 1, 3, 5 (Do-Mi-Sol) 3-note arpeggioswithin the tonic triad.
+P2-05 Seq Intro 5: Three-NoteSteps 10 3 notes 60 bpm 1, 2, 3 (Do-Re-Mi) 3-note stepwise scalicmotions.
+P2-06 Seq Intro 6: Four-NoteLower 10 4 notes 60 bpm 1, 2, 3, 4 (Do-Fa) 4-note scalic runs inlower tetrachord.
+P2-07 Seq Intro 7: Four-NoteUpper 10 4 notes 60 bpm 5, 6, 7, 8 (Sol-Do) 4-note scalic runs inupper tetrachord.
+P2-08 Seq Intro 8: Four-Note TriadFill 10 4 notes 60 bpm 1, 3, 5, 8 (Do-Mi-Sol-Do) Tonic triad and octavearpeggio dictations.
+Module S1: Major Scale Sequences (Levels S09 to S23 - 15 Levels)
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode & Octaves
+P2-09 Major Seq 1: PentachordSlow 10 4 notes 60 bpm 1, 2, 3, 4, 5 C Major, 1 octave
+P2-10 Major Seq 2: PentachordMedium 10 4 notes 70 bpm 1, 2, 3, 4, 5 C Major, 1 octave
+P2-11 Major Seq 3: PentachordFast 10 4 notes 80 bpm 1, 2, 3, 4, 5 C Major, 1 octave
+P2-12 Major Seq 4: Full OctaveSlow 10 4 notes 60 bpm All 8 diatonic C Major, 1 octave
+P2-13 Major Seq 5: Full OctaveMedium 10 4 notes 70 bpm All 8 diatonic C Major, 1 octave
+P2-14 Major Seq 6: Full Octave Fast 10 4 notes 80 bpm All 8 diatonic C Major, 1 octave
+P2-15 Major Seq 7: Full OctaveAllegro 10 4 notes 100 bpm All 8 diatonic C Major, 1 octave
+P2-16 Major Seq 8: Multi-OctaveSlow 10 4 notes 60 bpm All 8 diatonic C Major, many octaves
+P2-17 Major Seq 9: Multi-OctaveMedium 10 4 notes 70 bpm All 8 diatonic C Major, many octaves
+P2-18 Major Seq 10: Multi-OctaveFast 10 4 notes 80 bpm All 8 diatonic C Major, many octaves
+--- PAGE 8 ---
+Page 8
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode & Octaves
+P2-19 Major Seq 11: Not-C MajorSlow 10 4 notes 60 bpm All 8 diatonic Locked random key, 1octave
+P2-20 Major Seq 12: Not-C MajorFast 10 4 notes 80 bpm All 8 diatonic Locked random key, 1octave
+P2-21 Major Seq 13: RandomMajor Slow 10 4 notes 60 bpm All 8 diatonic Key changes everyquestion, 1 octave
+P2-22 Major Seq 14: RandomMajor Fast 10 4 notes 80 bpm All 8 diatonic Key changes everyquestion, 1 octave
+P2-23 Major Seq 15: MajorDictation Exam 25 4 notes 80 bpm All 8 diatonic Random key, manyoctaves exam
+--- PAGE 9 ---
+Page 9
+Module S2: Chromatics in Major Context Sequences (Levels S24 to S38 - 15 Levels)
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode &Registers
+P2-24 Maj Chrom Seq 1: LowerSemitones 10 4 notes 60 bpm 1, b2, 2, b3, 3, 4 C Major, 1 octave
+P2-25 Maj Chrom Seq 2: UpperSemitones 10 4 notes 60 bpm #4, 5, b6, 6, b7, 7, 8 C Major, 1 octave
+P2-26 Maj Chrom Seq 3: LowerSemitones 70 10 4 notes 70 bpm 1, b2, 2, b3, 3, 4 C Major, 1 octave
+P2-27 Maj Chrom Seq 4: UpperSemitones 70 10 4 notes 70 bpm #4, 5, b6, 6, b7, 7, 8 C Major, 1 octave
+P2-28 Maj Chrom Seq 5: Full 12Chromatic 10 4 notes 60 bpm All 12 chromatic C Major, 1 octave
+P2-29 Maj Chrom Seq 6: Full 12Chromatic 70 10 4 notes 70 bpm All 12 chromatic C Major, 1 octave
+P2-30 Maj Chrom Seq 7: Full 12Chromatic 80 10 4 notes 80 bpm All 12 chromatic C Major, 1 octave
+P2-31 Maj Chrom Seq 8: Multi-Octave 60 10 4 notes 60 bpm All 12 chromatic C Major, many octaves
+P2-32 Maj Chrom Seq 9: Multi-Octave 70 10 4 notes 70 bpm All 12 chromatic C Major, many octaves
+P2-33 Maj Chrom Seq 10: Multi-Octave 80 10 4 notes 80 bpm All 12 chromatic C Major, many octaves
+P2-34 Maj Chrom Seq 11: Not-CChromatic 60 10 4 notes 60 bpm All 12 chromatic Locked random key, 1octave
+P2-35 Maj Chrom Seq 12: Not-CChromatic 80 10 4 notes 80 bpm All 12 chromatic Locked random key, 1octave
+P2-36 Maj Chrom Seq 13: RandomChromatic 60 10 4 notes 60 bpm All 12 chromatic Random key perquestion, 1 octave
+P2-37 Maj Chrom Seq 14: RandomChromatic 80 10 4 notes 80 bpm All 12 chromatic Random key perquestion, 1 octave
+P2-38 Maj Chrom Seq 15:Chromatic Master Exam 25 4 notes 80 bpm All 12 chromatic Random key, manyoctaves exam
+Module S3: Minor Scale Sequences (Levels S39 to S53 - 15 Levels)
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode &Registers
+P2-39 Minor Seq 1: PentachordSlow 10 4 notes 60 bpm 1, 2, b3, 4, 5 C Minor, 1 octave
+P2-40 Minor Seq 2: PentachordMedium 10 4 notes 70 bpm 1, 2, b3, 4, 5 C Minor, 1 octave
+P2-41 Minor Seq 3: PentachordFast 10 4 notes 80 bpm 1, 2, b3, 4, 5 C Minor, 1 octave
+P2-42 Minor Seq 4: Full OctaveSlow 10 4 notes 60 bpm All 8 natural minor C Minor, 1 octave
+P2-43 Minor Seq 5: Full OctaveMedium 10 4 notes 70 bpm All 8 natural minor C Minor, 1 octave
+--- PAGE 10 ---
+Page 10
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode &Registers
+P2-44 Minor Seq 6: Full Octave Fast 10 4 notes 80 bpm All 8 natural minor C Minor, 1 octave
+P2-45 Minor Seq 7: Full OctaveAllegro 10 4 notes 100 bpm All 8 natural minor C Minor, 1 octave
+P2-46 Minor Seq 8: Multi-OctaveSlow 10 4 notes 60 bpm All 8 natural minor C Minor, many octaves
+P2-47 Minor Seq 9: Multi-OctaveMedium 10 4 notes 70 bpm All 8 natural minor C Minor, many octaves
+P2-48 Minor Seq 10: Multi-OctaveFast 10 4 notes 80 bpm All 8 natural minor C Minor, many octaves
+P2-49 Minor Seq 11: Not-C MinorSlow 10 4 notes 60 bpm All 8 natural minor Locked random key, 1octave
+P2-50 Minor Seq 12: Not-C MinorFast 10 4 notes 80 bpm All 8 natural minor Locked random key, 1octave
+P2-51 Minor Seq 13: RandomMinor Slow 10 4 notes 60 bpm All 8 natural minor Key changes everyquestion, 1 octave
+P2-52 Minor Seq 14: RandomMinor Fast 10 4 notes 80 bpm All 8 natural minor Key changes everyquestion, 1 octave
+P2-53 Minor Seq 15: MinorDictation Exam 25 4 notes 80 bpm All 8 natural minor Random key, manyoctaves exam
+--- PAGE 11 ---
+Page 11
+Module S4: Chromatics in Minor Context Sequences (Levels S54 to S68 - 15 Levels)
+ID Level Title Quest. Motif Length Tempo Active Degrees Key Mode &Registers
+P2-54 Min Chrom Seq 1: LowerSemitones 10 4 notes 60 bpm 1, b2, 2, b3, 3, 4 C Minor, 1 octave
+P2-55 Min Chrom Seq 2: UpperSemitones 10 4 notes 60 bpm #4, 5, b6, 6, b7, 7, 8 C Minor, 1 octave
+P2-56 Min Chrom Seq 3: LowerSemitones 70 10 4 notes 70 bpm 1, b2, 2, b3, 3, 4 C Minor, 1 octave
+P2-57 Min Chrom Seq 4: UpperSemitones 70 10 4 notes 70 bpm #4, 5, b6, 6, b7, 7, 8 C Minor, 1 octave
+P2-58 Min Chrom Seq 5: Full 12Chromatic 10 4 notes 60 bpm All 12 chromatic C Minor, 1 octave
+P2-59 Min Chrom Seq 6: Full 12Chromatic 70 10 4 notes 70 bpm All 12 chromatic C Minor, 1 octave
+P2-60 Min Chrom Seq 7: Full 12Chromatic 80 10 4 notes 80 bpm All 12 chromatic C Minor, 1 octave
+P2-61 Min Chrom Seq 8: Multi-Octave 60 10 4 notes 60 bpm All 12 chromatic C Minor, many octaves
+P2-62 Min Chrom Seq 9: Multi-Octave 70 10 4 notes 70 bpm All 12 chromatic C Minor, many octaves
+P2-63 Min Chrom Seq 10: Multi-Octave 80 10 4 notes 80 bpm All 12 chromatic C Minor, many octaves
+P2-64 Min Chrom Seq 11: Not-CChromatic 60 10 4 notes 60 bpm All 12 chromatic Locked random key, 1octave
+P2-65 Min Chrom Seq 12: Not-CChromatic 80 10 4 notes 80 bpm All 12 chromatic Locked random key, 1octave
+P2-66 Min Chrom Seq 13: RandomChromatic 60 10 4 notes 60 bpm All 12 chromatic Random key perquestion, 1 octave
+P2-67 Min Chrom Seq 14: RandomChromatic 80 10 4 notes 80 bpm All 12 chromatic Random key perquestion, 1 octave
+P2-68 Min Chrom Seq 15: GrandMaster Dictation 25 4 notes 80 bpm All 12 chromatic Grand master melodicdictation certification
+COMPLETE ROADMAP BALANCE CONFIRMATION
+• Path 1 (Single Note & Harmonic Dyads): 9 (Intro) + 8 (Major) + 8 (Major Chromatic) + 8 (Minor) + 8 (Minor Chromatic) +
+27 (Harmonic Dyads) = 68 Levels.
+• Path 2 (Melodic Sequences & Dictations): 8 (Intro) + 15 (Major) + 15 (Major Chromatic) + 15 (Minor) + 15 (Minor
+Chromatic) = 68 Levels.
+The two paths achieve 100% structural parity, enabling identical UI progression, stage unlock pacing, and visual roadmap
+nodes across the entire mobile application.

@@ -1,0 +1,9 @@
+Cloud account setup is not completed: no hosted project has been supplied.
+1. Create a Supabase project under the owner's account.
+2. Run schema.sql in its SQL editor.
+3. Enable email sign-in; add the app's exact deployment URL and http://localhost:8088 to the allowed redirect URLs.
+4. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY in the app's .env file. Never put a secret/service-role key in the app.
+5. Rebuild the web app. Journey will show the email sign-in controls.
+6. Validate real email delivery, two-device restore, offline retry and RLS rejection for a second user before release.
+Current integration uses explicit Sync my account, plus sync when the Journey account panel mounts. Live background sync and conflict resolution for simultaneous profile edits remain pending.
+Local profiles are device-local and are not password-protected accounts. Signing into a cloud account uses a separate local identity; another local player's records are never implicitly uploaded.

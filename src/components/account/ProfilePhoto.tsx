@@ -1,0 +1,10 @@
+import React,{useRef,useState} from 'react';
+import {View,Text,Image,TouchableOpacity} from 'react-native';
+export function ProfilePhoto({uri,name,size=56}:{uri?:string;name:string;size?:number}) {return <View style={{width:size,height:size,borderRadius:size/2,overflow:'hidden',alignItems:'center',justifyContent:'center',backgroundColor:'rgba(214,192,145,.12)',borderWidth:1,borderColor:'#a38f68'}}>{uri?<Image source={{uri}} style={{width:size,height:size}}/>:<Text style={{fontFamily:'Cinzel-Bold',color:'#ead7ad',fontSize:size*.35}}>{name.trim().slice(0,1).toUpperCase()||'·'}</Text>}</View>}
+export function PhotoPicker({uri,name,onChange}:{uri?:string;name:string;onChange:(uri:string)=>void}) {
+ const input=useRef<HTMLInputElement>(null);const [error,setError]=useState('');
+ const choose=async(e:React.ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(!f)return;setError('');
+ if(!f.type.startsWith('image/')){setError('Choose an image file.');return;}
+ const url=URL.createObjectURL(f);try{const img=new window.Image();img.src=url;await img.decode();const c=document.createElement('canvas');const scale=Math.min(1,512/Math.max(img.width,img.height));c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d')!.drawImage(img,0,0,c.width,c.height);onChange(c.toDataURL('image/jpeg',.86));}catch{setError('This photo could not be opened. Try a JPG, PNG or WebP.');}finally{URL.revokeObjectURL(url);e.target.value='';}};
+ return <View style={{alignItems:'center',gap:12}}><ProfilePhoto uri={uri} name={name} size={88}/><input ref={input} type="file" accept="image/*" aria-label="Upload profile photo" onChange={choose} style={{display:'none'}}/><TouchableOpacity accessibilityLabel="Upload profile photo" onPress={()=>input.current?.click()} style={{padding:12}}><Text style={{color:'#e9d5a9',fontSize:16}}>{uri?'Change photo':'Upload photo'}</Text></TouchableOpacity>{uri&&<TouchableOpacity onPress={()=>onChange('')}><Text style={{color:'#c0b397'}}>Remove photo</Text></TouchableOpacity>}{!!error&&<Text style={{color:'#edc8a8'}}>{error}</Text>}</View>
+}

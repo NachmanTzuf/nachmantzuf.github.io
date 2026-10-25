@@ -1,0 +1,24 @@
+{
+  "name": "Earpa: 3D Celtic Harp Ear Trainer",
+  "short_name": "Earpa",
+  "description": "Functional Celtic Harp Ear Trainer with 3D Lutherie & Alain Benbassat Methodology",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
