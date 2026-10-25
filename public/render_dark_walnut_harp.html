@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dark Walnut Harp Test Renderer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #three-canvas {
+      width: 1024px;
+      height: 1024px;
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="three-canvas" width="1024" height="1024"></canvas>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    const canvas = document.getElementById('three-canvas');
+    const width = 1024;
+    const height = 1024;
+
+    const scene = new THREE.Scene();
+
+    // Parse URL params for live parameter tuning
+    const params = new URLSearchParams(window.location.search);
+    const theta = parseFloat(params.get('theta') || '-0.65'); // Rotation around Y
+    const phi = parseFloat(params.get('phi') || '1.45'); // Camera pitch (1.57 is horizontal eye-level)
+    const radius = parseFloat(params.get('radius') || '2.60');
+    const targetY = parseFloat(params.get('targetY') || '0.50');
+    const woodColorHex = params.get('color') || '0x2a150e'; // Dark Walnut / Very Dark Cherry
+
+    const target = new THREE.Vector3(0.0, targetY, 0.0);
+    const camera = new THREE.PerspectiveCamera(36, 1.0, 0.1, 50);
+    const sinPhi = Math.sin(phi);
+    camera.position.set(
+      0.0,
+      target.y + radius * Math.cos(phi),
+      target.z + radius * sinPhi
+    );
+    camera.lookAt(target);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x000000, 0);
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+    // Ambient Lighting
+    const ambientLight = new THREE.HemisphereLight(0xffeed8, 0x423326, 1.10);
+    scene.add(ambientLight);
+
+    // Key Light from upper right
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 3.5);
+    keyLight.position.set(2.2, 5.5, -2.5);
+    keyLight.target.position.set(0.0, 0.4, 0.0);
+    scene.add(keyLight.target);
+    scene.add(keyLight);
+
+    // Front-Left Fill Light to highlight the dark walnut grain and curves
+    const fillLight = new THREE.DirectionalLight(0xecd5b8, 1.35);
+    fillLight.position.set(-2.2, 2.0, 3.0);
+    scene.add(fillLight);
+
+    // Lever Specular Light
+    const leverLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    leverLight.position.set(1.8, 1.6, 1.2);
+    leverLight.target.position.set(0.0, 0.9, 0.0);
+    scene.add(leverLight.target);
+    scene.add(leverLight);
+
+    // Contact shadow plane directly at y=0
+    const shadowGeo = new THREE.PlaneGeometry(3.0, 3.0);
+    shadowGeo.rotateX(-Math.PI / 2);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.45 });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.position.set(0, 0.0005, 0);
+    shadowMesh.receiveShadow = true;
+    scene.add(shadowMesh);
+
+    const loader = new GLTFLoader();
+    loader.load('/models/celtic_harp_8string.glb?v=dark_walnut_v1', (gltf) => {
+      const harpPivotGroup = new THREE.Group();
+      harpPivotGroup.position.set(0, 0.001, 0);
+      scene.add(harpPivotGroup);
+
+      const root = gltf.scene;
+      const harpScale = 0.85;
+      const stanceOffsetZ = 0.0755;
+      root.scale.set(harpScale, harpScale, harpScale);
+      root.position.set(0.0, 0.0, -stanceOffsetZ * harpScale);
+      harpPivotGroup.add(root);
+
+      const woodColor = new THREE.Color(parseInt(woodColorHex, 16));
+      const soundboardColor = new THREE.Color(parseInt(woodColorHex, 16)).clone().multiplyScalar(1.15); // Subtle warm contrast
+
+      root.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.needsUpdate = true;
+            if (child.name.startsWith('Lever_Base')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.94;
+              child.material.roughness = 0.20;
+              child.material.color = new THREE.Color(0x28303d);
+            } else if (child.name.startsWith('Lever_Handle')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.99;
+              child.material.roughness = 0.02;
+              child.material.color = new THREE.Color(0xffffff);
+            } else if (child.name.startsWith('Lever_Roller')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.98;
+              child.material.roughness = 0.04;
+              child.material.color = new THREE.Color(0xf8fafc);
+            }
+            if (child.name.startsWith('Lever_Band_1') || child.name.startsWith('Lever_Band_8')) {
+              child.material = child.material.clone();
+              child.material.color = new THREE.Color(0xef4444);
+              child.material.emissive = new THREE.Color(0xef4444);
+              child.material.emissiveIntensity = 0.30;
+            }
+            if (child.name.startsWith('Lever_Band_4')) {
+              child.material = child.material.clone();
+              child.material.color = new THREE.Color(0x2563eb);
+              child.material.emissive = new THREE.Color(0x2563eb);
+              child.material.emissiveIntensity = 0.30;
+            }
+            // Dark Walnut / Very Dark Cherry wood for the entire body
+            if (child.name.startsWith('Harp_Harmonic_Frame') || child.name.startsWith('Harp_Forepillar') || child.name.startsWith('Harp_Leg') || child.name.startsWith('Harp_Soundbox') || child.name.startsWith('Harp_Bottom_Plate') || child.name.startsWith('Harp_Central_String_Rib')) {
+              child.material = child.material.clone();
+              child.material.color = woodColor;
+              child.material.roughness = 0.26;
+              child.material.metalness = 0.04;
+            }
+            if (child.name.startsWith('Harp_Soundboard_Face')) {
+              child.material = child.material.clone();
+              child.material.color = soundboardColor;
+              child.material.roughness = 0.30;
+              child.material.metalness = 0.02;
+            }
+            if (child.name.startsWith('String_')) {
+              const deg = parseInt(child.name.replace('String_', ''), 10);
+              child.material = child.material.clone();
+              if (deg === 1 || deg === 8) {
+                child.material.color = new THREE.Color(0xef4444);
+              } else if (deg === 4) {
+                child.material.color = new THREE.Color(0x38bdf8);
+              } else {
+                child.material.color = new THREE.Color(0xf8fafc);
+              }
+            }
+          }
+        }
+      });
+
+      harpPivotGroup.rotation.y = theta;
+
+      renderer.render(scene, camera);
+      window.__ICON_RENDER_READY = true;
+    }, undefined, (err) => {
+      console.error(err);
+      window.__ICON_RENDER_ERROR = err.message;
+    });
+  </script>
+</body>
+</html>
