@@ -391,42 +391,43 @@ export default function EarpaMasterScreen() {
       <DeviceFramePreview>
         <SafeAreaView style={styles.hubSafeRoot}>
           {/* Authentic Full-Bleed Realm Sanctuary Photo (User Flow Masterpiece) */}
-          {activeTab !== 'profile' && (
-            <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-              <img
-                src={
-                  activeTab === 'chords'
-                    ? '/images/arctic_celtic_sanctuary.jpg'
-                    : activeTab === 'levers'
-                    ? '/images/desert_celtic_sanctuary.jpg'
-                    : '/images/irish_celtic_sanctuary.jpg'
-                }
-                alt="Ancient Realm Sanctuary"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                  pointerEvents: 'none',
-                }}
-              />
-              {/* Gentle Cinematic Vignette for Edge Depth */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(6, 12, 8, 0.32) 100%)',
-                  pointerEvents: 'none',
-                }}
-              />
-            </View>
-          )}
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            <img
+              src={
+                activeTab === 'chords'
+                  ? '/images/arctic_celtic_sanctuary.jpg'
+                  : activeTab === 'levers'
+                  ? '/images/desert_celtic_sanctuary.jpg'
+                  : '/images/irish_celtic_sanctuary.jpg'
+              }
+              alt="Ancient Realm Sanctuary"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                pointerEvents: 'none',
+              }}
+            />
+            {/* Gentle Cinematic Vignette for Edge Depth */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background:
+                  activeTab === 'profile'
+                    ? 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 65%, rgba(6, 12, 8, 0.20) 100%)'
+                    : 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(6, 12, 8, 0.32) 100%)',
+                pointerEvents: 'none',
+              }}
+            />
+          </View>
 
           {/* Top Header Bar with Prominent Stage Roadmap, Mini-Map Trail & XP Progress */}
           <TopHeaderBar

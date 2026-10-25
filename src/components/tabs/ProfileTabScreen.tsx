@@ -101,8 +101,7 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
   }[selectedRealm];
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#21372e' }}>
-      <Image source={{ uri: '/images/ingame_bg_single.jpg' }} style={[StyleSheet.absoluteFillObject, { opacity: 0.32 }]} />
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 110, gap: 24 }}>
         
         {/* 1. TOP: Name, Avatar Photo, and Level */}
@@ -438,9 +437,15 @@ const s = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: 'rgba(31, 49, 37, 0.7)',
+    backgroundColor: 'rgba(18, 32, 23, 0.58)',
     borderWidth: 1,
     borderColor: 'rgba(220, 198, 154, 0.35)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        } as any)
+      : {}),
   },
   statDivider: {
     width: 1,
@@ -451,9 +456,15 @@ const s = StyleSheet.create({
     gap: 14,
     padding: 16,
     borderRadius: 20,
-    backgroundColor: 'rgba(24, 38, 29, 0.75)',
+    backgroundColor: 'rgba(18, 32, 23, 0.58)',
     borderWidth: 1,
     borderColor: 'rgba(220, 198, 154, 0.3)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        } as any)
+      : {}),
   },
   realmSelectorBar: {
     flexDirection: 'row',

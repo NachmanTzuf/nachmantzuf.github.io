@@ -171,6 +171,52 @@ function getSoundedScaleDegree(strNum: number, isLeverUp: boolean): ScaleDegree 
   }
 }
 
+export const POSITIVE_FEEDBACK_VERDICTS: string[] = [
+  'Spot On!',
+  'Pure Resonance!',
+  'In Tune!',
+  'Golden Ear!',
+  'Harmonic Match!',
+  'Perfection!',
+  'True Harper!',
+  'Ear in Bloom!',
+  'Crystal Clear!',
+  'Resonant Truth!',
+  'Golden Tone!',
+  'Soulful Accuracy!',
+  'Pure Cadence!',
+  'Celtic Clarity!',
+  'Divine Pitch!',
+  "Luthier's Ear!",
+  'Flawless!',
+  'True Note!',
+  'Brilliant Catch!',
+  'Harmonic Grace!',
+];
+
+export const NEGATIVE_FEEDBACK_VERDICTS: string[] = [
+  'Listen Closely...',
+  'Almost There!',
+  'Feel the Pull...',
+  'A Gentle Whisper...',
+  'Follow Home...',
+  'Soft Miss...',
+  'Catch the Ring...',
+  'Trust Your Ear...',
+  'Nearly Attuned...',
+  'A Subtle Drift...',
+  'Seek the Anchor...',
+  'Breathe & Listen...',
+  'Tuning In...',
+  'Gentle Echo...',
+  'Just Adjacent...',
+  'Wandering Note...',
+  'Almost Anchored...',
+  'Feel the Gravity...',
+  'One Step Away...',
+  'Harmonic Quest...',
+];
+
 export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
   realm,
   level: initialLevel,
@@ -191,7 +237,12 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
   };
   const feedbackOpacity = useRef(new Animated.Value(1)).current;
   const [replayIndex,setReplayIndex]=useState(-1);
-  const [answerFeedback, setAnswerFeedback] = useState<{correct: boolean; text: string; musicalInsight?: string} | null>(null);
+  const [answerFeedback, setAnswerFeedback] = useState<{
+    correct: boolean;
+    verdictTitle: string;
+    text: string;
+    musicalInsight?: string;
+  } | null>(null);
   const theme = REALM_THEMES[realm] || REALM_THEMES.single;
   const canvasRef = useRef<CelticHarpCanvasRef | null>(null);
   const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('celtic_nylon'));
@@ -491,8 +542,12 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     const catalogResponse = isCorrect
       ? MusicalResponsesCatalog.getRandomCorrectResponse()
       : MusicalResponsesCatalog.getRandomIncorrectResponse();
+    const verdictTitle = isCorrect
+      ? POSITIVE_FEEDBACK_VERDICTS[Math.floor(Math.random() * POSITIVE_FEEDBACK_VERDICTS.length)]
+      : NEGATIVE_FEEDBACK_VERDICTS[Math.floor(Math.random() * NEGATIVE_FEEDBACK_VERDICTS.length)];
     setAnswerFeedback({
       correct: isCorrect,
+      verdictTitle,
       text: `Correct note: ${answerLabel(target, q)}`,
       musicalInsight: catalogResponse.text,
     });
@@ -544,8 +599,12 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     const catalogResponse = isCorrect
       ? MusicalResponsesCatalog.getRandomCorrectResponse()
       : MusicalResponsesCatalog.getRandomIncorrectResponse();
+    const seqVerdictTitle = isCorrect
+      ? POSITIVE_FEEDBACK_VERDICTS[Math.floor(Math.random() * POSITIVE_FEEDBACK_VERDICTS.length)]
+      : NEGATIVE_FEEDBACK_VERDICTS[Math.floor(Math.random() * NEGATIVE_FEEDBACK_VERDICTS.length)];
     setAnswerFeedback({
       correct: isCorrect,
+      verdictTitle: seqVerdictTitle,
       text: `Correct notes: ${targets.map(d => answerLabel(d, q)).join(' → ')}`,
       musicalInsight: catalogResponse.text,
     });
@@ -787,8 +846,8 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
           interactiveControls={true}
           fixedInGameAngle={true}
           customAngle={inGameAngle}
-          customScale={0.78}
-          targetY={0.56}
+          customScale={0.85}
+          targetY={0.50}
           minimalHeroMode={true}
         />
       </View>
@@ -897,55 +956,57 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
 
       {answerFeedback && (
         <Reveal style={styles.answerOverlay}>
-          {/* Top Section: Natural Verdict */}
-          <View style={styles.feedbackTopSection}>
-            <Animated.Text
-              style={[
-                styles.unifiedAnswerTitle,
-                {
-                  opacity: feedbackOpacity,
-                  color: answerFeedback.correct ? '#22c55e' : '#dc2626',
-                },
-              ]}
-            >
-              {answerFeedback.correct ? 'Correct' : 'Incorrect'}
-            </Animated.Text>
-          </View>
+          <View style={styles.feedbackContentBox}>
+            {/* Top Section: Natural Verdict */}
+            <View style={styles.feedbackTopSection}>
+              <Animated.Text
+                style={[
+                  styles.unifiedAnswerTitle,
+                  {
+                    opacity: feedbackOpacity,
+                    color: answerFeedback.correct ? '#22c55e' : '#dc2626',
+                  },
+                ]}
+              >
+                {answerFeedback.verdictTitle || (answerFeedback.correct ? 'Spot On!' : 'Listen Closely...')}
+              </Animated.Text>
+            </View>
 
-          {/* Middle Section: Clear Large Note Symbol Matching User Preference */}
-          <View style={styles.feedbackMiddleSection}>
-            {activeLevel.track === 'melody' && activeQuestion ? (
-              <View style={styles.unifiedMelodyRow}>
-                {activeQuestion.targetDegrees.map((d, i) => {
-                  const midi = activeQuestion.targetMidiNotes[i];
-                  const sym = getSingleDisplaySymbol(d, midi, notationPreference);
-                  return (
-                    <View key={i} style={styles.unifiedMelodyPill}>
-                      <Text style={styles.unifiedMelodyNote}>{sym}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <Text style={styles.unifiedAnswerNote}>
-                {activeQuestion
-                  ? getSingleDisplaySymbol(
-                      activeQuestion.targetDegrees[0],
-                      activeQuestion.targetMidiNotes[0],
-                      notationPreference
-                    )
-                  : answerFeedback.text.replace('Correct note: ', '')}
-              </Text>
-            )}
-          </View>
+            {/* Middle Section: Clear Large Note Symbol Matching User Preference */}
+            <View style={styles.feedbackMiddleSection}>
+              {activeLevel.track === 'melody' && activeQuestion ? (
+                <View style={styles.unifiedMelodyRow}>
+                  {activeQuestion.targetDegrees.map((d, i) => {
+                    const midi = activeQuestion.targetMidiNotes[i];
+                    const sym = getSingleDisplaySymbol(d, midi, notationPreference);
+                    return (
+                      <View key={i} style={styles.unifiedMelodyPill}>
+                        <Text style={styles.unifiedMelodyNote}>{sym}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text style={styles.unifiedAnswerNote}>
+                  {activeQuestion
+                    ? getSingleDisplaySymbol(
+                        activeQuestion.targetDegrees[0],
+                        activeQuestion.targetMidiNotes[0],
+                        notationPreference
+                      )
+                    : answerFeedback.text.replace('Correct note: ', '')}
+                </Text>
+              )}
+            </View>
 
-          {/* Bottom Section: Short Musical Insight */}
-          <View style={styles.feedbackBottomSection}>
-            {answerFeedback.musicalInsight ? (
-              <Text style={styles.unifiedInsightText}>
-                "{answerFeedback.musicalInsight}"
-              </Text>
-            ) : null}
+            {/* Bottom Section: Short Musical Insight */}
+            <View style={styles.feedbackBottomSection}>
+              {answerFeedback.musicalInsight ? (
+                <Text style={styles.unifiedInsightText}>
+                  "{answerFeedback.musicalInsight}"
+                </Text>
+              ) : null}
+            </View>
           </View>
         </Reveal>
       )}
@@ -969,17 +1030,23 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 90,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'web' ? 70 : 90,
-    paddingBottom: Platform.OS === 'web' ? 70 : 90,
+    justifyContent: 'center',
     paddingHorizontal: 24,
-    backgroundColor: 'rgba(8, 14, 10, 0.42)',
+    backgroundColor: 'rgba(6, 12, 9, 0.44)',
     ...(Platform.OS === 'web'
       ? ({
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
         } as any)
       : {}),
+  },
+  feedbackContentBox: {
+    width: '100%',
+    maxWidth: 440,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 22,
+    paddingVertical: 18,
   },
   feedbackTopSection: {
     alignItems: 'center',
@@ -989,32 +1056,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingVertical: 20,
   },
   feedbackBottomSection: {
     alignItems: 'center',
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   unifiedAnswerTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 44,
+    fontSize: 50,
     fontWeight: '900',
     textAlign: 'center',
-    letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    textShadowRadius: 10,
   },
   unifiedAnswerNote: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 64,
+    fontSize: 88,
     color: '#fef3c7',
     textAlign: 'center',
     letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.65)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
+    textShadowColor: 'rgba(254, 240, 138, 0.45)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 14,
   },
   unifiedMelodyRow: {
     flexDirection: 'row',
@@ -1026,31 +1092,31 @@ const styles = StyleSheet.create({
   unifiedMelodyPill: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 22,
+    paddingVertical: 16,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.09)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.22)',
-    minWidth: 70,
+    minWidth: 76,
   },
   unifiedMelodyNote: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 34,
+    fontSize: 40,
     color: '#fef3c7',
     textAlign: 'center',
   },
   unifiedInsightText: {
     fontFamily: 'Inter',
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#f1f5f9',
+    fontSize: 18,
+    lineHeight: 28,
+    color: '#f8fafc',
     textAlign: 'center',
-    maxWidth: 340,
+    maxWidth: 360,
     fontStyle: 'italic',
-    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
+    textShadowRadius: 8,
   },
   container: {
     width: '100%',
