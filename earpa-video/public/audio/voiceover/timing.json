@@ -1,0 +1,34 @@
+{
+  "scene_1_hook": {
+    "startFrame": 0,
+    "durationInFrames": 161,
+    "durationSec": 5.38,
+    "text": "You practice for hours every week. But when did you last train your ears deliberately?"
+  },
+  "scene_2_problem": {
+    "startFrame": 161,
+    "durationInFrames": 190,
+    "durationSec": 6.34,
+    "text": "Even hitting the right notes, you are still guessing. That subtle hesitation kills your musical flow."
+  },
+  "scene_3_mechanism": {
+    "startFrame": 351,
+    "durationInFrames": 212,
+    "durationSec": 7.06,
+    "text": "EARPA changes that. Using the Alain Benbassat method, feel tonal gravity pull every note home."
+  },
+  "scene_4_gameplay": {
+    "startFrame": 563,
+    "durationInFrames": 197,
+    "durationSec": 6.55,
+    "text": "Ten minutes a day. Sixty eight gamified levels and three D harp plucking build instant finger memory."
+  },
+  "scene_5_cta": {
+    "startFrame": 760,
+    "durationInFrames": 192,
+    "durationSec": 6.41,
+    "text": "Stop hesitating. Unlock true confidence and start improvising freely by ear with EARPA."
+  },
+  "totalFrames": 952,
+  "totalSeconds": 31.73
+}

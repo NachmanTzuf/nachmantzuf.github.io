@@ -66,6 +66,7 @@ import { ProfileTabScreen } from '../components/tabs/ProfileTabScreen';
 import { DeviceFramePreview } from '../components/preview/DeviceFramePreview';
 import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
 import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
+import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
 import {
   LevelDefinition,
   SINGLE_NOTE_LEVELS,
@@ -117,6 +118,7 @@ export default function EarpaMasterScreen() {
   const [previousStreak, setPreviousStreak] = useState<number>(0);
   const [correctCount, setCorrectCount] = useState<number>(0);
   const [totalTrials, setTotalTrials] = useState<number>(0);
+  const [isAppLoading, setIsAppLoading] = useState<boolean>(true);
 
   // Active Trial State
   const [stimulusDegree, setStimulusDegree] = useState<ScaleDegree | null>(null);
@@ -380,6 +382,15 @@ export default function EarpaMasterScreen() {
   const accuracyPct = totalTrials > 0 ? Math.round((correctCount / totalTrials) * 100) : 100;
   const progression = journeyEngineRef.current.getUserProgression();
   const modalDef = ModalShiftEngine.getModalDefinition(activeRootPc, activeMode);
+
+  // Loading Screen: Master Tri-Realm Background with 3D Celtic Harp on Pedestal and Minimal Progress Indicator
+  if (isAppLoading) {
+    return (
+      <DeviceFramePreview>
+        <AppLoadingScreen onLoaded={() => setIsAppLoading(false)} durationMs={2000} />
+      </DeviceFramePreview>
+    );
+  }
 
   // =========================================================================
   // VIEW 1: MASTER OUT-OF-GAME MOBILE HUB (With Hybrid Tab Bar & Hero 3D Harp)

@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageOps
 
 BRAIN_DIR = "C:/Users/Hp/.gemini/antigravity/brain/71677e65-ddd0-4156-bd73-ec960d83fd95"
-master_path = f"{BRAIN_DIR}/master_icon_composite_1024.png"
+master_path = f"{BRAIN_DIR}/verified_master_square_logo.png"
 public_icons_dir = "public/images/icons"
 dist_icons_dir = "dist/images/icons"
 
@@ -37,41 +37,14 @@ print("Generated multi-resolution favicon.ico")
 
 # 3. Maskable Icons (Android Adaptive Icon Safe Zone)
 # Android circle mask diameter is 80% (radius 40% = ~205px in 512x512).
-# We take the continuous coastal background and paste the transparent harp at 78% scale
-# so the harp sits comfortably inside the 80% safe zone with ZERO inner square or seam!
-bg_path = "public/images/coastal_cliff_pathway.jpg"
-bg_img = Image.open(bg_path).convert("RGB")
-bg_crop = bg_img.crop((0, 180, 571, 180 + 571)).resize((1024, 1024), Image.Resampling.LANCZOS)
-maskable_master = bg_crop.convert("RGBA")
+# We take the full tri-realm image and crop a slightly wider square centered around the harp
+# so the entire harp and archway remain 100% visible inside any circle/squircle mask!
+full_bg_path = f"{BRAIN_DIR}/verified_master_loading_bg.png"
+full_img = Image.open(full_bg_path).convert("RGBA")
 
-# Load transparent harp cutout
-harp_img = Image.open(f"{BRAIN_DIR}/harp_transparent_1024.png").convert("RGBA")
-bbox = harp_img.getbbox()
-harp_cutout = harp_img.crop(bbox)
-hw, hh = harp_cutout.size
-
-# Target height 680px (66% of frame, well within 80% circle safe zone)
-m_scale = 680.0 / float(hh)
-m_w = int(hw * m_scale)
-m_h = int(680)
-m_scaled_harp = harp_cutout.resize((m_w, m_h), Image.Resampling.LANCZOS)
-
-# Soft shadow on ground
-shadow_w = int(m_w * 0.70)
-shadow_h = int(shadow_w * 0.28)
-shadow_layer = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
-from PIL import ImageDraw, ImageFilter
-draw = ImageDraw.Draw(shadow_layer)
-m_x = (1024 - m_w) // 2
-m_y = (1024 - m_h) // 2 + 10
-sx0 = (1024 - shadow_w) // 2 + 8
-sy0 = m_y + m_h - int(shadow_h * 0.75)
-draw.ellipse((sx0, sy0, sx0 + shadow_w, sy0 + shadow_h), fill=(10, 15, 22, 110))
-shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(14))
-maskable_master.paste(shadow_layer, (0, 0), shadow_layer)
-
-# Paste scaled harp
-maskable_master.paste(m_scaled_harp, (m_x, m_y), m_scaled_harp)
+# Wider vertical crop from y=180 to y=880 (700px height), resized to 1024x1024
+# Safe zone is inner 80%, meaning the harp occupies ~65% of the frame
+maskable_square = full_img.crop((0, 180, 571, 180 + 571)).resize((1024, 1024), Image.Resampling.LANCZOS)
 
 maskable_targets = {
     "earpa_icon_maskable_512.png": 512,
@@ -79,7 +52,7 @@ maskable_targets = {
 }
 
 for filename, size in maskable_targets.items():
-    resized = maskable_master.resize((size, size), Image.Resampling.LANCZOS)
+    resized = maskable_square.resize((size, size), Image.Resampling.LANCZOS)
     pub_p = os.path.join(public_icons_dir, filename)
     dist_p = os.path.join(dist_icons_dir, filename)
     resized.save(pub_p, "PNG")
@@ -87,3 +60,4 @@ for filename, size in maskable_targets.items():
     print(f"Generated maskable icon {filename} ({size}x{size})")
 
 print("All icon assets generated successfully!")
+

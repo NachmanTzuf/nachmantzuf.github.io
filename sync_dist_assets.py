@@ -18,12 +18,64 @@ def main():
         print("dist directory does not exist!")
         return
 
-    # 1. Ensure 404.html is identical to index.html
+    # 1. Enhance index.html with PWA metadata and instant loading screen
     index_html = os.path.join(dist_dir, 'index.html')
     not_found_html = os.path.join(dist_dir, '404.html')
     if os.path.exists(index_html):
+        with open(index_html, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Add PWA head links if missing
+        pwa_head = """    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/images/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="/images/icons/apple_touch_icon.png" />
+    <meta name="theme-color" content="#090d16" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  </head>"""
+        if '<link rel="manifest"' not in content:
+            content = content.replace('</head>', pwa_head)
+
+        # Inject initial instant loader before </body>
+        instant_loader = """  <!-- Instant Cold-Boot Loading Screen: Tri-Realm Background + Smooth Indicator Bar -->
+  <div id="earpa-instant-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#090d16 url('/images/earpa_master_loading_bg.jpg') center center / cover no-repeat;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:auto;transition:opacity 0.4s ease-out;">
+    <div style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to top, rgba(5,10,16,0.85) 0%, rgba(5,10,16,0) 100%);pointer-events:none;"></div>
+    <div style="position:relative;margin-bottom:64px;width:240px;max-width:75%;height:4.5px;background:rgba(15,23,42,0.65);border:1px solid rgba(255,255,255,0.18);border-radius:999px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,0.55);">
+      <div id="earpa-instant-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg, #d97706 0%, #fbbf24 50%, #38bdf8 100%);box-shadow:0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(56,189,248,0.6);animation:earpaProgressFill 2.0s cubic-bezier(0.16,1,0.3,1) forwards;"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes earpaProgressFill {
+      0% { width: 0%; }
+      35% { width: 48%; }
+      75% { width: 85%; }
+      100% { width: 100%; }
+    }
+  </style>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      // Once React mounts its DOM inside #root, fade out the instant HTML loader
+      var check = setInterval(function() {
+        var root = document.getElementById('root');
+        if (root && root.children.length > 0) {
+          clearInterval(check);
+          var loader = document.getElementById('earpa-instant-loader');
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(function() { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 420);
+          }
+        }
+      }, 80);
+    });
+  </script>
+</body>"""
+        if 'id="earpa-instant-loader"' not in content:
+            content = content.replace('</body>', instant_loader)
+
+        with open(index_html, 'w', encoding='utf-8') as f:
+            f.write(content)
         shutil.copy2(index_html, not_found_html)
-        print("Generated dist/404.html from index.html")
+        print("Updated dist/index.html and generated dist/404.html with instant loading screen and PWA headers")
 
     # 2. Ensure .nojekyll exists
     nojekyll = os.path.join(dist_dir, '.nojekyll')
@@ -50,11 +102,11 @@ def main():
     if os.path.exists(js_dir):
         entries = [f for f in os.listdir(js_dir) if f.startswith('entry-') and f.endswith('.js')]
         print("Found JS entries:", entries)
-        # Find latest entry
-        latest_entry = 'entry-a06af7961980fc5b205cf9622d5a1429.js'
+        latest_entry = 'entry-241dc2b474c7dc0ebd966e8cad672510.js'
         latest_path = os.path.join(js_dir, latest_entry)
         if os.path.exists(latest_path):
             compat_names = [
+                'entry-a06af7961980fc5b205cf9622d5a1429.js',
                 'entry-85de23aecec6a4f3ae346b50bf4463fe.js',
                 'entry-6c4df1355ef891d45fea586cbfabc9fd.js',
                 'entry-15c957fb40a97aa35069b2daee361093.js',
