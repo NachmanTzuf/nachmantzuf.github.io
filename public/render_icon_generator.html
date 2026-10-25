@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Earpa App Icon Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      background: #0b0f14;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #icon-stage {
+      position: relative;
+      width: 1024px;
+      height: 1024px;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    #bg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 55%;
+      filter: brightness(0.92) contrast(1.05);
+    }
+    #vignette {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 55%, rgba(4,9,14,0.45) 100%);
+      pointer-events: none;
+    }
+    #three-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="icon-stage">
+    <img id="bg-layer" src="/images/coastal_cliff_pathway.jpg" alt="Coastal Background">
+    <div id="vignette"></div>
+    <canvas id="three-canvas" width="1024" height="1024"></canvas>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    const canvas = document.getElementById('three-canvas');
+    const width = 1024;
+    const height = 1024;
+
+    const scene = new THREE.Scene();
+
+    // Camera setup exactly matching in-game view
+    // targetY at 0.52 aligns camera with harp vertical centroid
+    const target = new THREE.Vector3(0.0, 0.52, -0.015);
+    const inGameTheta = -0.95; // Exact in-game orientation: pillar left, soundboard right
+    const phi = 1.325; // 14.1 deg tilt
+    const radius = 2.70; // Calibrated for 1024x1024 square icon with comfortable safe zone margin
+
+    const camera = new THREE.PerspectiveCamera(38, 1.0, 0.1, 50);
+    const sinPhi = Math.sin(phi);
+    camera.position.set(
+      0.0,
+      target.y + radius * Math.cos(phi),
+      target.z + radius * sinPhi
+    );
+    camera.lookAt(target);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x000000, 0); // Pure transparent background
+
+    // Studio Environment for lustrous metallic chrome reflections
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+    // Ambient Hemisphere Lighting
+    const ambientLight = new THREE.HemisphereLight(0xffeed8, 0x423326, 1.05);
+    scene.add(ambientLight);
+
+    // Key Light: Sunlight streaming at 60 deg angle
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 3.4);
+    keyLight.position.set(1.8, 6.0, -3.0);
+    keyLight.target.position.set(-0.015, 0.0, -0.015);
+    scene.add(keyLight.target);
+    scene.add(keyLight);
+
+    // Front-Left Fill Light for rich wood grain depth
+    const fillLight = new THREE.DirectionalLight(0xd4a574, 0.75);
+    fillLight.position.set(-2.0, 1.6, 2.4);
+    scene.add(fillLight);
+
+    // Dedicated Specular Light for Camac Levers on +X side
+    const leverAccentLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    leverAccentLight.position.set(1.6, 1.3, 0.8);
+    leverAccentLight.target.position.set(0.0, 1.05, 0.0);
+    scene.add(leverAccentLight);
+    scene.add(leverAccentLight.target);
+
+    // Soft Contact Shadow Disc under the harp feet
+    const shadowGeo = new THREE.CircleGeometry(0.55, 64);
+    shadowGeo.rotateX(-Math.PI / 2);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.38 });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.position.set(-0.015, 0.001, -0.015);
+    shadowMesh.receiveShadow = true;
+    scene.add(shadowMesh);
+
+    // Load Celtic Harp GLB
+    const loader = new GLTFLoader();
+    loader.load('/models/celtic_harp_8string.glb?v=icon_render', (gltf) => {
+      const harpPivotGroup = new THREE.Group();
+      harpPivotGroup.position.set(-0.015, 0.003, -0.015);
+      scene.add(harpPivotGroup);
+
+      const root = gltf.scene;
+      const harpScale = 0.86;
+      const stanceOffsetZ = 0.0755;
+      root.scale.set(harpScale, harpScale, harpScale);
+      root.position.set(0.0, 0.0, -stanceOffsetZ * harpScale);
+      harpPivotGroup.add(root);
+
+      root.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.needsUpdate = true;
+            if (child.name.startsWith('Lever_Base')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.92;
+              child.material.roughness = 0.24;
+              child.material.color = new THREE.Color(0x333b47);
+            } else if (child.name.startsWith('Lever_Handle')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.99;
+              child.material.roughness = 0.03;
+              child.material.color = new THREE.Color(0xffffff);
+            } else if (child.name.startsWith('Lever_Roller')) {
+              child.material = child.material.clone();
+              child.material.metalness = 0.98;
+              child.material.roughness = 0.05;
+              child.material.color = new THREE.Color(0xf1f5f9);
+            }
+            if (child.name.startsWith('Lever_Band_1') || child.name.startsWith('Lever_Band_8')) {
+              child.material = child.material.clone();
+              child.material.color = new THREE.Color(0xef4444);
+              child.material.emissive = new THREE.Color(0xef4444);
+              child.material.emissiveIntensity = 0.25;
+            }
+            if (child.name.startsWith('Lever_Band_4')) {
+              child.material = child.material.clone();
+              child.material.color = new THREE.Color(0x2563eb);
+              child.material.emissive = new THREE.Color(0x2563eb);
+              child.material.emissiveIntensity = 0.25;
+            }
+            if (child.name.startsWith('Harp_Harmonic_Frame') || child.name.startsWith('Harp_Forepillar') || child.name.startsWith('Harp_Leg') || child.name.startsWith('Harp_Soundbox')) {
+              child.material = child.material.clone();
+              child.material.color = new THREE.Color(0xd4a872);
+              child.material.roughness = 0.30;
+            }
+            if (child.name.startsWith('String_')) {
+              const deg = parseInt(child.name.replace('String_', ''), 10);
+              child.material = child.material.clone();
+              if (deg === 1 || deg === 8) {
+                child.material.color = new THREE.Color(0xef4444);
+              } else if (deg === 4) {
+                child.material.color = new THREE.Color(0x38bdf8);
+              } else {
+                child.material.color = new THREE.Color(0xf8fafc);
+              }
+            }
+          }
+        }
+      });
+
+      // Rotate harp around Y axis to exact in-game angle (-0.95 rad)
+      harpPivotGroup.rotation.y = inGameTheta;
+
+      renderer.render(scene, camera);
+      window.__ICON_RENDER_READY = true;
+      console.log('Icon rendering complete!');
+    }, undefined, (err) => {
+      console.error('Failed to load harp model:', err);
+      window.__ICON_RENDER_ERROR = err.message;
+    });
+  </script>
+</body>
+</html>
