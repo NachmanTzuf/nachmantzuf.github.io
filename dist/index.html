@@ -13,9 +13,19 @@
     <link rel="icon" type="image/png" href="./images/icons/favicon.png" />
     <link rel="apple-touch-icon" href="./images/icons/apple_touch_icon.png" />
     <link rel="shortcut icon" href="./favicon.ico" />
-    <!-- The react-native-web recommended style reset and mobile touch ergonomics -->
+    <script>
+      // Self-healing cache recovery if an old bundle is referenced
+      window.addEventListener('error', function(e) {
+        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          if ('caches' in window) {
+            caches.keys().then(function(keys) {
+              keys.forEach(function(k) { caches.delete(k); });
+            });
+          }
+        }
+      }, true);
+    </script>
     <style id="expo-reset">
-      /* Full bleed screen without white gaps */
       html,
       body {
         height: 100%;
@@ -49,11 +59,13 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>
-    <script src="/_expo/static/js/web/entry-15c9479e6722cae0e271f481b3c5c461.js" defer></script>
+    <script src="./_expo/static/js/web/entry-15c9479e6722cae0e271f481b3c5c461.js" defer></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./sw.js?v=3').then(function(reg) {
+            reg.update();
+          }).catch(function() {});
         });
       }
     </script>
