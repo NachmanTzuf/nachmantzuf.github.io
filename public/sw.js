@@ -1,12 +1,12 @@
 const CACHE_NAME = 'earpa-pwa-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/images/icons/earpa_icon_192.png',
-  '/images/icons/earpa_icon_512.png',
-  '/images/icons/apple_touch_icon.png',
-  '/images/icons/favicon.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './images/icons/earpa_icon_192.png',
+  './images/icons/earpa_icon_512.png',
+  './images/icons/apple_touch_icon.png',
+  './images/icons/favicon.png'
 ];
 
 self.addEventListener('install', (event) => {
