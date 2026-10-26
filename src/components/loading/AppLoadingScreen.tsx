@@ -1,47 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 
 interface AppLoadingScreenProps {
   onLoaded?: () => void;
-  durationMs?: number;
+  isAppReady?: boolean;
+  minDurationMs?: number;
 }
 
 export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
   onLoaded,
-  durationMs = 2200,
+  isAppReady = true,
+  minDurationMs = 1600,
 }) => {
   const [progress, setProgress] = useState(0);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const isAppReadyRef = useRef(isAppReady);
+  isAppReadyRef.current = isAppReady;
 
   useEffect(() => {
     const startTime = performance.now();
     let animId = 0;
+    let completed = false;
 
     const tick = (now: number) => {
+      if (completed) return;
       const elapsed = now - startTime;
-      const rawProgress = Math.min(1.0, elapsed / durationMs);
-      // Smooth natural cubic easing curve
-      const easedProgress = Math.min(100, Math.round(100 * (1 - Math.pow(1 - rawProgress, 2.5))));
-      setProgress(easedProgress);
+      const timeProgress = Math.min(1.0, elapsed / minDurationMs);
+      const ready = isAppReadyRef.current;
 
-      if (rawProgress < 1.0) {
-        animId = requestAnimationFrame(tick);
+      let targetPct = 0;
+      if (!ready) {
+        // While app is still loading in background, progress smoothly up to 90%
+        targetPct = Math.min(90, Math.round(90 * (1 - Math.pow(1 - timeProgress, 2.2))));
       } else {
-        // Complete! Hold briefly, then trigger smooth fade-out
+        // App is confirmed ready in background!
+        if (timeProgress < 1.0) {
+          // If min display time hasn't finished yet, progress towards 95%
+          targetPct = Math.min(95, Math.round(95 * (1 - Math.pow(1 - timeProgress, 2.2))));
+        } else {
+          // Both min time and app readiness achieved: finish to 100%!
+          targetPct = 100;
+        }
+      }
+
+      setProgress(targetPct);
+
+      if (targetPct >= 100) {
+        completed = true;
+        // Hold 100% briefly, then smoothly fade out to reveal the live interactive app
         setTimeout(() => {
           setIsFadingOut(true);
           setTimeout(() => {
             setIsDone(true);
             if (onLoaded) onLoaded();
           }, 450);
-        }, 180);
+        }, 120);
+      } else {
+        animId = requestAnimationFrame(tick);
       }
     };
 
     animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
-  }, [durationMs, onLoaded]);
+
+    // Safety fallback: ensure loading screen never hangs beyond 4.5 seconds
+    const safetyTimer = setTimeout(() => {
+      if (!completed) {
+        completed = true;
+        setProgress(100);
+        setIsFadingOut(true);
+        setTimeout(() => {
+          setIsDone(true);
+          if (onLoaded) onLoaded();
+        }, 450);
+      }
+    }, 4500);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      clearTimeout(safetyTimer);
+    };
+  }, [minDurationMs, onLoaded]);
 
   if (isDone) return null;
 

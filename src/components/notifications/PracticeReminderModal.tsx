@@ -69,7 +69,7 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
 
           {/* Clean Minimal Description */}
           <Text style={styles.subtitle}>
-            A short, fun daily chime to keep your ear sharp and practice flowing.
+            A playful daily evening chime around 6:00–7:00 PM in your timezone encouraging 10 minutes of listening.
           </Text>
 
           {/* Toggle Switch Row */}
@@ -78,7 +78,7 @@ export const PracticeReminderModal: React.FC<PracticeReminderModalProps> = ({
               <Text style={styles.toggleLabel}>Daily notifications</Text>
               <Text style={styles.toggleStatus}>
                 {permission === 'granted'
-                  ? (enabled ? 'Active · Reminding you once daily' : 'Turned off')
+                  ? (enabled ? 'Active · Evening chime around 6:00–7:00 PM' : 'Turned off')
                   : permission === 'denied'
                   ? 'Notifications blocked in browser'
                   : 'Tap toggle to enable'}

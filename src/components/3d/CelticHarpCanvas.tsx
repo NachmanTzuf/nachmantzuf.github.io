@@ -54,6 +54,7 @@ interface CelticHarpCanvasProps {
   customScale?: number;
   customAngle?: number;
   targetY?: number;
+  onModelLoaded?: () => void;
 }
 
 // Physical Smartphone Haptic Feedback
@@ -102,6 +103,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       customScale,
       customAngle,
       targetY,
+      onModelLoaded,
     },
     ref
   ) => {
@@ -308,27 +310,59 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
 
       const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 25);
 
-      const renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true,
-        powerPreference: 'high-performance',
-      });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.10;
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFShadowMap;
+      // Universal multi-tier WebGL context initialization fallback (Pixel 10 Pro, Samsung, Xiaomi, iOS, Huawei)
+      let renderer: THREE.WebGLRenderer | null = null;
+      const rendererConfigs = [
+        { antialias: true, alpha: true, powerPreference: 'high-performance' as const },
+        { antialias: true, alpha: true, powerPreference: 'default' as const },
+        { antialias: false, alpha: true, powerPreference: 'default' as const },
+        { antialias: false, alpha: true, powerPreference: 'low-power' as const },
+        { alpha: true },
+      ];
+
+      for (const cfg of rendererConfigs) {
+        try {
+          renderer = new THREE.WebGLRenderer(cfg);
+          if (renderer && renderer.getContext()) break;
+        } catch {
+          renderer = null;
+        }
+      }
+
+      if (!renderer) {
+        console.warn('WebGL initialization failed on device; graceful fallback active.');
+        onModelLoaded?.();
+        return;
+      }
+
+      const glRenderer = renderer;
+
+      glRenderer.setSize(width, height);
+      glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+      glRenderer.toneMappingExposure = 1.10;
+      glRenderer.shadowMap.enabled = true;
+      glRenderer.shadowMap.type = THREE.PCFShadowMap;
       if (minimalHeroMode) {
-        renderer.setClearColor(0x000000, 0);
+        glRenderer.setClearColor(0x000000, 0);
       }
 
       container.innerHTML = '';
-      container.appendChild(renderer.domElement);
+      container.appendChild(glRenderer.domElement);
 
-      // Studio Environment for lustrous metallic reflections on silver levers & hardware (matching viewer.html)
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+      // Safe WebGL context lost/restored handling
+      glRenderer.domElement.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault();
+      }, false);
+
+      // Safe Studio Environment reflection texture generation
+      try {
+        const pmremGen = new THREE.PMREMGenerator(glRenderer);
+        scene.environment = pmremGen.fromScene(new RoomEnvironment(), 0.04).texture;
+        pmremGen.dispose();
+      } catch (pmremErr) {
+        console.warn('PMREM RoomEnvironment generation bypassed:', pmremErr);
+      }
 
       // Warm Natural Ambient Lighting matching the Roman Temple Sanctuary
       const ambientLight = new THREE.HemisphereLight(0xffeed8, 0x423326, 0.95);
@@ -341,8 +375,12 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       keyLight.target.position.set(-0.015, 0.0, -0.015);
       scene.add(keyLight.target);
       keyLight.castShadow = true;
-      keyLight.shadow.mapSize.width = 2048;
-      keyLight.shadow.mapSize.height = 2048;
+
+      // Safe texture allocation for shadow map based on GPU max texture size
+      const maxTex = renderer.capabilities?.maxTextureSize || 2048;
+      const shadowMapDim = Math.min(2048, Math.max(512, maxTex >= 4096 ? 2048 : 1024));
+      keyLight.shadow.mapSize.width = shadowMapDim;
+      keyLight.shadow.mapSize.height = shadowMapDim;
       keyLight.shadow.camera.near = 1.0;
       keyLight.shadow.camera.far = 16.0;
       keyLight.shadow.camera.left = -2.5;
@@ -550,10 +588,16 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
               leverHitObjectsRef.current.push(child);
             }
           });
+
+          onModelLoaded?.();
+          if (typeof window !== 'undefined') {
+            (window as any).__earpa_harpReady = true;
+          }
         },
         undefined,
         (err) => {
           console.error('Failed to load celtic_harp_8string.glb:', err);
+          onModelLoaded?.();
         }
       );
 
@@ -649,7 +693,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       };
 
       const handlePointerStringCheck = (clientX: number, clientY: number): boolean => {
-        const rect = renderer.domElement.getBoundingClientRect();
+        const rect = glRenderer.domElement.getBoundingClientRect();
         pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(pointer, camera);
@@ -686,7 +730,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           }
         }
 
-        const rect = renderer.domElement.getBoundingClientRect();
+        const rect = glRenderer.domElement.getBoundingClientRect();
         pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(pointer, camera);
@@ -798,7 +842,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         // Zoom locked per user mandate: camera framing remains constant so entirety of harp is visible
       };
 
-      const domElem = renderer.domElement;
+      const domElem = glRenderer.domElement;
       domElem.style.touchAction = 'none';
       domElem.style.cursor = 'grab';
       domElem.addEventListener('pointerdown', onPointerDown);
@@ -951,7 +995,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           keyLightRef.current.intensity = 2.5 + pulseIntensityRef.current * 1.2;
         }
 
-        renderer.render(scene, camera);
+        glRenderer.render(scene, camera);
       };
 
       animId = requestAnimationFrame(animate);
@@ -962,7 +1006,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         const h = mountRef.current.clientHeight || 420;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
+        glRenderer.setSize(w, h);
       };
       window.addEventListener('resize', handleResize);
 
@@ -973,8 +1017,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         window.removeEventListener('pointerup', onPointerUp);
         domElem.removeEventListener('wheel', onWheel);
         window.removeEventListener('resize', handleResize);
-        pmremGenerator.dispose();
-        renderer.dispose();
+        glRenderer.dispose();
       };
     }, []);
 

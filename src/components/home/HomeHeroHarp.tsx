@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { CelticHarpCanvas, CelticHarpCanvasRef } from '../3d/CelticHarpCanvas';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 
 interface HomeHeroHarpProps {
   onPressPlay: () => void;
   onOpenRoadmap: () => void;
   onStringPlucked?: (degreeNumber: number) => void;
+  onModelLoaded?: () => void;
   streakCount: number;
   currentXp: number;
   nextMilestoneXp: number;
@@ -21,6 +23,7 @@ interface HomeHeroHarpProps {
 export const HomeHeroHarp: React.FC<HomeHeroHarpProps> = ({
   onPressPlay,
   onStringPlucked,
+  onModelLoaded,
   themeColor = '#059669',
   playTextColor,
   runeColor = '#fef08a',
@@ -67,14 +70,17 @@ export const HomeHeroHarp: React.FC<HomeHeroHarpProps> = ({
 
       {/* 3D Celtic Harp Canvas on Roman Sandstone Plinth (Centerpiece Masterpiece) */}
       <View style={styles.harpCanvasContainer}>
-        <CelticHarpCanvas
-          ref={canvasRef}
-          style={styles.harpCanvas}
-          onStringPlucked={onStringPlucked}
-          interactiveControls={true}
-          minimalHeroMode={true}
-          autoSpin={true}
-        />
+        <ErrorBoundary componentName="HomeHeroHarpCanvas">
+          <CelticHarpCanvas
+            ref={canvasRef}
+            style={styles.harpCanvas}
+            onStringPlucked={onStringPlucked}
+            onModelLoaded={onModelLoaded}
+            interactiveControls={true}
+            minimalHeroMode={true}
+            autoSpin={true}
+          />
+        </ErrorBoundary>
       </View>
 
       {/* Action Section: Compact Angled Liquid Glass Play Button (Floating above tab bar clearance) */}

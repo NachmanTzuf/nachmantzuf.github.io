@@ -1,25 +1,65 @@
 // src/services/notifications/PracticeReminderService.ts
-// Duolingo-style daily practice reminder service for Earpa with harp-themed wit
+// Duolingo-style daily practice reminder service for Earpa with cute, playful harp prompts
 
 export interface ReminderConfig {
   enabled: boolean;
-  time: string; // "HH:MM" e.g. "09:00", "19:00"
-  lastNotifiedDate?: string; // "YYYY-MM-DD"
+  time: string; // "HH:MM" e.g. "18:30"
+  lastNotifiedDate?: string; // "YYYY-MM-DD" in local timezone
 }
 
 export const HARP_REMINDER_PROMPTS = [
-  { title: "Your harp misses you! 🎵", body: "Don't make the red C string cry. 3 minutes of listening keeps your ears sharp." },
-  { title: "The bards are watching! 🏛️", body: "5 minutes of ear training beats 5 hours of musician guilt." },
-  { title: "Tuning fork check! 🔔", body: "Your tonic anchor is waiting. Can you still find your Do?" },
-  { title: "Lever maintenance alert! ⚙️", body: "Don't let your sharping levers get stiff. Come flip a few semitones." },
-  { title: "Quick ear workout! ⚡", body: "Just 5 notes to protect your daily streak. The Cliffs of Moher await." },
-  { title: "Your harp called... 📞", body: "It said you ghosted. Five quick plucks and all is forgiven." },
-  { title: "Unresolved leading tone! 🪕", body: "Degree 7 is hanging in mid-air. Come resolve it home to the tonic." },
-  { title: "Spruce belly check! 🪵", body: "The soundboard is primed for resonance. Time for your daily practice." },
-  { title: "Don't lose your calluses! ✨", body: "Even Celtic masters practiced daily. Jump into Stage 1 for a quick spin." },
-  { title: "Sympathetic resonance! 🎶", body: "Your strings vibrate even when you're not playing. Come make it official." },
-  { title: "Ear fatigue antidote! ☕", body: "Take a 2-minute listening break. Your brain will thank you." },
-  { title: "Streak protector! 🔥", body: "One lesson stands between you and breaking your streak. Let's do this!" },
+  {
+    title: "Evening harp time! 🪕",
+    body: "Just 10 minutes of listening tonight will make your ears glow and keep your pitch sharp."
+  },
+  {
+    title: "Cozy sunset practice! 🌅",
+    body: "10 playful minutes before dinner! Can you find your tonic anchor on the first try?"
+  },
+  {
+    title: "The bards are tuning up! 🏛️",
+    body: "10 minutes of ear training beats hours of musician guilt. Jump in for a quick round!"
+  },
+  {
+    title: "Your 10-minute ear spa! ✨",
+    body: "Unwind tonight with gentle Celtic strings, Sitka spruce resonance, and modal melodies."
+  },
+  {
+    title: "Streak protector alert! 🔥",
+    body: "Only 10 minutes stands between you and your highest streak yet. Let's make it ring!"
+  },
+  {
+    title: "A quick 10-minute pluck! 🎵",
+    body: "The red C string missed you today! 10 minutes of ear training keeps your fingers nimble."
+  },
+  {
+    title: "Evening resonance check! 🌙",
+    body: "Anchor your Do tonight. 10 peaceful minutes on the harp will have you hearing melodies in your sleep."
+  },
+  {
+    title: "10 minutes of musical bliss! ☕",
+    body: "Take a cozy 10-minute break with the Celtic harp. Can you hit a flawless 5-round streak?"
+  },
+  {
+    title: "Feel the tonal gravity! 🌌",
+    body: "Degree 7 is calling you home. Give your ears 10 minutes of love before the day ends."
+  },
+  {
+    title: "Don't let the levers get lonely! ⚙️",
+    body: "10 minutes of sharping lever fun! Come flip a few semitones and master new modes."
+  },
+  {
+    title: "Soundboard sunset serenade! 🪵",
+    body: "The spruce belly is primed for resonance. 10 minutes tonight makes tomorrow's solos effortless."
+  },
+  {
+    title: "Sweet 10-minute ear workout! ⚡",
+    body: "10 minutes of ear training today, effortless playing by ear forever. Ready to play?"
+  },
+  {
+    title: "Golden tone check-in! 🔔",
+    body: "Your daily 10 minutes of Celtic harp mastery starts now. The bards are cheering for you!"
+  },
 ];
 
 export class PracticeReminderService {
@@ -32,7 +72,7 @@ export class PracticeReminderService {
         if (data) return JSON.parse(data);
       }
     } catch {}
-    return { enabled: false, time: '19:00' };
+    return { enabled: false, time: '18:30' };
   }
 
   public static saveConfig(config: ReminderConfig): void {
@@ -76,6 +116,37 @@ export class PracticeReminderService {
    * Immediately sends a visual practice reminder notification with Earpa icon
    */
   public static async sendTestNotification(): Promise<boolean> {
+    return this.dispatchNotification();
+  }
+
+  /**
+   * Evaluates if current local device time is between 18:00 and 19:00 (6:00-7:00 PM),
+   * and if notifications are enabled and haven't yet been sent today in the user's timezone.
+   */
+  public static async checkAndDispatchDailyReminder(): Promise<boolean> {
+    if (!this.isSupported() || Notification.permission !== 'granted') return false;
+
+    const config = this.getConfig();
+    if (!config.enabled) return false;
+
+    const now = new Date();
+    const currentHour = now.getHours(); // Local device timezone
+
+    // Target evening window: 18:00 to 19:00 (6:00 PM - 7:00 PM) in user's local timezone
+    if (currentHour < 18 || currentHour >= 19) return false;
+
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (config.lastNotifiedDate === todayStr) return false; // Already notified today!
+
+    const sent = await this.dispatchNotification();
+    if (sent) {
+      config.lastNotifiedDate = todayStr;
+      this.saveConfig(config);
+    }
+    return sent;
+  }
+
+  private static async dispatchNotification(): Promise<boolean> {
     if (!this.isSupported()) return false;
 
     if (Notification.permission !== 'granted') {

@@ -102,10 +102,15 @@ def main():
     if os.path.exists(js_dir):
         entries = [f for f in os.listdir(js_dir) if f.startswith('entry-') and f.endswith('.js')]
         print("Found JS entries:", entries)
-        latest_entry = 'entry-86005dad95ff916afb02c5c3ad3085ff.js'
+        latest_entry = 'entry-03da5b86f18fc9b21e8c5a2514d3f575.js'
         latest_path = os.path.join(js_dir, latest_entry)
         if os.path.exists(latest_path):
             compat_names = [
+                'entry-591f221d562db681e981d133989945c4.js',
+                'entry-5fffed3a26a629f68471eb69882fc2ac.js',
+                'entry-63bc5b44169e6314d26378b2a3b84271.js',
+                'entry-8d69bb973d5da92adcfe80a2740a1c6d.js',
+                'entry-86005dad95ff916afb02c5c3ad3085ff.js',
                 'entry-241dc2b474c7dc0ebd966e8cad672510.js',
                 'entry-a06af7961980fc5b205cf9622d5a1429.js',
                 'entry-85de23aecec6a4f3ae346b50bf4463fe.js',

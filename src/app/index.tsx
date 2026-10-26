@@ -66,6 +66,7 @@ import { ProfileTabScreen } from '../components/tabs/ProfileTabScreen';
 import { DeviceFramePreview } from '../components/preview/DeviceFramePreview';
 import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
 import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
+import { PracticeReminderService } from '../services/notifications/PracticeReminderService';
 import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
 import {
   LevelDefinition,
@@ -119,6 +120,21 @@ export default function EarpaMasterScreen() {
   const [correctCount, setCorrectCount] = useState<number>(0);
   const [totalTrials, setTotalTrials] = useState<number>(0);
   const [isAppLoading, setIsAppLoading] = useState<boolean>(true);
+  const [isHarpLoaded, setIsHarpLoaded] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && (window as any).__earpa_harpReady) {
+      return true;
+    }
+    return false;
+  });
+
+  // Periodic check for Daily Practice Reminder (18:00 to 19:00 evening window in local timezone)
+  useEffect(() => {
+    PracticeReminderService.checkAndDispatchDailyReminder();
+    const reminderInterval = setInterval(() => {
+      PracticeReminderService.checkAndDispatchDailyReminder();
+    }, 60000);
+    return () => clearInterval(reminderInterval);
+  }, []);
 
   // Active Trial State
   const [stimulusDegree, setStimulusDegree] = useState<ScaleDegree | null>(null);
@@ -383,19 +399,25 @@ export default function EarpaMasterScreen() {
   const progression = journeyEngineRef.current.getUserProgression();
   const modalDef = ModalShiftEngine.getModalDefinition(activeRootPc, activeMode);
 
-  // Loading Screen: Master Tri-Realm Background with 3D Celtic Harp on Pedestal and Minimal Progress Indicator
-  if (isAppLoading) {
-    return (
-      <DeviceFramePreview>
-        <AppLoadingScreen onLoaded={() => setIsAppLoading(false)} durationMs={2000} />
-      </DeviceFramePreview>
-    );
-  }
-
   // =========================================================================
   // VIEW 1: MASTER OUT-OF-GAME MOBILE HUB (With Hybrid Tab Bar & Hero 3D Harp)
   // =========================================================================
-  if (!profile.onboardingComplete && profile.id === 'usr_default_bard') return <DeviceFramePreview><WelcomeProfile onDone={() => setProfile({...accountDb.getActiveProfile()})}/></DeviceFramePreview>;
+  if (!profile.onboardingComplete && profile.id === 'usr_default_bard') {
+    return (
+      <DeviceFramePreview>
+        <SafeAreaView style={styles.hubSafeRoot}>
+          <WelcomeProfile onDone={() => setProfile({ ...accountDb.getActiveProfile() })} />
+          {isAppLoading && (
+            <AppLoadingScreen
+              isAppReady={true}
+              onLoaded={() => setIsAppLoading(false)}
+              minDurationMs={1400}
+            />
+          )}
+        </SafeAreaView>
+      </DeviceFramePreview>
+    );
+  }
 
   if (viewMode === 'HUB') {
     return (
@@ -463,6 +485,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('single')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('single')}
+                  onModelLoaded={() => setIsHarpLoaded(true)}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={profile.totalTrialsAttempted * 10}
                   nextMilestoneXp={500}
@@ -483,6 +506,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('melody')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('melody')}
+                  onModelLoaded={() => setIsHarpLoaded(true)}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={180}
                   nextMilestoneXp={400}
@@ -503,6 +527,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('single')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('levers')}
+                  onModelLoaded={() => setIsHarpLoaded(true)}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={260}
                   nextMilestoneXp={450}
@@ -600,6 +625,15 @@ export default function EarpaMasterScreen() {
             visible={showReminderModal}
             onClose={() => setShowReminderModal(false)}
           />
+
+          {/* Smooth Zero-Black-Screen Cold Boot Loading Overlay */}
+          {isAppLoading && (
+            <AppLoadingScreen
+              isAppReady={isHarpLoaded}
+              onLoaded={() => setIsAppLoading(false)}
+              minDurationMs={1600}
+            />
+          )}
         </SafeAreaView>
       </DeviceFramePreview>
     );

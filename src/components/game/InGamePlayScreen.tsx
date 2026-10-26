@@ -1,4 +1,5 @@
 import {Reveal} from '../common/Reveal';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -835,21 +836,23 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* 3. 3D Celtic Harp: Side 3/4 Beauty Angle with Direct Finger Plucking */}
+      {/* 3. 3D Celtic Harp: Side 3/4 Beauty Angle with Symmetrical Top & Bottom Buffers */}
       <View style={styles.fixedHarpContainer} pointerEvents="box-none">
-        <CelticHarpCanvas
-          ref={canvasRef}
-          style={[styles.harpCanvas, { pointerEvents: 'auto' } as any]}
-          onStringPlucked={handleDirectStringPluck}
-          onLeverToggled={handleLeverToggled}
-          initialLeverStates={leverStates}
-          interactiveControls={true}
-          fixedInGameAngle={true}
-          customAngle={inGameAngle}
-          customScale={0.85}
-          targetY={0.50}
-          minimalHeroMode={true}
-        />
+        <ErrorBoundary componentName="InGameHarpCanvas">
+          <CelticHarpCanvas
+            ref={canvasRef}
+            style={[styles.harpCanvas, { pointerEvents: 'auto' } as any]}
+            onStringPlucked={handleDirectStringPluck}
+            onLeverToggled={handleLeverToggled}
+            initialLeverStates={leverStates}
+            interactiveControls={true}
+            fixedInGameAngle={true}
+            customAngle={inGameAngle}
+            customScale={0.912}
+            targetY={0.590}
+            minimalHeroMode={true}
+          />
+        </ErrorBoundary>
       </View>
 
       {/* 4. Bottom Scale Degree Shelf */}

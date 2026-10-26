@@ -4,6 +4,7 @@ import {TUNING_STRING_BASELINES} from '../../services/curriculum/TuningMatrixEng
 import React, {useRef, useState, useEffect} from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet, ScrollView} from 'react-native';
 import {CelticHarpCanvas, CelticHarpCanvasRef} from '../3d/CelticHarpCanvas';
+import {ErrorBoundary} from '../common/ErrorBoundary';
 import {TuningMatrixEngine, PLAYABLE_MAJOR_KEYS, StringLetter} from '../../services/curriculum/TuningMatrixEngine';
 import {UserAccountDatabase} from '../../services/account/UserAccountDatabase';
 
@@ -149,22 +150,24 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
 
   return <View style={{flex:1,backgroundColor:'#483b2a'}}>
     <Image source={{uri:'/images/ingame_bg_levers.jpg'}} style={StyleSheet.absoluteFillObject}/>
-    <CelticHarpCanvas ref={canvas} initialLeverStates={states} onLeverToggled={(i,v)=>{
-      setLever(i-1,v);
-      if (intro === 1 && letters[i-1] === guidedLetter && v) {
-        setGuidedFlipped(true);
-        synth.current.initAudio();
-        synth.current.unlockSynchronously();
-        const rootMidi = TuningMatrixEngine.getRootMidiForKey(keys[0], 4);
-        const letterIdx = 'CDEFGAB'.indexOf(guidedLetter);
-        const intervals = [0, 2, 4, 5, 7, 9, 11];
-        const midi = rootMidi + intervals[letterIdx];
-        synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
-      }
-      if (intro === 4 && (i === 1 || i === 8)) {
-        if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
-      }
-    }} fixedInGameAngle customAngle={-0.95} customScale={0.84} targetY={0.60} minimalHeroMode style={[StyleSheet.absoluteFillObject,{width:'100%',height:'100%'}]}/>
+    <ErrorBoundary componentName="LeverHarpCanvas">
+      <CelticHarpCanvas ref={canvas} initialLeverStates={states} onLeverToggled={(i,v)=>{
+        setLever(i-1,v);
+        if (intro === 1 && letters[i-1] === guidedLetter && v) {
+          setGuidedFlipped(true);
+          synth.current.initAudio();
+          synth.current.unlockSynchronously();
+          const rootMidi = TuningMatrixEngine.getRootMidiForKey(keys[0], 4);
+          const letterIdx = 'CDEFGAB'.indexOf(guidedLetter);
+          const intervals = [0, 2, 4, 5, 7, 9, 11];
+          const midi = rootMidi + intervals[letterIdx];
+          synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
+        }
+        if (intro === 4 && (i === 1 || i === 8)) {
+          if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
+        }
+      }} fixedInGameAngle customAngle={-0.95} customScale={0.912} targetY={0.590} minimalHeroMode style={[StyleSheet.absoluteFillObject,{width:'100%',height:'100%'}]}/>
+    </ErrorBoundary>
     <View style={styles.top}><TouchableOpacity onPress={onBackToHome}><Text style={styles.text}>‹ Home</Text></TouchableOpacity><Text style={styles.text}>{round+1} / 5 · Lever journey</Text></View>
     {practice&&result===null&&<><View pointerEvents="none" style={{position:'absolute',top:65,left:20,right:20}}><Text style={styles.title}>{pretty(target)} major</Text><Text style={styles.text}>Press the levers on your harp</Text></View><View style={styles.controls}><TouchableOpacity onPress={()=>{setPractice(false);setIntro(5);}}><Text style={styles.small}>Show the circle of fifths</Text></TouchableOpacity><TouchableOpacity onPress={()=>setShowControls(!showControls)}><Text style={styles.small}>Alternative lever controls {showControls?'−':'+'}</Text></TouchableOpacity>{showControls&&<View style={{flexDirection:'row',gap:4}}>{letters.map((l,i)=><TouchableOpacity key={i} accessibilityLabel={`${l}${i===7?' upper':''} lever ${states[i]?'up':'down'}`} onPress={()=>setLever(i,!states[i])} style={styles.lever}><Text style={styles.text}>{l}{states[i]?'↑':'↓'}</Text></TouchableOpacity>)}</View>}<TouchableOpacity style={styles.button} onPress={check}><Text style={styles.text}>Confirm scale →</Text></TouchableOpacity></View></>}
     {!practice&&<Reveal key={`${intro}-${target}`} style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:28,gap:16}}>
