@@ -258,19 +258,20 @@ export const SceneCTAShort: React.FC = () => {
             top: 140,
             width: 190,
             height: 390,
-            borderRadius: 22,
-            padding: 6,
-            background: 'rgba(15, 23, 42, 0.92)',
-            border: '1.5px solid rgba(16, 185, 129, 0.55)',
+            borderRadius: 24,
+            padding: 4,
+            background: 'linear-gradient(145deg, #334155 0%, #1e293b 100%)',
+            border: '1.5px solid rgba(16, 185, 129, 0.75)',
             transform: `rotate(-10deg) scale(${Math.max(0.08, harpBurstIn)})`,
-            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(16, 185, 129, 0.3)',
             zIndex: 4,
             opacity: harpBurstIn,
+            overflow: 'hidden',
           }}
         >
           <Img
-            src={staticFile('textures/real/verified_tab_single_green_phone.png')}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 16 }}
+            src={staticFile('textures/real/app_screen_single_note.png')}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 20 }}
           />
         </div>
 
@@ -282,19 +283,20 @@ export const SceneCTAShort: React.FC = () => {
             top: 140,
             width: 190,
             height: 390,
-            borderRadius: 22,
-            padding: 6,
-            background: 'rgba(15, 23, 42, 0.92)',
-            border: '1.5px solid rgba(56, 189, 248, 0.55)',
+            borderRadius: 24,
+            padding: 4,
+            background: 'linear-gradient(145deg, #334155 0%, #1e293b 100%)',
+            border: '1.5px solid rgba(56, 189, 248, 0.75)',
             transform: `rotate(10deg) scale(${Math.max(0.08, harpBurstIn)})`,
-            boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(56, 189, 248, 0.3)',
             zIndex: 4,
             opacity: harpBurstIn,
+            overflow: 'hidden',
           }}
         >
           <Img
-            src={staticFile('textures/real/verified_realm_coastal_roadmap_phone.png')}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 16 }}
+            src={staticFile('textures/real/app_screen_coastal_roadmap.png')}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 20 }}
           />
         </div>
 

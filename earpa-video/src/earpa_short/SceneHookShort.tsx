@@ -52,42 +52,42 @@ const CAROUSEL_CARDS = [
   {
     startFrame: 215,
     endFrame: 245,
-    img: 'textures/real/verified_physical_string_pluck_guess.png',
+    img: 'textures/real/app_screen_pluck_guess.png',
     badge: 'LIVE 3D HARP • REAL STRING PLUCKS',
     accent: '#ef4444',
   },
   {
     startFrame: 245,
     endFrame: 275,
-    img: 'textures/real/verified_resolution_walk_active.png',
+    img: 'textures/real/app_screen_resolution_walk.png',
     badge: 'MAGNETIC GRAVITY • 4 → 3 → 2 → 1',
     accent: '#38bdf8',
   },
   {
     startFrame: 275,
     endFrame: 305,
-    img: 'textures/real/verified_melody_tab_standalone_card.png',
+    img: 'textures/real/app_screen_melody_studio.png',
     badge: 'NEW MELODY STUDIO • BY-EAR PHRASING',
     accent: '#34d399',
   },
   {
     startFrame: 305,
     endFrame: 335,
-    img: 'textures/real/verified_journey_sunglasses_tab.png',
+    img: 'textures/real/app_screen_journey_analytics.png',
     badge: 'POLARIZED JOURNEY • MASTERY METRICS',
     accent: '#a855f7',
   },
   {
     startFrame: 335,
     endFrame: 365,
-    img: 'textures/real/verified_levers_tab_standalone_card.png',
+    img: 'textures/real/app_screen_camac_levers.png',
     badge: 'CAMAC SHARPING LEVERS • MODAL SHIFTS',
     accent: '#f59e0b',
   },
   {
     startFrame: 365,
     endFrame: 400,
-    img: 'textures/real/verified_realm_coastal_roadmap_phone.png',
+    img: 'textures/real/app_screen_coastal_roadmap.png',
     badge: '220+ GUIDED LEVELS • 10 MIN A DAY',
     accent: '#10b981',
   },
@@ -285,23 +285,23 @@ export const SceneHookShort: React.FC = () => {
       <div
         style={{
           position: 'absolute',
-          top: 136,
+          top: 120,
           left: 54,
           right: 54,
-          minHeight: 190,
+          minHeight: 140,
           display: 'flex',
           flexDirection: 'column',
-          gap: 12,
+          gap: 8,
           zIndex: 20,
         }}
       >
         {/* Line 1 */}
         <div
           style={{
-            fontSize: 27,
+            fontSize: 22,
             fontWeight: 700,
             color: '#f8fafc',
-            lineHeight: 1.35,
+            lineHeight: 1.3,
             textShadow: '0 2px 14px rgba(0,0,0,0.9)',
           }}
         >
@@ -315,10 +315,10 @@ export const SceneHookShort: React.FC = () => {
         {frame >= 190 && (
           <div
             style={{
-              fontSize: 27,
+              fontSize: 22,
               fontWeight: 800,
               color: '#38bdf8',
-              lineHeight: 1.35,
+              lineHeight: 1.3,
               textShadow: '0 2px 14px rgba(0,0,0,0.9)',
             }}
           >
@@ -331,10 +331,10 @@ export const SceneHookShort: React.FC = () => {
         {frame >= 265 && (
           <div
             style={{
-              fontSize: 28,
+              fontSize: 23,
               fontWeight: 800,
               color: '#ffffff',
-              lineHeight: 1.35,
+              lineHeight: 1.3,
               textShadow: '0 2px 14px rgba(0,0,0,0.9)',
             }}
           >
@@ -391,14 +391,13 @@ export const SceneHookShort: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            left: 54,
-            right: 54,
-            top: 350,
-            height: 1220,
+            left: 180,
+            width: 720,
+            top: 275,
+            height: 1410,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
             zIndex: 15,
             opacity: phoneOpacity,
             transform: `perspective(1200px) rotateY(${phoneRotateY}deg) scale(${phoneScale})`,
@@ -415,13 +414,14 @@ export const SceneHookShort: React.FC = () => {
               boxShadow: `0 8px 30px rgba(0,0,0,0.8), 0 0 24px ${currentCard.accent}55`,
               color: currentCard.accent,
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: 900,
               letterSpacing: 1.5,
-              marginBottom: 20,
+              marginBottom: 16,
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
+              gap: 10,
+              whiteSpace: 'nowrap',
             }}
           >
             <span>FEATURE {activeCardIndex + 1} OF 6</span>
@@ -429,50 +429,50 @@ export const SceneHookShort: React.FC = () => {
             <span>{currentCard.badge}</span>
           </div>
 
-          {/* Unified Phone Device Mockup */}
+          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
           <div
             style={{
-              width: 580,
-              height: 1040,
+              width: 720,
+              height: 1380,
               borderRadius: 48,
-              padding: 14,
-              background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-              border: `2px solid ${currentCard.accent}88`,
-              boxShadow: `0 30px 80px rgba(0,0,0,0.85), 0 0 40px ${currentCard.accent}33`,
+              padding: 8,
+              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
+              border: `2px solid ${currentCard.accent}99`,
+              boxShadow: `0 35px 90px rgba(0,0,0,0.9), 0 0 45px ${currentCard.accent}33`,
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
             }}
           >
-            {/* Phone Dynamic Island / Speaker Notch */}
+            {/* Phone Dynamic Island */}
             <div
               style={{
                 width: 140,
                 height: 26,
                 borderRadius: 20,
                 background: '#020617',
-                margin: '4px auto 10px auto',
-                border: '1px solid rgba(255,255,255,0.1)',
+                margin: '4px auto 6px auto',
+                border: '1px solid rgba(255,255,255,0.12)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
+                flexShrink: 0,
               }}
             >
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
               <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
             </div>
 
-            {/* Live Interactive Screen Content */}
+            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
             <div
               style={{
                 flex: 1,
-                borderRadius: 36,
+                borderRadius: 40,
                 overflow: 'hidden',
                 background: '#030712',
                 position: 'relative',
-                border: '1px solid rgba(255,255,255,0.08)',
               }}
             >
               <Img
@@ -480,7 +480,7 @@ export const SceneHookShort: React.FC = () => {
                 style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                 }}
               />
             </div>
@@ -488,56 +488,58 @@ export const SceneHookShort: React.FC = () => {
         </div>
       )}
 
-      {/* 6. BOTTOM UNIFIED STAGE: 32-Bar Acoustic Spectrum Visualizer (Full-Bleed, No Dividing Box) */}
+      {/* 6. ACOUSTIC SOUND WAVES: Dynamic Luminous Spectrum (Resonant Solo Framing & Tactile Pulses) */}
       <div
         style={{
           position: 'absolute',
-          left: 54,
-          right: 54,
-          bottom: 140,
-          height: 38,
+          left: 80,
+          right: 80,
+          top: frame < 215 ? 1380 : 1720,
+          height: frame < 215 ? 75 : 36,
           display: 'flex',
           alignItems: 'flex-end',
           justifyContent: 'space-between',
-          gap: 4,
+          gap: 5,
           zIndex: 25,
           pointerEvents: 'none',
+          transition: 'all 0.3s ease',
         }}
       >
-        {Array.from({ length: 32 }).map((_, barIdx) => {
+        {Array.from({ length: 36 }).map((_, barIdx) => {
           const barFreq = 0.08 * (barIdx + 1);
           const isPluckActive = HOOK_PLUCKS.some((p) => {
             const dt = frame - p.startFrame;
-            return dt >= 0 && dt <= 35;
+            return dt >= 0 && dt <= 32;
           });
-          const baseAmp = isPluckActive ? 0.42 : 0.12;
+          const baseAmp = isPluckActive ? (frame < 215 ? 1.0 : 0.45) : (frame < 215 ? 0.22 : 0.1);
+          const maxHeight = frame < 215 ? 68 : 30;
           const barHeight = Math.min(
-            34,
+            maxHeight,
             Math.max(
-              4,
-              (Math.sin(frame * barFreq + barIdx * 0.4) * 0.5 + 0.5) * 28 * baseAmp + 4
+              6,
+              (Math.sin(frame * barFreq + barIdx * 0.38) * 0.5 + 0.5) * maxHeight * baseAmp + 6
             )
           );
+          const isHighBar = barIdx % 3 === 0;
+          const isMidBar = barIdx % 2 === 0;
           return (
             <div
               key={barIdx}
               style={{
                 flex: 1,
                 height: barHeight,
-                borderRadius: 3,
-                background:
-                  barIdx % 4 === 0
-                    ? '#fbbf24'
-                    : barIdx % 2 === 0
-                    ? '#38bdf8'
-                    : 'rgba(255,255,255,0.35)',
-                boxShadow:
-                  barIdx % 4 === 0
-                    ? '0 0 8px rgba(251, 191, 36, 0.5)'
-                    : barIdx % 2 === 0
-                    ? '0 0 8px rgba(56, 189, 248, 0.4)'
-                    : 'none',
-                transition: 'height 0.08s ease',
+                borderRadius: 4,
+                background: isHighBar
+                  ? 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)'
+                  : isMidBar
+                  ? 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)'
+                  : 'linear-gradient(180deg, #34d399 0%, #059669 100%)',
+                boxShadow: isHighBar
+                  ? '0 0 12px rgba(251, 191, 36, 0.7)'
+                  : isMidBar
+                  ? '0 0 10px rgba(56, 189, 248, 0.6)'
+                  : 'none',
+                opacity: frame < 215 ? 0.95 : 0.65,
               }}
             />
           );

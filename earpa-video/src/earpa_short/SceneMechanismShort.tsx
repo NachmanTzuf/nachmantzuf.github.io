@@ -338,16 +338,16 @@ export const SceneMechanismShort: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 16,
-                padding: 16,
+                padding: 10,
               }}
             >
               <Img
-                src={staticFile('textures/real/verified_journey_sunglasses_tab.png')}
-                style={{ width: '100%', borderRadius: 16, objectFit: 'contain' }}
+                src={staticFile('textures/real/app_screen_journey_analytics.png')}
+                style={{ width: '100%', borderRadius: 24, objectFit: 'cover' }}
               />
               <Img
-                src={staticFile('textures/real/accounts_profile_dashboard_verified.png')}
-                style={{ width: '100%', borderRadius: 16, objectFit: 'contain' }}
+                src={staticFile('textures/real/app_screen_profile_dashboard.png')}
+                style={{ width: '100%', borderRadius: 24, objectFit: 'cover' }}
               />
             </div>
 
@@ -356,19 +356,19 @@ export const SceneMechanismShort: React.FC = () => {
               style={{
                 position: 'absolute',
                 bottom: 24,
-                left: 24,
-                right: 24,
+                left: 20,
+                right: 20,
                 transform: `scale(${melodyCardPop}) translateY(${interpolate(
                   melodyCardPop,
                   [0, 1],
                   [50, 0]
                 )}px)`,
                 opacity: melodyCardPop,
-                borderRadius: 24,
+                borderRadius: 28,
                 background: 'rgba(10, 16, 26, 0.98)',
                 border: '2px solid #34d399',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.9), 0 0 35px rgba(52, 211, 153, 0.45)',
-                padding: 16,
+                padding: 14,
               }}
             >
               <div
@@ -384,10 +384,12 @@ export const SceneMechanismShort: React.FC = () => {
               >
                 ★ NEW MELODY STUDIO TAB • BY-EAR PHRASING
               </div>
-              <Img
-                src={staticFile('textures/real/verified_melody_tab_standalone_card.png')}
-                style={{ width: '100%', height: 260, objectFit: 'contain', borderRadius: 14 }}
-              />
+              <div style={{ width: '100%', height: 260, borderRadius: 18, overflow: 'hidden' }}>
+                <Img
+                  src={staticFile('textures/real/app_screen_melody_studio.png')}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -498,24 +500,57 @@ export const SceneMechanismShort: React.FC = () => {
             ))}
           </div>
 
-          {/* Resolution Walk Active Demonstration Phone */}
+          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
           <div
             style={{
               flex: 1,
-              borderRadius: 24,
-              overflow: 'hidden',
-              background: '#030712',
-              border: '1px solid rgba(255,255,255,0.08)',
+              marginTop: 10,
+              borderRadius: 44,
+              padding: 8,
+              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
+              border: '2px solid rgba(16, 185, 129, 0.75)',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.9), 0 0 45px rgba(16, 185, 129, 0.3)',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              flexDirection: 'column',
               position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            <Img
-              src={staticFile('textures/real/verified_resolution_walk_active.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+            {/* Phone Dynamic Island */}
+            <div
+              style={{
+                width: 140,
+                height: 24,
+                borderRadius: 20,
+                background: '#020617',
+                margin: '2px auto 6px auto',
+                border: '1px solid rgba(255,255,255,0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
+            </div>
+
+            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
+            <div
+              style={{
+                flex: 1,
+                borderRadius: 36,
+                overflow: 'hidden',
+                background: '#030712',
+                position: 'relative',
+              }}
+            >
+              <Img
+                src={staticFile('textures/real/app_screen_resolution_walk.png')}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
           </div>
         </div>
       )}

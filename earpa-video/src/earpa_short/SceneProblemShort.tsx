@@ -447,47 +447,65 @@ export const SceneProblemShort: React.FC = () => {
             </div>
           </div>
 
-          {/* Unified Phone Device Mockup showing live gameplay */}
+          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
           <div
             style={{
-              flex: 1,
-              marginTop: 18,
-              borderRadius: 36,
-              padding: 16,
-              background: 'rgba(10, 16, 26, 0.94)',
-              border: '2px solid rgba(56, 189, 248, 0.55)',
-              boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(56, 189, 248, 0.25)',
+              width: 720,
+              height: 1200,
+              margin: '14px auto 0 auto',
+              borderRadius: 48,
+              padding: 8,
+              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
+              border: '2px solid rgba(56, 189, 248, 0.75)',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.9), 0 0 45px rgba(56, 189, 248, 0.3)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
               position: 'relative',
               overflow: 'hidden',
             }}
           >
+            {/* Phone Dynamic Island */}
             <div
               style={{
-                width: '100%',
-                height: 1020,
-                borderRadius: 24,
-                overflow: 'hidden',
-                background: '#030712',
-                position: 'relative',
+                width: 140,
+                height: 26,
+                borderRadius: 20,
+                background: '#020617',
+                margin: '4px auto 6px auto',
+                border: '1px solid rgba(255,255,255,0.12)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: 8,
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
+            </div>
+
+            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
+            <div
+              style={{
+                flex: 1,
+                borderRadius: 40,
+                overflow: 'hidden',
+                background: '#030712',
+                position: 'relative',
               }}
             >
               <Img
                 src={staticFile(
-                  activeStep <= 2
-                    ? 'textures/real/verified_ingame_guessed_note_walk.png'
-                    : 'textures/real/verified_resolution_walk_active.png'
+                  activeStep === 1
+                    ? 'textures/real/app_screen_pluck_guess.png'
+                    : activeStep === 2
+                    ? 'textures/real/app_screen_single_note.png'
+                    : 'textures/real/app_screen_resolution_walk.png'
                 )}
                 style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                 }}
               />
 
@@ -497,8 +515,8 @@ export const SceneProblemShort: React.FC = () => {
                   style={{
                     position: 'absolute',
                     bottom: 24,
-                    left: 24,
-                    right: 24,
+                    left: 20,
+                    right: 20,
                     padding: '16px 20px',
                     borderRadius: 18,
                     background: 'rgba(13, 20, 33, 0.96)',

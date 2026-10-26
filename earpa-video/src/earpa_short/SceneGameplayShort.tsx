@@ -81,7 +81,7 @@ export const SceneGameplayShort: React.FC = () => {
       subtitle: '68 Levels • 10-Minute Daily Anchor',
       accent: '#10b981',
       sanctuary: 'Emerald Coast Sanctuary',
-      phoneImg: 'textures/real/verified_tab_single_green_phone.png',
+      phoneImg: 'textures/real/app_screen_single_note.png',
     },
     {
       id: 1,
@@ -89,7 +89,7 @@ export const SceneGameplayShort: React.FC = () => {
       subtitle: '76 Levels • Real By-Ear Phrasing',
       accent: '#38bdf8',
       sanctuary: 'Glacial Fjord Sanctuary',
-      phoneImg: 'textures/real/verified_tab_melody_blue_phone.png',
+      phoneImg: 'textures/real/app_screen_melody_studio.png',
     },
     {
       id: 2,
@@ -97,7 +97,7 @@ export const SceneGameplayShort: React.FC = () => {
       subtitle: '76 Levels • Modal Key Shifts',
       accent: '#f59e0b',
       sanctuary: 'Desert Sandstone Canyon',
-      phoneImg: 'textures/real/verified_tab_levers_orange_phone.png',
+      phoneImg: 'textures/real/app_screen_camac_levers.png',
     },
   ];
 
@@ -254,16 +254,16 @@ export const SceneGameplayShort: React.FC = () => {
             </span>
           </div>
 
-          {/* Unified Smartphone Showcase Frame */}
+          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
           <div
             style={{
-              width: 620,
-              height: 1140,
+              width: 720,
+              height: 1240,
               borderRadius: 48,
-              padding: 14,
-              background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-              border: `2px solid ${currentPath.accent}88`,
-              boxShadow: `0 30px 80px rgba(0,0,0,0.85), 0 0 40px ${currentPath.accent}33`,
+              padding: 8,
+              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
+              border: `2px solid ${currentPath.accent}99`,
+              boxShadow: `0 35px 90px rgba(0,0,0,0.9), 0 0 45px ${currentPath.accent}33`,
               position: 'relative',
               display: 'flex',
               flexDirection: 'column',
@@ -271,39 +271,39 @@ export const SceneGameplayShort: React.FC = () => {
               transform: `perspective(1200px) rotateY(${phoneRotateY}deg)`,
             }}
           >
-            {/* Dynamic Island Notch */}
+            {/* Phone Dynamic Island */}
             <div
               style={{
-                width: 150,
-                height: 28,
+                width: 140,
+                height: 26,
                 borderRadius: 20,
                 background: '#020617',
-                margin: '4px auto 12px auto',
-                border: '1px solid rgba(255,255,255,0.1)',
+                margin: '4px auto 6px auto',
+                border: '1px solid rgba(255,255,255,0.12)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
+                flexShrink: 0,
               }}
             >
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
-              <div style={{ width: 44, height: 4, borderRadius: 2, background: '#1e293b' }} />
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
             </div>
 
-            {/* Screen Content */}
+            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
             <div
               style={{
                 flex: 1,
-                borderRadius: 36,
+                borderRadius: 40,
                 overflow: 'hidden',
                 background: '#030712',
                 position: 'relative',
-                border: '1px solid rgba(255,255,255,0.08)',
               }}
             >
               <Img
                 src={staticFile(currentPath.phoneImg)}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
           </div>
