@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   AbsoluteFill,
-  Audio,
   Img,
   interpolate,
   spring,
@@ -9,239 +8,514 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
+import { Harp3DCanvas, PluckEvent } from './Harp3DCanvas';
+
+// Scene 3 runs from global frame 660 to 930 (270 frames: local 0..270)
+const MECHANISM_PLUCKS: PluckEvent[] = [
+  // I Chord Cadence (local frame 15 = global 675)
+  { stringNum: 1, startFrame: 15, amplitude: 0.022 },
+  { stringNum: 3, startFrame: 17, amplitude: 0.018 },
+  { stringNum: 5, startFrame: 19, amplitude: 0.018 },
+  { stringNum: 8, startFrame: 21, amplitude: 0.021 },
+  // IV Chord (local frame 45 = global 705)
+  { stringNum: 4, startFrame: 45, amplitude: 0.023 },
+  { stringNum: 6, startFrame: 47, amplitude: 0.019 },
+  { stringNum: 8, startFrame: 49, amplitude: 0.020 },
+  // V Chord (local frame 75 = global 735)
+  { stringNum: 2, startFrame: 75, amplitude: 0.020 },
+  { stringNum: 5, startFrame: 77, amplitude: 0.021 },
+  { stringNum: 7, startFrame: 79, amplitude: 0.022 },
+  // I Chord Tonic Anchor (local frame 105 = global 765)
+  { stringNum: 1, startFrame: 105, amplitude: 0.024 },
+  { stringNum: 3, startFrame: 107, amplitude: 0.019 },
+  { stringNum: 5, startFrame: 109, amplitude: 0.019 },
+  { stringNum: 8, startFrame: 111, amplitude: 0.024 },
+  // Mystery Note F4 (local frame 140 = global 800)
+  { stringNum: 4, startFrame: 140, amplitude: 0.025 },
+  // Stepwise Gravity Resolution Walk: 4 -> 3 -> 2 -> 1 (local frames 170, 190, 210, 230)
+  { stringNum: 4, startFrame: 170, amplitude: 0.023 },
+  { stringNum: 3, startFrame: 190, amplitude: 0.022 },
+  { stringNum: 2, startFrame: 210, amplitude: 0.022 },
+  { stringNum: 1, startFrame: 230, amplitude: 0.026 },
+  { stringNum: 8, startFrame: 230, amplitude: 0.024 },
+];
+
+const CADENCE_STEPS = [
+  { roman: 'I', label: 'TONIC HOME', chord: 'C Major', trigger: 15, color: '#ef4444' },
+  { roman: 'IV', label: 'SUBDOMINANT', chord: 'F Major', trigger: 45, color: '#38bdf8' },
+  { roman: 'V', label: 'DOMINANT PULL', chord: 'G Major', trigger: 75, color: '#fbbf24' },
+  { roman: 'I', label: 'ANCHOR LOCKED', chord: 'C Major', trigger: 105, color: '#10b981' },
+];
 
 export const SceneMechanism: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Entrance spring
-  const enterSpring = spring({
-    frame,
+  // Dynamic 3D Harp Entrance Choreography:
+  // Harp pops in dynamically with a 3D spring zoom at frame 10 right as Cadence starts!
+  const harpPopIn = spring({
+    frame: frame - 10,
     fps,
-    config: { damping: 14, mass: 0.6, stiffness: 120 },
+    config: { damping: 14, stiffness: 120, mass: 0.85 },
   });
 
-  // Cadence chord badges entrance
-  const c1 = spring({ frame: frame - 15, fps, config: { damping: 12, mass: 0.4 } });
-  const c2 = spring({ frame: frame - 35, fps, config: { damping: 12, mass: 0.4 } });
-  const c3 = spring({ frame: frame - 55, fps, config: { damping: 12, mass: 0.4 } });
-  const c4 = spring({ frame: frame - 75, fps, config: { damping: 12, mass: 0.4 } });
+  const theta = interpolate(frame, [0, 135, 270], [-1.35, 0.88, 2.25]);
+  const phi = interpolate(frame, [0, 90, 180, 270], [1.45, 1.18, 1.42, 1.32]);
+  const radius = interpolate(harpPopIn, [0, 1], [3.2, 2.28]);
+  const tiltX = interpolate(frame, [0, 135, 270], [0.07, -0.07, 0.05]);
+  const tiltZ = interpolate(frame, [0, 135, 270], [-0.06, 0.06, -0.04]);
 
-  // 3D camera pan around the harp
-  const harpRotY = interpolate(frame, [0, 212], [-20, 15]);
-  const harpRotX = interpolate(frame, [0, 212], [8, -4]);
-  const harpZoom = interpolate(frame, [0, 212], [1.0, 1.2]);
+  // Smooth vertical scroll inside Left Card through Polarized Journey tab sequence (0px to -420px)
+  const journeyScrollY = interpolate(frame, [30, 240], [0, -420], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  // Gravitational pull beam oscillation
-  const gravityPulse = Math.sin(frame * 0.15) * 10;
+  // Floating New Melody Card Pop-in at local frame 95
+  const melodyCardPop = spring({
+    frame: frame - 95,
+    fps,
+    config: { damping: 12, stiffness: 150 },
+  });
+
+  // Stepwise resolution active step (4 -> 3 -> 2 -> 1)
+  const activeResolutionStep =
+    frame >= 230 ? 1 : frame >= 210 ? 2 : frame >= 190 ? 3 : frame >= 140 ? 4 : null;
 
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#07100b',
+        backgroundColor: '#060a11',
         overflow: 'hidden',
-        perspective: '1400px',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontFamily: 'Inter, system-ui, sans-serif',
       }}
     >
-      <Audio src={staticFile('audio/voiceover/scene_3_mechanism.mp3')} />
-      <Audio src={staticFile('audio/sparkle.mp3')} volume={0.4} />
-
-      {/* Background: Ancient Celtic Sanctuary with Volumetric Sunlight */}
+      {/* Ambient Sanctuary Gold & Cyan Tonal Gravity Field */}
       <div
         style={{
           position: 'absolute',
-          inset: -40,
-          transform: `scale(${interpolate(frame, [0, 212], [1.05, 1.18])})`,
-          filter: 'brightness(0.65) contrast(1.1)',
-        }}
-      >
-        <Img
-          src={staticFile('textures/EARPA_01_Green_Celtic_Sanctuary.png')}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      </div>
-
-      {/* Volumetric Diagonal Light Beam */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-10%',
-          right: '-10%',
-          width: '80%',
-          height: '140%',
+          inset: 0,
           background:
-            'linear-gradient(135deg, rgba(255, 230, 160, 0.28) 0%, rgba(255, 215, 100, 0.08) 45%, transparent 75%)',
-          pointerEvents: 'none',
-          transform: 'rotate(-12deg)',
-          filter: 'blur(30px)',
+            'radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.22) 0%, rgba(56, 189, 248, 0.12) 38%, rgba(6, 10, 17, 0.98) 78%)',
         }}
       />
 
-      {/* Left Column: Pedagogical Engine & Alain Benbassat Tonal Gravity */}
+      {/* Top Cadence Bar */}
       <div
         style={{
           position: 'absolute',
-          left: '100px',
-          top: '120px',
-          width: '760px',
+          top: 36,
+          left: 64,
+          right: 64,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           zIndex: 10,
-          opacity: interpolate(enterSpring, [0, 1], [0, 1]),
-          transform: `translateY(${interpolate(enterSpring, [0, 1], [30, 0])}px)`,
         }}
       >
         <div
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '10px',
-            color: '#4ade80',
-            fontSize: '18px',
+            padding: '8px 20px',
+            borderRadius: 999,
+            background: 'rgba(212, 175, 55, 0.15)',
+            border: '1px solid rgba(212, 175, 55, 0.55)',
+            color: '#fbbf24',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: 14,
             fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '3px',
-            marginBottom: '16px',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            backgroundColor: 'rgba(34, 197, 94, 0.15)',
-            border: '1px solid rgba(34, 197, 94, 0.4)',
+            letterSpacing: 2,
           }}
         >
-          The Architectural Breakthrough
+          03 // TONAL GRAVITY ENGINE • ALAIN BENBASSAT CADENCE & RESOLUTION
         </div>
 
-        <h1
-          style={{
-            fontSize: '56px',
-            fontWeight: 900,
-            color: '#ffffff',
-            lineHeight: 1.15,
-            margin: '0 0 16px 0',
-            textShadow: '0 4px 20px rgba(0,0,0,0.8)',
-          }}
-        >
-          EARPA Changes That.
-        </h1>
-
-        <div
-          style={{
-            fontSize: '26px',
-            color: '#fef08a',
-            fontWeight: 600,
-            marginBottom: '28px',
-            lineHeight: 1.4,
-          }}
-        >
-          Grounded in the <span style={{ color: '#ffd700', textDecoration: 'underline' }}>Alain Benbassat Method</span>
-        </div>
-
-        {/* 4-Chord Grounding Cadence Badges */}
-        <div style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              fontSize: '14px',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              color: '#94a3b8',
-              marginBottom: '12px',
-              fontWeight: 700,
-            }}
-          >
-            Grounding Cadence (Tonal Center Anchor)
-          </div>
-          <div style={{ display: 'flex', gap: '14px' }}>
-            {[
-              { label: 'I Tonic', chord: 'C Major', spring: c1, color: '#38bdf8' },
-              { label: 'IV Subdominant', chord: 'F Major', spring: c2, color: '#a78bfa' },
-              { label: 'V Dominant', chord: 'G Major', spring: c3, color: '#fb923c' },
-              { label: 'I Home Anchor', chord: 'C Tonic', spring: c4, color: '#4ade80' },
-            ].map((item, idx) => (
+        {/* 4 Cadence Progression Badges */}
+        <div style={{ display: 'flex', gap: 12 }}>
+          {CADENCE_STEPS.map((c, idx) => {
+            const isTriggered = frame >= c.trigger;
+            const isCurrent =
+              frame >= c.trigger &&
+              (idx === CADENCE_STEPS.length - 1 ? frame < 125 : frame < CADENCE_STEPS[idx + 1].trigger);
+            return (
               <div
-                key={idx}
+                key={c.roman}
                 style={{
-                  padding: '14px 20px',
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.75)',
-                  border: `2px solid ${item.color}`,
-                  boxShadow: `0 8px 24px rgba(0,0,0,0.5), 0 0 16px ${item.color}33`,
-                  transform: `scale(${interpolate(item.spring, [0, 1], [0.8, 1])})`,
-                  opacity: interpolate(item.spring, [0, 1], [0, 1]),
-                  backdropFilter: 'blur(12px)',
+                  padding: '6px 16px',
+                  borderRadius: 10,
+                  background: isCurrent ? `${c.color}33` : isTriggered ? 'rgba(30,41,59,0.8)' : 'rgba(15,23,42,0.6)',
+                  border: `1.5px solid ${isCurrent ? c.color : isTriggered ? `${c.color}88` : 'rgba(255,255,255,0.1)'}`,
+                  color: isTriggered ? '#ffffff' : '#64748b',
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
                 }}
               >
-                <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>
-                  {item.label}
-                </div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: item.color }}>
-                  {item.chord}
-                </div>
+                <span>{c.roman}</span>
+                <span style={{ fontSize: 11, color: isTriggered ? c.color : '#64748b' }}>{c.chord}</span>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CENTER HERO: Free-Floating V9.3 3D Celtic Harp with Dynamic Pop-In */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 480,
+          top: 30,
+          width: 960,
+          height: 980,
+          transform: `scale(${Math.max(0.08, harpPopIn)})`,
+          opacity: Math.max(0, harpPopIn),
+          zIndex: 4,
+        }}
+      >
+        <Harp3DCanvas
+          width={960}
+          height={980}
+          theta={theta}
+          phi={phi}
+          radius={radius}
+          targetY={0.48}
+          fov={34}
+          pluckEvents={MECHANISM_PLUCKS}
+          harpScale={0.73}
+          tiltX={tiltX}
+          tiltZ={tiltZ}
+        />
+      </div>
+
+      {/* LEFT CARD: Larger Scrolling Polarized Journey Tab + Floating New Melody Card */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 44,
+          top: 108,
+          width: 560,
+          height: 850,
+          borderRadius: 26,
+          background: 'rgba(13, 20, 33, 0.92)',
+          border: '1px solid rgba(168, 85, 247, 0.45)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.65)',
+          overflow: 'hidden',
+          zIndex: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 20,
+        }}
+      >
+        {/* Card Header */}
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 12,
+                fontWeight: 800,
+                color: '#c084fc',
+                letterSpacing: 1.6,
+              }}
+            >
+              POLARIZED JOURNEY & ANALYTICS
+            </span>
+            <span
+              style={{
+                padding: '4px 10px',
+                borderRadius: 8,
+                background: 'rgba(168, 85, 247, 0.18)',
+                border: '1px solid #c084fc',
+                color: '#ffffff',
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 11,
+                fontWeight: 800,
+              }}
+            >
+              REAL-TIME SCROLL
+            </span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff' }}>
+            Internalize the Emotional Color of Every Note
           </div>
         </div>
 
-        {/* Gravitational Resolution Vector Box */}
+        {/* Scrolling Viewport Container (Polarized Journey Tab -> Profile Dashboard -> Insights) */}
         <div
           style={{
-            padding: '20px 28px',
-            borderRadius: '20px',
-            background:
-              'linear-gradient(135deg, rgba(20, 45, 35, 0.85) 0%, rgba(10, 25, 20, 0.95) 100%)',
-            border: '2px solid rgba(74, 222, 128, 0.5)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(74, 222, 128, 0.2)',
+            position: 'relative',
+            height: 520,
+            borderRadius: 18,
+            background: 'rgba(7, 11, 18, 0.88)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
           }}
         >
-          <div style={{ fontSize: '15px', color: '#86efac', fontWeight: 700, textTransform: 'uppercase' }}>
-            Tonal Gravity: Every Note Pulls Home
-          </div>
           <div
             style={{
-              fontSize: '24px',
-              fontWeight: 800,
-              color: '#ffffff',
-              marginTop: '8px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              transform: `translateY(${journeyScrollY}px)`,
               display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
+              flexDirection: 'column',
+              gap: 16,
+              padding: 12,
             }}
           >
-            <span>4 (Fa) → 3 (Mi) → 1 (Do)</span>
-            <span style={{ color: '#4ade80', transform: `translateY(${gravityPulse}px)` }}>
-              ↓ Home
-            </span>
-            <span>7 (Ti) → 8 (Do)</span>
+            {/* 1. Polarized Sunglasses Journey Tab */}
+            <div style={{ height: 280, display: 'flex', justifyContent: 'center' }}>
+              <Img
+                src={staticFile('textures/real/verified_journey_sunglasses_tab.png')}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 12 }}
+              />
+            </div>
+            {/* 2. Harper Profile Dashboard */}
+            <div style={{ height: 280, display: 'flex', justifyContent: 'center' }}>
+              <Img
+                src={staticFile('textures/real/accounts_profile_dashboard_verified.png')}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 12 }}
+              />
+            </div>
+            {/* 3. Session Insights & Radar Modal */}
+            <div style={{ height: 280, display: 'flex', justifyContent: 'center' }}>
+              <Img
+                src={staticFile('textures/real/accounts_session_insights_modal_verified.png')}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 12 }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer info pill */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: 12,
+            color: '#94a3b8',
+          }}
+        >
+          <span>DARK OBSIDIAN THEME</span>
+          <span style={{ color: '#c084fc', fontWeight: 800 }}>★ DEGREE RADAR ACTIVE</span>
+        </div>
+
+        {/* Overlapping Floating New Melody Card (Pops in at local frame 95) */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            right: -16,
+            width: 250,
+            height: 200,
+            borderRadius: 18,
+            padding: 8,
+            background: 'rgba(11, 19, 33, 0.96)',
+            border: '2px solid #38bdf8',
+            boxShadow: '0 16px 45px rgba(56, 189, 248, 0.45)',
+            transform: `scale(${melodyCardPop}) rotate(-4deg)`,
+            opacity: melodyCardPop,
+            zIndex: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: 10,
+              fontWeight: 800,
+              color: '#38bdf8',
+              letterSpacing: 1.2,
+            }}
+          >
+            NEW • MELODY SEQUENCE CARD
+          </div>
+          <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Img
+              src={staticFile('textures/real/verified_melody_tab_standalone_card.png')}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 10 }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Right Column: 3D Celtic Harp on Exhibition Plinth */}
+      {/* RIGHT CARD: Eye-Captivating Magnetic Resolution Walk (4 -> 3 -> 2 -> 1) */}
       <div
         style={{
           position: 'absolute',
-          right: '6%',
-          top: '10%',
-          width: '600px',
-          height: '840px',
-          transform: `scale(${harpZoom}) rotateY(${harpRotY}deg) rotateX(${harpRotX}deg)`,
-          transformStyle: 'preserve-3d',
-          filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.8))',
+          right: 44,
+          top: 108,
+          width: 560,
+          height: 850,
+          borderRadius: 26,
+          background: 'rgba(13, 20, 33, 0.92)',
+          border: '1px solid rgba(56, 189, 248, 0.48)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.65)',
+          overflow: 'hidden',
+          zIndex: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 20,
         }}
       >
-        <Img
-          src={staticFile('textures/v9_3_full_harp_lever_side.png')}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        />
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 12,
+                fontWeight: 800,
+                color: '#38bdf8',
+                letterSpacing: 1.6,
+              }}
+            >
+              MAGNETIC TONAL GRAVITY WELL
+            </span>
+            <span
+              style={{
+                padding: '4px 10px',
+                borderRadius: 8,
+                background: 'rgba(56, 189, 248, 0.18)',
+                border: '1px solid #38bdf8',
+                color: '#ffffff',
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 11,
+                fontWeight: 800,
+              }}
+            >
+              STEPWISE RESOLUTION
+            </span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff' }}>
+            Note 4 (Fa) Gravitates 4 → 3 → 2 → 1 to Tonic Home
+          </div>
+        </div>
 
-        {/* Orbiting Golden Energy Particles */}
+        {/* Top Live Visual Preview (Crossfade Low Down / Active Resolution Walk) */}
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            background:
-              'radial-gradient(circle at 45% 55%, rgba(212, 175, 55, 0.25) 0%, transparent 60%)',
+            height: 380,
+            borderRadius: 18,
+            background: 'rgba(7, 11, 18, 0.88)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Img
+            src={staticFile(
+              frame < 180
+                ? 'textures/real/verified_closest_resolution_low_down.png'
+                : 'textures/real/verified_resolution_walk_active.png'
+            )}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 12 }}
+          />
+        </div>
+
+        {/* Concentric Gravity Target Step Visualizer (4 -> 3 -> 2 -> 1) */}
+        <div
+          style={{
+            padding: '16px 20px',
+            borderRadius: 18,
+            background: 'rgba(7, 11, 18, 0.92)',
+            border: '1px solid rgba(16, 185, 129, 0.45)',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: 12,
+              fontWeight: 800,
+              color: '#34d399',
+              marginBottom: 10,
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+          >
+            <span>GRAVITY STEP SEQUENCE</span>
+            <span>{activeResolutionStep ? `ACTIVE: DEGREE ${activeResolutionStep}` : 'WAITING FOR NOTE'}</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            {[
+              { deg: 4, name: 'Fa', color: '#38bdf8', label: 'Tension Note' },
+              { deg: 3, name: 'Mi', color: '#fbbf24', label: 'Step Down' },
+              { deg: 2, name: 'Re', color: '#fbbf24', label: 'Step Down' },
+              { deg: 1, name: 'Do', color: '#ef4444', label: '⚓ Tonic Home' },
+            ].map((st) => {
+              const isNow = activeResolutionStep === st.deg;
+              return (
+                <div
+                  key={st.deg}
+                  style={{
+                    padding: '10px 8px',
+                    borderRadius: 12,
+                    textAlign: 'center',
+                    background: isNow ? `${st.color}33` : 'rgba(255,255,255,0.06)',
+                    border: `2px solid ${isNow ? st.color : 'rgba(255,255,255,0.12)'}`,
+                    boxShadow: isNow ? `0 0 20px ${st.color}66` : 'none',
+                    transform: isNow ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: 22,
+                      fontWeight: 900,
+                      color: isNow ? '#ffffff' : st.color,
+                    }}
+                  >
+                    {st.deg}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#f8fafc', marginTop: 2 }}>
+                    {st.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{st.label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer info pill */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: 12,
+            color: '#94a3b8',
+          }}
+        >
+          <span>ALAIN BENBASSAT FUNCTIONAL METHOD</span>
+          <span style={{ color: '#38bdf8', fontWeight: 800 }}>MAGNETIC SNAP LOCKED</span>
+        </div>
       </div>
     </AbsoluteFill>
   );

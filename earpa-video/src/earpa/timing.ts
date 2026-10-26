@@ -1,28 +1,26 @@
 export const TIMING = {
+  fps: 30,
+  totalFrames: 1350, // 45.0 seconds at 30fps
   scene1: {
     from: 0,
-    durationInFrames: 161,
-    audio: 'audio/voiceover/scene_1_hook.mp3',
+    durationInFrames: 400, // 00:00.0 - 00:13.33 (13.33s)
   },
   scene2: {
-    from: 161,
-    durationInFrames: 190,
-    audio: 'audio/voiceover/scene_2_problem.mp3',
+    from: 400,
+    durationInFrames: 260, // 00:13.33 - 00:22.00 (8.67s)
   },
   scene3: {
-    from: 351,
-    durationInFrames: 212,
-    audio: 'audio/voiceover/scene_3_mechanism.mp3',
+    from: 660,
+    durationInFrames: 270, // 00:22.00 - 00:31.00 (9.00s)
   },
   scene4: {
-    from: 563,
-    durationInFrames: 197,
-    audio: 'audio/voiceover/scene_4_gameplay.mp3',
+    from: 930,
+    durationInFrames: 235, // 00:31.00 - 00:38.83 (7.83s)
   },
   scene5: {
-    from: 760,
-    durationInFrames: 192,
-    audio: 'audio/voiceover/scene_5_cta.mp3',
+    from: 1165,
+    durationInFrames: 185, // 00:38.83 - 00:45.00 (6.17s)
   },
-  totalFrames: 952,
-};
+} as const;
+
+
