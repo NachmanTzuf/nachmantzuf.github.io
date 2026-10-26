@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>EARPA // Master Promo Video Player</title>
+  <meta name="theme-color" content="#070b12">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #070b12;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 24px) 16px;
+    }
+    .header {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      padding: 16px 0 20px 0;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #fbbf24;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    
+    /* Segmented Switcher */
+    .switcher {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 10px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.08) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .tab-duration {
+      font-size: 10px;
+      opacity: 0.75;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    
+    /* Video Container */
+    .video-card {
+      width: 100%;
+      max-width: 600px;
+      background: #000000;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.15);
+      position: relative;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 72vh;
+      background: #000000;
+    }
+    
+    /* Info Card */
+    .info-card {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .info-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .info-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+    
+    /* Action Buttons */
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #070b12;
+      border: none;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span>EARPA BROADCAST MEDIA</span>
+    </div>
+    <h1>Master Promo Video</h1>
+    <div class="subtitle">Direct Phone Video Stream &bull; Select Version Below</div>
+  </div>
+
+  <!-- Switcher -->
+  <div class="switcher">
+    <button id="btn45" class="tab-btn active" onclick="selectVideo(45)">
+      <span>45s Clean Solo Master</span>
+      <span class="tab-duration">45.0s &bull; Clean Celtic Harp Solo</span>
+    </button>
+    <button id="btn30" class="tab-btn" onclick="selectVideo(30)">
+      <span>30s Original Video</span>
+      <span class="tab-duration">31.7s &bull; High-Velocity Original</span>
+    </button>
+  </div>
+
+  <!-- Player -->
+  <div class="video-card">
+    <video
+      id="videoPlayer"
+      controls
+      playsinline
+      webkit-playsinline
+      preload="auto"
+      src="videos/earpa_master_promo_45s_clean_solo.mp4"
+    >
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- Details Card -->
+  <div class="info-card">
+    <div class="info-title">
+      <span id="videoTitle">45s Master: Clean Celtic Harp Solo</span>
+      <span style="font-size: 11px; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">1080p Full HD</span>
+    </div>
+    <div class="info-desc" id="videoDesc">
+      Features the new intimate Karplus-Strong Celtic harp solo in the clear from frame 0 to 72, with Sitka spruce cavity resonance, warm acoustic countermelody beneath the voiceover, zero sub-bass rumble, and zero distracting low-frequency SFX.
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="togglePlay()">
+        <span id="playIcon">&#9654;</span> <span id="playLabel">Play Fullscreen</span>
+      </button>
+      <a id="downloadLink" class="btn btn-secondary" href="videos/earpa_master_promo_45s_clean_solo.mp4" download>
+        <span>&#11015;</span> <span>Save to Phone</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    EARPA &copy; 2026 &bull; Alain Benbassat Functional Ear Training &bull; Powered by Remotion
+  </div>
+
+  <script>
+    const videos = {
+      45: {
+        src: 'videos/earpa_master_promo_45s_clean_solo.mp4',
+        title: '45s Master: Clean Celtic Harp Solo',
+        desc: 'Features the new intimate Karplus-Strong Celtic harp solo in the clear from frame 0 to 72, with Sitka spruce cavity resonance, warm acoustic countermelody beneath the voiceover, zero sub-bass rumble, and zero distracting low-frequency SFX.'
+      },
+      30: {
+        src: 'videos/earpa_master_promo_30s_original.mp4',
+        title: '30s Original: High-Velocity Montage',
+        desc: 'The original 952-frame (31.7s) high-velocity programmatic assembly preserved untouched from Milestone M67, featuring fast-paced scene cuts and full band voiceover.'
+      }
+    };
+
+    const player = document.getElementById('videoPlayer');
+    const titleEl = document.getElementById('videoTitle');
+    const descEl = document.getElementById('videoDesc');
+    const dlLink = document.getElementById('downloadLink');
+    const btn45 = document.getElementById('btn45');
+    const btn30 = document.getElementById('btn30');
+
+    function selectVideo(ver) {
+      if (ver === 45) {
+        btn45.classList.add('active');
+        btn30.classList.remove('active');
+      } else {
+        btn30.classList.add('active');
+        btn45.classList.remove('active');
+      }
+      const data = videos[ver];
+      player.src = data.src;
+      player.load();
+      titleEl.innerText = data.title;
+      descEl.innerText = data.desc;
+      dlLink.href = data.src;
+      player.play().catch(function(e) { console.log('Autoplay deferred:', e); });
+    }
+
+    function togglePlay() {
+      if (player.paused) {
+        player.play();
+        if (player.requestFullscreen) {
+          player.requestFullscreen();
+        } else if (player.webkitRequestFullscreen) {
+          player.webkitRequestFullscreen();
+        }
+      } else {
+        player.pause();
+      }
+    }
+
+    player.addEventListener('play', () => {
+      document.getElementById('playIcon').innerHTML = '&#10074;&#10074;';
+      document.getElementById('playLabel').innerText = 'Pause Video';
+    });
+
+    player.addEventListener('pause', () => {
+      document.getElementById('playIcon').innerHTML = '&#9654;';
+      document.getElementById('playLabel').innerText = 'Play Fullscreen';
+    });
+  </script>
+</body>
+</html>
