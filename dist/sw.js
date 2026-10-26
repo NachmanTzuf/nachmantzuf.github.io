@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v12';
+const CACHE_NAME = 'earpa-pwa-v13';
 const ASSETS_TO_CACHE = [
   './manifest.json',
   './images/icons/earpa_icon_192.png',
@@ -35,6 +35,11 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
+
+  // Bypass Service Worker completely for video streams and HTTP Range requests
+  if (req.url.includes('/videos/') || req.url.endsWith('.mp4') || req.headers.get('range')) {
+    return;
+  }
 
   // HTML Navigation: Network-first so users always receive latest bundle references
   if (req.mode === 'navigate' || req.destination === 'document') {
