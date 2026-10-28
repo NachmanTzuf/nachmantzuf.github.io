@@ -13,11 +13,11 @@ const { UserAccountDatabase } = require(root + '/src/services/account/UserAccoun
 const { LEVER_LEVELS } = require(root + '/src/services/curriculum/leverCurriculum.ts');
 
 // 1. Verify LEVER_LEVELS rounds metadata
-assert.equal(LEVER_LEVELS.length, 7);
+assert.equal(LEVER_LEVELS.length, 13);
 LEVER_LEVELS.forEach((lvl, i) => {
   assert.equal(lvl.rounds, 5, `Stage ${i + 1} rounds must be 5`);
 });
-console.log('PASS: All 7 LEVER_LEVELS configured with exactly 5 rounds.');
+console.log('PASS: All 13 LEVER_LEVELS configured with exactly 5 rounds.');
 
 // 2. Test 5-round session simulation with 4/5 pass threshold
 const db = UserAccountDatabase.getInstance();

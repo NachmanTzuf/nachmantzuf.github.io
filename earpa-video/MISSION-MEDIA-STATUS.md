@@ -1,0 +1,6 @@
+# Motion suite status and truthful asset provenance
+15 new editable compositions: 3 landscape masters, 5 vertical shorts, 6 animated path studies, 90-second lever lesson.
+These are review drafts, not approved final deliverables. The requested human harp solo and real performer/finger-placement footage were not found with verified provenance. Animation and synthesized audio are labeled accordingly. No empirical sub-300ms claim, manufacturer endorsement, guaranteed mastery, or unverified level count is added.
+Landscape closing shots reuse V5 frames 930–1349 directly, preserving their source visual content. Original V5/V6 files and model are untouched.
+Vertical phone width is 830/1080 (76.9%), resolving contradictory brief dimensions in favor of its stated 75–80%. Main typography uses readable 68px rather than 23px at full HD. Acoustic bar animation currently follows authored musical beat events, not a measured live recording spectrum. Real-human audio replacement and spectrum analysis remain outstanding.
+Instructor review is needed before publishing instructional studies. The eight-string model cannot literally display every upper-octave root-to-root note: illustration must not imply a missing string is physically present.

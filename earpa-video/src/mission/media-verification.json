@@ -1,0 +1,197 @@
+[
+  {
+    "id": "EarpaV7",
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.01",
+    "truePeak": "-3.33",
+    "status": "DRAFT: licensed human solo and narration approval required",
+    "sha256": "1f35b1c3c3f38b0d52ff9f15529ed55de9356d41555e212d492393c04d56a125"
+  },
+  {
+    "id": "EarpaV8",
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.00",
+    "truePeak": "-3.38",
+    "status": "DRAFT: licensed human solo and narration approval required",
+    "sha256": "2dbc27537a27b833e6d9078c8bf12c291da2bc708f101d4bb3d807bc5eaef768"
+  },
+  {
+    "id": "EarpaV9",
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.01",
+    "truePeak": "-3.55",
+    "status": "DRAFT: licensed human solo and narration approval required",
+    "sha256": "fae29ff4092fbd04ed64611b2a513c87e7d90fccee6e887dc61e3b5ec4ddd7d3"
+  },
+  {
+    "id": "EarpaShort1",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.00",
+    "truePeak": "-3.36",
+    "status": "DRAFT: synthetic demonstration audio; human solo required for Short 1",
+    "sha256": "f71b989ad068f62a8b7ca869dc210aeb517458f4977d57573a2e631e89a0d0e3"
+  },
+  {
+    "id": "EarpaShort2",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.01",
+    "truePeak": "-2.84",
+    "status": "DRAFT: synthetic demonstration audio; human solo required for Short 1",
+    "sha256": "f731400c1542f63d333c43a30204f7c9cb360b6a9c0f61e8a2d930f7ef5defc8"
+  },
+  {
+    "id": "EarpaShort3",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.00",
+    "truePeak": "-2.89",
+    "status": "DRAFT: synthetic demonstration audio; human solo required for Short 1",
+    "sha256": "ac2a3b342c3fdbb47fa349bce0bdbda0a5ac285df007c0c4a69b9b41b243b87a"
+  },
+  {
+    "id": "EarpaShort4",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.00",
+    "truePeak": "-2.66",
+    "status": "DRAFT: synthetic demonstration audio; human solo required for Short 1",
+    "sha256": "c65927c25f20115b8ef2016d843506bb99da2e823542bd15b6d0a53081f89152"
+  },
+  {
+    "id": "EarpaShort5",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "1350",
+    "duration": "45.056000",
+    "lufs": "-14.00",
+    "truePeak": "-2.94",
+    "status": "DRAFT: synthetic demonstration audio; human solo required for Short 1",
+    "sha256": "8e48ebdc560dfc3a5756f99596dac887d0797b4a52ceb187c9d6afe4a6ad748f"
+  },
+  {
+    "id": "EarpaSingleA",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.053333",
+    "lufs": "-14.01",
+    "truePeak": "-2.74",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "63b66bfa46edc7d77216c088f8d622fdad03971d6522d6e3a796350ebcddc989"
+  },
+  {
+    "id": "EarpaSingleB",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.000000",
+    "lufs": "-14.01",
+    "truePeak": "-2.60",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "6d852f3c43049dc7ba452725513409e13e23ca73946397dbb8e28a45a52edc79"
+  },
+  {
+    "id": "EarpaMelodyA",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.053333",
+    "lufs": "-14.00",
+    "truePeak": "-2.69",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "40bf9bc9968373daa859e68c42eeb9c660f58e9a229e9836e9588701317f1472"
+  },
+  {
+    "id": "EarpaMelodyB",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.000000",
+    "lufs": "-14.01",
+    "truePeak": "-2.97",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "f3bc3eae8450b6d71b468af6e34be800e1ce16cacbf54bce94e42431fff0ccc5"
+  },
+  {
+    "id": "EarpaLeversA",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.053333",
+    "lufs": "-14.01",
+    "truePeak": "-3.02",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "276faf793d6274e011e01bc29d11beeb3ed392c741a24966c4e39279373a96a2"
+  },
+  {
+    "id": "EarpaLeversB",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "600",
+    "duration": "20.053333",
+    "lufs": "-14.00",
+    "truePeak": "-2.75",
+    "status": "ANIMATED STUDY: requested real performer footage not supplied",
+    "sha256": "9fe264d753ca56420ce54bbc00fd01a9387dfe705983b225714e11751183546e"
+  },
+  {
+    "id": "EarpaLeverMasterclass",
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "frames": "2700",
+    "duration": "90.048000",
+    "lufs": "-14.00",
+    "truePeak": "-3.39",
+    "status": "ANIMATED LESSON: teacher review and narration approval pending",
+    "sha256": "144954ecd2c8cdbfd0a7e40682ceb686ed3d900c3742c099b97832a3f77222ca"
+  }
+]

@@ -1,0 +1,330 @@
+{
+  "EarpaV7": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "opening narration omitted to preserve solo",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.10",
+      "input_tp": "-5.01",
+      "input_lra": "8.40",
+      "input_thresh": "-34.70",
+      "output_i": "-15.01",
+      "output_tp": "-1.00",
+      "output_lra": "7.60",
+      "output_thresh": "-25.62",
+      "normalization_type": "dynamic",
+      "target_offset": "1.01"
+    }
+  },
+  "EarpaV8": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "opening narration omitted to preserve solo",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.08",
+      "input_tp": "-5.28",
+      "input_lra": "8.30",
+      "input_thresh": "-34.97",
+      "output_i": "-14.85",
+      "output_tp": "-1.00",
+      "output_lra": "7.70",
+      "output_thresh": "-25.72",
+      "normalization_type": "dynamic",
+      "target_offset": "0.85"
+    }
+  },
+  "EarpaV9": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "opening narration omitted to preserve solo",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.38",
+      "input_tp": "-5.41",
+      "input_lra": "7.70",
+      "input_thresh": "-35.13",
+      "output_i": "-14.67",
+      "output_tp": "-1.00",
+      "output_lra": "7.30",
+      "output_thresh": "-25.42",
+      "normalization_type": "dynamic",
+      "target_offset": "0.67"
+    }
+  },
+  "EarpaShort1": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "opening narration omitted to preserve solo",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.10",
+      "input_tp": "-5.07",
+      "input_lra": "8.40",
+      "input_thresh": "-34.70",
+      "output_i": "-15.00",
+      "output_tp": "-1.00",
+      "output_lra": "7.60",
+      "output_thresh": "-25.61",
+      "normalization_type": "dynamic",
+      "target_offset": "1.00"
+    }
+  },
+  "EarpaShort2": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.46",
+      "input_tp": "-5.28",
+      "input_lra": "6.90",
+      "input_thresh": "-34.37",
+      "output_i": "-15.56",
+      "output_tp": "-1.00",
+      "output_lra": "6.90",
+      "output_thresh": "-26.50",
+      "normalization_type": "dynamic",
+      "target_offset": "1.56"
+    }
+  },
+  "EarpaShort3": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.72",
+      "input_tp": "-5.44",
+      "input_lra": "6.40",
+      "input_thresh": "-34.43",
+      "output_i": "-15.49",
+      "output_tp": "-1.00",
+      "output_lra": "6.30",
+      "output_thresh": "-26.23",
+      "normalization_type": "dynamic",
+      "target_offset": "1.49"
+    }
+  },
+  "EarpaShort4": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.87",
+      "input_tp": "-5.42",
+      "input_lra": "11.20",
+      "input_thresh": "-35.04",
+      "output_i": "-15.71",
+      "output_tp": "-1.00",
+      "output_lra": "9.00",
+      "output_thresh": "-26.85",
+      "normalization_type": "dynamic",
+      "target_offset": "1.71"
+    }
+  },
+  "EarpaShort5": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.89",
+      "input_tp": "-5.32",
+      "input_lra": "11.20",
+      "input_thresh": "-34.88",
+      "output_i": "-15.62",
+      "output_tp": "-1.00",
+      "output_lra": "9.60",
+      "output_thresh": "-26.59",
+      "normalization_type": "dynamic",
+      "target_offset": "1.62"
+    }
+  },
+  "EarpaSingleA": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.79",
+      "input_tp": "-5.43",
+      "input_lra": "2.40",
+      "input_thresh": "-34.11",
+      "output_i": "-15.61",
+      "output_tp": "-1.00",
+      "output_lra": "2.10",
+      "output_thresh": "-25.95",
+      "normalization_type": "dynamic",
+      "target_offset": "1.61"
+    }
+  },
+  "EarpaSingleB": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration (concise take)",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-25.06",
+      "input_tp": "-5.80",
+      "input_lra": "6.50",
+      "input_thresh": "-35.36",
+      "output_i": "-14.87",
+      "output_tp": "-1.00",
+      "output_lra": "2.80",
+      "output_thresh": "-25.14",
+      "normalization_type": "dynamic",
+      "target_offset": "0.87"
+    }
+  },
+  "EarpaMelodyA": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.69",
+      "input_tp": "-5.51",
+      "input_lra": "2.20",
+      "input_thresh": "-34.04",
+      "output_i": "-15.52",
+      "output_tp": "-1.00",
+      "output_lra": "2.10",
+      "output_thresh": "-25.83",
+      "normalization_type": "dynamic",
+      "target_offset": "1.52"
+    }
+  },
+  "EarpaMelodyB": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration (concise take)",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.43",
+      "input_tp": "-6.54",
+      "input_lra": "6.60",
+      "input_thresh": "-34.84",
+      "output_i": "-15.82",
+      "output_tp": "-1.00",
+      "output_lra": "5.10",
+      "output_thresh": "-26.18",
+      "normalization_type": "dynamic",
+      "target_offset": "1.82"
+    }
+  },
+  "EarpaLeversA": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.05",
+      "input_tp": "-6.40",
+      "input_lra": "2.20",
+      "input_thresh": "-34.32",
+      "output_i": "-15.32",
+      "output_tp": "-1.00",
+      "output_lra": "1.90",
+      "output_thresh": "-25.59",
+      "normalization_type": "dynamic",
+      "target_offset": "1.32"
+    }
+  },
+  "EarpaLeversB": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-24.04",
+      "input_tp": "-5.59",
+      "input_lra": "2.00",
+      "input_thresh": "-34.31",
+      "output_i": "-15.69",
+      "output_tp": "-1.00",
+      "output_lra": "2.00",
+      "output_thresh": "-25.96",
+      "normalization_type": "dynamic",
+      "target_offset": "1.69"
+    }
+  },
+  "EarpaLeverMasterclass": {
+    "audio": "synthesized harp, not human performance",
+    "narration": [
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration",
+      "AI narration"
+    ],
+    "preNormalization": {
+      "input_i": "-23.31",
+      "input_tp": "-5.16",
+      "input_lra": "6.00",
+      "input_thresh": "-33.81",
+      "output_i": "-14.99",
+      "output_tp": "-1.00",
+      "output_lra": "6.70",
+      "output_thresh": "-25.50",
+      "normalization_type": "dynamic",
+      "target_offset": "0.99"
+    }
+  }
+}

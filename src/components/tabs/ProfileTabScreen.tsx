@@ -1,3 +1,4 @@
+import {TesterFeedback} from '../common/TesterFeedback';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -111,6 +112,7 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
           <Text style={s.small}>{profile.experienceLevel}</Text>
         </View>
 
+        <TesterFeedback />
         {/* 2. TOP: 3 Stat Counters Row (Sessions, Minutes, Accuracy %) */}
         <View style={s.statsCard}>
           <View style={{ alignItems: 'center', gap: 4 }}>

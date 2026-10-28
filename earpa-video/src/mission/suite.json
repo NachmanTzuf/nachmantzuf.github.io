@@ -1,0 +1,618 @@
+{
+  "EarpaV7": {
+    "kind": "master",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Let your ear lead.",
+        "detail": "A daily practice for your Celtic harp.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "When did you last train your ears?",
+        "detail": "Listen deliberately. Find the tonic.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Listen. Choose. Hear.",
+        "detail": "A cadence, a mystery note, then clear feedback.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Three paths. One musical ear.",
+        "detail": "Single notes · Melodies · Levers",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Make listening a habit.",
+        "detail": "Start your Earpa journey.",
+        "screen": "coastal_roadmap",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: licensed human solo and narration approval required"
+  },
+  "EarpaV8": {
+    "kind": "master",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Ready when the tune starts?",
+        "detail": "Build confidence beyond the page.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hear each note in context.",
+        "detail": "Anchor your ear to the home note.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Remember the shape.",
+        "detail": "Listen to a phrase, then play it back.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Bring your listening to the session.",
+        "detail": "Small, focused practice. Musical possibilities.",
+        "screen": "arctic_roadmap",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Play. Listen. Connect.",
+        "detail": "Begin with Earpa.",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: licensed human solo and narration approval required"
+  },
+  "EarpaV9": {
+    "kind": "master",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Make sense of your levers.",
+        "detail": "One string. One semitone.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "Start with your open tuning.",
+        "detail": "E-flat → B-flat → F → C",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "Raise A. Then E. Then B.",
+        "detail": "Three groups take E-flat tuning to C major.",
+        "screen": "camac_levers",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Same notes. A new home.",
+        "detail": "D Dorian begins and ends on D.",
+        "screen": "camac_levers",
+        "root": "D",
+        "mode": "dorian"
+      },
+      {
+        "title": "Hear the change.",
+        "detail": "Explore your lever journey.",
+        "screen": "canyon_roadmap",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: licensed human solo and narration approval required"
+  },
+  "EarpaShort1": {
+    "kind": "short",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Let your ear lead.",
+        "detail": "A daily practice for your Celtic harp.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "When did you last train your ears?",
+        "detail": "Listen deliberately. Find the tonic.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Listen. Choose. Hear.",
+        "detail": "A cadence, a mystery note, then clear feedback.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Three paths. One musical ear.",
+        "detail": "Single notes · Melodies · Levers",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Make listening a habit.",
+        "detail": "Start your Earpa journey.",
+        "screen": "coastal_roadmap",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: synthetic demonstration audio; human solo required for Short 1"
+  },
+  "EarpaShort2": {
+    "kind": "short",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Ready when the tune starts?",
+        "detail": "Build confidence beyond the page.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hear each note in context.",
+        "detail": "Anchor your ear to the home note.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Remember the shape.",
+        "detail": "Listen to a phrase, then play it back.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Bring your listening to the session.",
+        "detail": "Small, focused practice. Musical possibilities.",
+        "screen": "arctic_roadmap",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Play. Listen. Connect.",
+        "detail": "Begin with Earpa.",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: synthetic demonstration audio; human solo required for Short 1"
+  },
+  "EarpaShort3": {
+    "kind": "short",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Make sense of your levers.",
+        "detail": "One string. One semitone.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "Start with your open tuning.",
+        "detail": "E-flat → B-flat → F → C",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "Raise A. Then E. Then B.",
+        "detail": "Three groups take E-flat tuning to C major.",
+        "screen": "camac_levers",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Same notes. A new home.",
+        "detail": "D Dorian begins and ends on D.",
+        "screen": "camac_levers",
+        "root": "D",
+        "mode": "dorian"
+      },
+      {
+        "title": "Hear the change.",
+        "detail": "Explore your lever journey.",
+        "screen": "canyon_roadmap",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: synthetic demonstration audio; human solo required for Short 1"
+  },
+  "EarpaShort4": {
+    "kind": "short",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Find your home note.",
+        "detail": "Listen to the cadence.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hear the mystery note.",
+        "detail": "Hold the tonic in mind.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Choose what you heard.",
+        "detail": "Tap or pluck your answer.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Listen to the way home.",
+        "detail": "Hear 4 → 3 → 2 → 1.",
+        "screen": "resolution_walk",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Return tomorrow.",
+        "detail": "A small practice, repeated.",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: synthetic demonstration audio; human solo required for Short 1"
+  },
+  "EarpaShort5": {
+    "kind": "short",
+    "seconds": 45,
+    "shots": [
+      {
+        "title": "Your next musical step.",
+        "detail": "Three guided paths.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Single notes.",
+        "detail": "Hear each degree relative to home.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Melodies.",
+        "detail": "Listen to the full phrase before answering.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Levers.",
+        "detail": "Set the scale. Confirm. Hear the result.",
+        "screen": "camac_levers",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "See your progress.",
+        "detail": "Practice at your pace.",
+        "screen": "journey_analytics",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "DRAFT: synthetic demonstration audio; human solo required for Short 1"
+  },
+  "EarpaSingleA": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "Listen first.",
+        "detail": "Let the cadence establish home.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Keep the tonic in mind.",
+        "detail": "The home note is degree 1.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Choose the mystery note.",
+        "detail": "Tap or pluck one answer.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hear its path home.",
+        "detail": "Listen to the feedback, then try again.",
+        "screen": "resolution_walk",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaSingleB": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "Find a comfortable hum.",
+        "detail": "Listen to the tonic. Hum it gently.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hold that sound.",
+        "detail": "Keep the home note in your memory.",
+        "screen": "single_note",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Now hear the mystery note.",
+        "detail": "Compare its feeling with the tonic.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Choose. Then listen.",
+        "detail": "Feedback helps you adjust.",
+        "screen": "resolution_walk",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaMelodyA": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "Listen to the whole phrase.",
+        "detail": "Two, three or four notes.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Notice its shape.",
+        "detail": "Does it rise, fall, or return?",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Play the notes in order.",
+        "detail": "Complete every note before feedback.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Hear the correct phrase.",
+        "detail": "Compare the replay with your answer.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaMelodyB": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "Follow the pulse.",
+        "detail": "Hear a short arpeggio.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Remember the order.",
+        "detail": "First note. Next note. Final note.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Play your answer.",
+        "detail": "The app waits for the entire sequence.",
+        "screen": "pluck_guess",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Listen once more.",
+        "detail": "The correct notes replay in order.",
+        "screen": "melody_studio",
+        "root": "C",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaLeversA": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "A lever changes one string.",
+        "detail": "Down is the open pitch.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "Raise it one semitone.",
+        "detail": "The lever shortens the speaking length.",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "A-flat becomes A.",
+        "detail": "Natural strings become sharps.",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "Change every matching octave.",
+        "detail": "Then confirm and hear the scale.",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaLeversB": {
+    "kind": "lesson",
+    "seconds": 20,
+    "shots": [
+      {
+        "title": "Begin in E-flat.",
+        "detail": "All levers down.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "Raise A, E and B.",
+        "detail": "Now the harp is in C major.",
+        "screen": "camac_levers",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Add F for G major.",
+        "detail": "F becomes F-sharp.",
+        "screen": "camac_levers",
+        "root": "G",
+        "mode": "major"
+      },
+      {
+        "title": "Listen from G to G.",
+        "detail": "The root gives the scale its home.",
+        "screen": "camac_levers",
+        "root": "G",
+        "mode": "major"
+      }
+    ],
+    "approval": "ANIMATED STUDY: requested real performer footage not supplied"
+  },
+  "EarpaLeverMasterclass": {
+    "kind": "masterclass",
+    "seconds": 90,
+    "approval": "ANIMATED LESSON: teacher review and narration approval pending",
+    "shots": [
+      {
+        "title": "Meet the sharping lever.",
+        "detail": "It raises a string by one semitone.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "A shorter speaking length.",
+        "detail": "The lever contacts the string. The pitch rises.",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "Your open tuning matters.",
+        "detail": "E-flat tuning begins with B-flat, E-flat and A-flat.",
+        "screen": "camac_levers",
+        "root": "Eb",
+        "mode": "major"
+      },
+      {
+        "title": "One clockwise step.",
+        "detail": "Raise A-flat to A: E-flat major becomes B-flat major.",
+        "screen": "camac_levers",
+        "root": "Bb",
+        "mode": "major"
+      },
+      {
+        "title": "Then raise E.",
+        "detail": "Keep A raised. E-flat becomes E: now F major.",
+        "screen": "camac_levers",
+        "root": "F",
+        "mode": "major"
+      },
+      {
+        "title": "Then raise B.",
+        "detail": "A, E and B raised: C major.",
+        "screen": "camac_levers",
+        "root": "C",
+        "mode": "major"
+      },
+      {
+        "title": "Continue with F, C, G, D.",
+        "detail": "Each new major key raises one more letter group.",
+        "screen": "camac_levers",
+        "root": "G",
+        "mode": "major"
+      },
+      {
+        "title": "Modes change the home note.",
+        "detail": "C-major levers, D as home: D Dorian.",
+        "screen": "camac_levers",
+        "root": "D",
+        "mode": "dorian"
+      },
+      {
+        "title": "Set. Confirm. Listen.",
+        "detail": "Play the scale from its root to the root above. Some keys require retuning.",
+        "screen": "camac_levers",
+        "root": "D",
+        "mode": "dorian"
+      }
+    ]
+  }
+}

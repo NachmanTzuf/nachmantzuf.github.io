@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v13';
+const CACHE_NAME = 'earpa-pwa-v14';
 const ASSETS_TO_CACHE = [
   './manifest.json',
   './images/icons/earpa_icon_192.png',
@@ -72,4 +72,20 @@ self.addEventListener('fetch', (event) => {
       });
     })
   );
+});
+
+self.addEventListener('push', event => {
+ let payload={};try{payload=event.data?event.data.json():{};}catch{}
+ event.waitUntil(self.registration.showNotification('Earpa · Daily practice',{
+  body:typeof payload.body==='string'?payload.body:'A few minutes to listen, find your tonic, and play.',
+  icon:'/images/icons/earpa_icon_192.png',tag:'earpa-daily-practice',data:{url:'/'},
+ }));
+});
+self.addEventListener('notificationclick', event => {
+ event.notification.close();
+ event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(async clients=>{
+  const home=new URL('/',self.location.origin).href;
+  for(const client of clients)if(new URL(client.url).origin===self.location.origin){await client.focus();return;}
+  return self.clients.openWindow(home);
+ }));
 });

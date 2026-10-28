@@ -10,3 +10,7 @@ cloudflared.exe
 .env.local
 .env
 .env.*
+
+# Recoverable mission backups and intermediate audio
+mission-backup-20261028/
+earpa-video/public/audio/mission/*.wav

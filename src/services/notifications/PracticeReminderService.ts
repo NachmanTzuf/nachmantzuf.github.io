@@ -1,193 +1,46 @@
-// src/services/notifications/PracticeReminderService.ts
-// Duolingo-style daily practice reminder service for Earpa with cute, playful harp prompts
-
-export interface ReminderConfig {
-  enabled: boolean;
-  time: string; // "HH:MM" e.g. "18:30"
-  lastNotifiedDate?: string; // "YYYY-MM-DD" in local timezone
-}
-
-export const HARP_REMINDER_PROMPTS = [
-  {
-    title: "Evening harp time! 🪕",
-    body: "Just 10 minutes of listening tonight will make your ears glow and keep your pitch sharp."
-  },
-  {
-    title: "Cozy sunset practice! 🌅",
-    body: "10 playful minutes before dinner! Can you find your tonic anchor on the first try?"
-  },
-  {
-    title: "The bards are tuning up! 🏛️",
-    body: "10 minutes of ear training beats hours of musician guilt. Jump in for a quick round!"
-  },
-  {
-    title: "Your 10-minute ear spa! ✨",
-    body: "Unwind tonight with gentle Celtic strings, Sitka spruce resonance, and modal melodies."
-  },
-  {
-    title: "Streak protector alert! 🔥",
-    body: "Only 10 minutes stands between you and your highest streak yet. Let's make it ring!"
-  },
-  {
-    title: "A quick 10-minute pluck! 🎵",
-    body: "The red C string missed you today! 10 minutes of ear training keeps your fingers nimble."
-  },
-  {
-    title: "Evening resonance check! 🌙",
-    body: "Anchor your Do tonight. 10 peaceful minutes on the harp will have you hearing melodies in your sleep."
-  },
-  {
-    title: "10 minutes of musical bliss! ☕",
-    body: "Take a cozy 10-minute break with the Celtic harp. Can you hit a flawless 5-round streak?"
-  },
-  {
-    title: "Feel the tonal gravity! 🌌",
-    body: "Degree 7 is calling you home. Give your ears 10 minutes of love before the day ends."
-  },
-  {
-    title: "Don't let the levers get lonely! ⚙️",
-    body: "10 minutes of sharping lever fun! Come flip a few semitones and master new modes."
-  },
-  {
-    title: "Soundboard sunset serenade! 🪵",
-    body: "The spruce belly is primed for resonance. 10 minutes tonight makes tomorrow's solos effortless."
-  },
-  {
-    title: "Sweet 10-minute ear workout! ⚡",
-    body: "10 minutes of ear training today, effortless playing by ear forever. Ready to play?"
-  },
-  {
-    title: "Golden tone check-in! 🔔",
-    body: "Your daily 10 minutes of Celtic harp mastery starts now. The bards are cheering for you!"
-  },
-];
-
+import {cloud} from '../account/CloudAccounts';
+import {validTime,localDay,reminderDue} from './ReminderSchedule';
+export interface ReminderConfig {enabled:boolean;time:string;lastNotifiedDate?:string;background?:boolean;}
+export const HARP_REMINDER_PROMPTS=[{title:'Earpa Â· Time to listen',body:'A few minutes with your harp. Listen, find the tonic, and enjoy a practice round.'},{title:'Earpa Â· Your daily practice',body:'Single notes, melodies or levers: choose a small step for today.'}];
 export class PracticeReminderService {
-  private static STORAGE_KEY = 'earpa_practice_reminders';
-
-  public static getConfig(): ReminderConfig {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const data = localStorage.getItem(this.STORAGE_KEY);
-        if (data) return JSON.parse(data);
-      }
-    } catch {}
-    return { enabled: false, time: '18:30' };
+ private static key='earpa_practice_reminders'; private static sending=false;
+ static getConfig():ReminderConfig {try{const c=JSON.parse(localStorage.getItem(this.key)||'null');if(c&&validTime(c.time))return c;}catch{}return {enabled:false,time:'10:00'};}
+ static saveConfig(config:ReminderConfig){if(!validTime(config.time))throw new Error('Use a time such as 10:00.');try{localStorage.setItem(this.key,JSON.stringify(config));}catch{throw new Error('Reminder preferences could not be saved on this device.');}}
+ static isSupported(){return typeof window!=='undefined'&&'Notification' in window;}
+ static getPermissionState():NotificationPermission {return this.isSupported()?Notification.permission:'denied';}
+ static async requestPermission():Promise<NotificationPermission>{if(!this.isSupported())return 'denied';try{return await Notification.requestPermission();}catch{return 'denied';}}
+ static getRandomPrompt(){return HARP_REMINDER_PROMPTS[Math.floor(Math.random()*HARP_REMINDER_PROMPTS.length)];}
+ static async registration(){
+  if(!('serviceWorker' in navigator))throw new Error('Service workers are unavailable.');
+  await navigator.serviceWorker.register('/sw.js');
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{return await Promise.race([navigator.serviceWorker.ready,new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('The notification service did not become ready. Please retry.')),10000);})]);}finally{if(timer)clearTimeout(timer);}
+ }
+ static async configure(enabled:boolean,time:string):Promise<string>{
+  if(!validTime(time))throw new Error('Enter a valid 24-hour time (HH:MM).');
+  if(!enabled){
+   if(typeof navigator!=='undefined'&&'serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration();const sub=await reg?.pushManager?.getSubscription();if(sub){if(cloud){const {error}=await cloud.from('earpa_push_subscriptions').delete().eq('endpoint',sub.endpoint);if(error)throw new Error('Could not turn off server reminders. Please retry.');}await sub.unsubscribe();}}
+   this.saveConfig({...this.getConfig(),enabled:false,background:false,time});return 'Reminders off';
   }
-
-  public static saveConfig(config: ReminderConfig): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(config));
-      }
-    } catch {}
-  }
-
-  public static isSupported(): boolean {
-    return typeof window !== 'undefined' && 'Notification' in window;
-  }
-
-  public static getPermissionState(): NotificationPermission {
-    if (!this.isSupported()) return 'denied';
-    return Notification.permission;
-  }
-
-  public static async requestPermission(): Promise<NotificationPermission> {
-    if (!this.isSupported()) return 'denied';
-    try {
-      const perm = await Notification.requestPermission();
-      if (perm === 'granted') {
-        const config = this.getConfig();
-        config.enabled = true;
-        this.saveConfig(config);
-      }
-      return perm;
-    } catch {
-      return 'denied';
-    }
-  }
-
-  public static getRandomPrompt(): { title: string; body: string } {
-    const idx = Math.floor(Math.random() * HARP_REMINDER_PROMPTS.length);
-    return HARP_REMINDER_PROMPTS[idx];
-  }
-
-  /**
-   * Immediately sends a visual practice reminder notification with Earpa icon
-   */
-  public static async sendTestNotification(): Promise<boolean> {
-    return this.dispatchNotification();
-  }
-
-  /**
-   * Evaluates if current local device time is between 18:00 and 19:00 (6:00-7:00 PM),
-   * and if notifications are enabled and haven't yet been sent today in the user's timezone.
-   */
-  public static async checkAndDispatchDailyReminder(): Promise<boolean> {
-    if (!this.isSupported() || Notification.permission !== 'granted') return false;
-
-    const config = this.getConfig();
-    if (!config.enabled) return false;
-
-    const now = new Date();
-    const currentHour = now.getHours(); // Local device timezone
-
-    // Target evening window: 18:00 to 19:00 (6:00 PM - 7:00 PM) in user's local timezone
-    if (currentHour < 18 || currentHour >= 19) return false;
-
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    if (config.lastNotifiedDate === todayStr) return false; // Already notified today!
-
-    const sent = await this.dispatchNotification();
-    if (sent) {
-      config.lastNotifiedDate = todayStr;
-      this.saveConfig(config);
-    }
-    return sent;
-  }
-
-  private static async dispatchNotification(): Promise<boolean> {
-    if (!this.isSupported()) return false;
-
-    if (Notification.permission !== 'granted') {
-      const perm = await this.requestPermission();
-      if (perm !== 'granted') return false;
-    }
-
-    const prompt = this.getRandomPrompt();
-    const iconUrl = '/images/icons/earpa_icon_192.png';
-    const badgeUrl = '/images/icons/favicon.png';
-
-    try {
-      // If service worker registration is available, use showNotification for mobile PWA support
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        const reg = await navigator.serviceWorker.ready;
-        await reg.showNotification(prompt.title, {
-          body: prompt.body,
-          icon: iconUrl,
-          badge: badgeUrl,
-          tag: 'earpa-daily-practice',
-          data: { url: '/' },
-        } as any);
-        return true;
-      }
-
-      // Standard desktop/mobile browser fallback
-      const notif = new Notification(prompt.title, {
-        body: prompt.body,
-        icon: iconUrl,
-        badge: badgeUrl,
-        tag: 'earpa-daily-practice',
-      });
-
-      notif.onclick = () => {
-        window.focus();
-        notif.close();
-      };
-      return true;
-    } catch (err) {
-      console.warn('Notification trigger error:', err);
-      return false;
-    }
-  }
+  if(await this.requestPermission()!=='granted')throw new Error('Notifications are unavailable or blocked. On iPhone, install Earpa on the Home Screen first.');
+  const vapid=process.env.EXPO_PUBLIC_WEB_PUSH_KEY;
+  if(!cloud||!vapid){this.saveConfig({...this.getConfig(),enabled:true,time,background:false});return 'Saved for when Earpa is open. Background delivery is not connected yet.';}
+  const {data:{user}}=await cloud.auth.getUser();if(!user)throw new Error('Sign in before enabling background reminders.');
+  const reg=await this.registration();
+  const base64=vapid.replace(/-/g,'+').replace(/_/g,'/');const key=Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length/4)*4,'=')),c=>c.charCodeAt(0));
+  const existing=await reg.pushManager.getSubscription();const sub=existing??await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+  const json=sub.toJSON();const {error}=await cloud.from('earpa_push_subscriptions').upsert({user_id:user.id,endpoint:sub.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth,local_time:time,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,enabled:true},{onConflict:'endpoint'});
+  if(error){if(!existing)await sub.unsubscribe();throw new Error('The reminder server could not save your schedule. Please retry.');}
+  this.saveConfig({...this.getConfig(),enabled:true,time,background:true});return 'Subscription saved. Delivery depends on the server schedule, device settings and connectivity.';
+ }
+ static async sendTestNotification(){return this.dispatchNotification();}
+ static async checkAndDispatchDailyReminder(){
+  const config=this.getConfig();if(config.background||this.sending||!reminderDue(config)||this.getPermissionState()!=='granted')return false;
+  this.sending=true;try{const sent=await this.dispatchNotification();if(sent)this.saveConfig({...config,lastNotifiedDate:localDay(new Date())});return sent;}finally{this.sending=false;}
+ }
+ private static async dispatchNotification(){
+  if(this.getPermissionState()!=='granted')return false;
+  const prompt=this.getRandomPrompt();const options={body:prompt.body,icon:'/images/icons/earpa_icon_192.png',tag:'earpa-daily-practice',data:{url:'/'}};
+  try{if('serviceWorker' in navigator){const reg=await this.registration();await reg.showNotification(prompt.title,options);}else{new Notification(prompt.title,options);}return true;}catch{return false;}
+ }
 }

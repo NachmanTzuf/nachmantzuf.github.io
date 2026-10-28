@@ -1,0 +1,51 @@
+[
+  {
+    "id": "EarpaLeverMasterclass",
+    "title": "Lever masterclass",
+    "track": "levers",
+    "seconds": 90,
+    "url": "/videos/mission/EarpaLeverMasterclass-review.mp4"
+  },
+  {
+    "id": "EarpaSingleA",
+    "title": "The tonic gravity pull",
+    "track": "single",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaSingleA-review.mp4"
+  },
+  {
+    "id": "EarpaSingleB",
+    "title": "Hum your home note",
+    "track": "single",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaSingleB-review.mp4"
+  },
+  {
+    "id": "EarpaMelodyA",
+    "title": "Hear a melodic shape",
+    "track": "melody",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaMelodyA-review.mp4"
+  },
+  {
+    "id": "EarpaMelodyB",
+    "title": "Follow an arpeggio",
+    "track": "melody",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaMelodyB-review.mp4"
+  },
+  {
+    "id": "EarpaLeversA",
+    "title": "One lever, one semitone",
+    "track": "levers",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaLeversA-review.mp4"
+  },
+  {
+    "id": "EarpaLeversB",
+    "title": "From E-flat to C and G",
+    "track": "levers",
+    "seconds": 20,
+    "url": "/videos/mission/EarpaLeversB-review.mp4"
+  }
+]

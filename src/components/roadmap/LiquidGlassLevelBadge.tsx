@@ -34,7 +34,7 @@ export const LiquidGlassLevelBadge: React.FC<LiquidGlassLevelBadgeProps> = ({
     },
   }[theme];
 
-  if (level.id.startsWith('lever_')) return <View style={[styles.container,{borderColor:'#ba9a65'}]}><Text style={[styles.levelCodeText,{color:'#ddbc86'}]}>{level.code} · LEVERS</Text><Text style={styles.titleText}>{level.title}</Text><Text style={{fontSize:11,color:'#ddd0b3',lineHeight:17}}>Circle of fifths</Text><Text style={{fontSize:11,color:'#b9a98c'}}>20 rounds · set the scale</Text></View>;
+  if (level.id.startsWith('lever_')) return <View style={[styles.container,{borderColor:'#ba9a65'}]}><Text style={[styles.levelCodeText,{color:'#ddbc86'}]}>{level.code} · LEVERS</Text><Text style={styles.titleText}>{level.title}</Text><Text style={{fontSize:11,color:'#ddd0b3',lineHeight:17}}>Circle of fifths</Text><Text style={{fontSize:11,color:'#b9a98c'}}>5 rounds · set the scale</Text></View>;
   return (
     <View
       style={[

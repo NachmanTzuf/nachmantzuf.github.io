@@ -1,2 +1,3 @@
-import {LevelDefinition,SINGLE_NOTE_LEVELS} from './curriculumData';
-export const LEVER_LEVELS: LevelDefinition[] = Array.from({length:7},(_,i)=>({...SINGLE_NOTE_LEVELS[0],id:`lever_stage_${i+1}`,code:`L-${i+1}`,levelNumber:i+1,title:`${i+2} scales`,rounds:5,description:`Set levers for ${i+2} major scales. Learn the next circle-of-fifths step, then mix familiar scales.`,module:'Lever scales'}));
+import {SINGLE_NOTE_LEVELS,LevelDefinition} from './curriculumData';
+const titles=['Open native scale','One group raised','Two groups raised','Three groups raised','Four groups raised','Five groups raised','Six groups raised','D Dorian','E Phrygian','F Lydian','G Mixolydian','A Aeolian','B Locrian'];
+export const LEVER_LEVELS:LevelDefinition[]=titles.map((title,i)=>({...SINGLE_NOTE_LEVELS[0],id:`lever_stage_${i+1}`,code:`L-${i+1}`,levelNumber:i+1,title,rounds:5,description:i<7?'Learn the next reachable major scale for your native tuning, then practice.':'Keep the C-major lever configuration and listen from the modal tonic to its octave.',module:i<7?'Lever scales':'Modal roots'}));

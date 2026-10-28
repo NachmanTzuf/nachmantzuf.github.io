@@ -1,0 +1,24 @@
+const assert=require('assert'),fs=require('fs'),Module=require('module');
+const root=require('path').resolve(__dirname,'..');
+const ts=require(root+'/node_modules/typescript');
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+const calls=[];let fail=false,unsubscribed=0;
+const sub={endpoint:'https://web.push.apple.com/test',toJSON:()=>({keys:{p256dh:'test-public',auth:'test-auth'}}),unsubscribe:async()=>{unsubscribed++;return true;}};
+const reg={pushManager:{getSubscription:async()=>sub,subscribe:async()=>sub},showNotification:async(...args)=>calls.push(['notification',...args])};
+const cloud={auth:{getUser:async()=>({data:{user:{id:'tester'}}})},from:()=>({upsert:async row=>{calls.push(['upsert',row]);return {error:fail?new Error('offline'):null};},delete:()=>({eq:async()=>({error:null})})})};
+const original=Module._load;Module._load=function(id,...args){if(id==='../account/CloudAccounts')return {cloud};return original.call(this,id,...args);};
+const store=new Map();global.localStorage={getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)};
+global.window={Notification:class{},localStorage};global.Notification={permission:'granted',requestPermission:async()=>'granted'};
+Object.defineProperty(global,'navigator',{value:{serviceWorker:{register:async()=>reg,ready:Promise.resolve(reg),getRegistration:async()=>reg}},configurable:true});
+process.env.EXPO_PUBLIC_WEB_PUSH_KEY=Buffer.alloc(65,1).toString('base64url');
+const {PracticeReminderService:S}=require(root+'/src/services/notifications/PracticeReminderService.ts');
+(async()=>{
+ await S.configure(true,'10:15');assert.equal(S.getConfig().background,true);assert.equal(calls[0][1].local_time,'10:15');assert.equal(calls[0][1].user_id,'tester');
+ assert.equal(await S.sendTestNotification(),true);assert(calls.some(x=>x[0]==='notification'));
+ await S.configure(false,'10:15');assert.equal(S.getConfig().enabled,false);assert.equal(unsubscribed,1);
+ fail=true;await assert.rejects(()=>S.configure(true,'12:30'),/could not save/);assert.equal(S.getConfig().enabled,false);fail=false;
+ delete process.env.EXPO_PUBLIC_WEB_PUSH_KEY;const message=await S.configure(true,'13:45');assert(message.includes('not connected'));assert.equal(S.getConfig().background,false);
+ await assert.rejects(()=>S.configure(true,'25:00'),/valid/);
+ global.Notification.permission='denied';assert.equal(await S.sendTestNotification(),false);
+ console.log('PASS: subscription ownership/time, test dispatch, disable/unsubscribe, failed persistence, honest foreground fallback, invalid time, revoked permission. Real server delivery NOT tested.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
