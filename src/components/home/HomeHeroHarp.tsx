@@ -18,6 +18,7 @@ interface HomeHeroHarpProps {
   runeColor?: string;
   runeGlow?: string;
   playButtonLabel?: string;
+  secondaryAction?: React.ReactNode;
 }
 
 export const HomeHeroHarp: React.FC<HomeHeroHarpProps> = ({
@@ -29,6 +30,7 @@ export const HomeHeroHarp: React.FC<HomeHeroHarpProps> = ({
   runeColor = '#fef08a',
   runeGlow = '0 0 10px rgba(254, 240, 138, 0.95), 0 0 20px rgba(245, 158, 11, 0.75)',
   playButtonLabel = 'PRESS TO PLAY',
+  secondaryAction,
 }) => {
   const canvasRef = useRef<CelticHarpCanvasRef | null>(null);
   const [isPressed, setIsPressed] = useState(false);
@@ -129,6 +131,7 @@ export const HomeHeroHarp: React.FC<HomeHeroHarpProps> = ({
             </Text>
           </View>
         </TouchableOpacity>
+        {secondaryAction}
       </View>
     </View>
   );
@@ -166,10 +169,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 25,
+    gap: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 94, // Lowered cleanly per user mandate
+    paddingBottom: 104, // Dedicated action stack clears the bottom navigation.
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {
@@ -237,3 +241,4 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
 });
+
