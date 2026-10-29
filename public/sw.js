@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v14';
+const CACHE_NAME = 'earpa-pwa-v15-lessons';
 const ASSETS_TO_CACHE = [
   './manifest.json',
   './images/icons/earpa_icon_192.png',

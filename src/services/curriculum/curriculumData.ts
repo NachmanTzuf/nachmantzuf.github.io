@@ -12,7 +12,7 @@ export interface LevelDefinition {
   code: string; // e.g. "P1-01", "P2-01"
   title: string;
   module: string;
-  rounds: 5 | 10 | 20 | 25 | 50;
+  rounds: 3 | 4 | 5 | 10 | 20 | 25 | 50;
   octaves: 1 | 2 | 3;
   register?: number;
   cadenceProgression: string; // e.g. "I - IV - V - I", "i - iv - V - i"

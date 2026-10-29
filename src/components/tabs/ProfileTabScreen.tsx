@@ -1,3 +1,4 @@
+import {LessonLibrary} from '../common/LessonLibrary';
 import {TesterFeedback} from '../common/TesterFeedback';
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -10,6 +11,7 @@ import {
   TextInput,
   Switch,
   Platform,
+  Linking,
 } from 'react-native';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 import { PhotoPicker, ProfilePhoto } from '../account/ProfilePhoto';
@@ -393,6 +395,16 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
           Your photo, preferences and practice are saved separately for each profile on this browser.
         </Text>
 
+        <View style={s.journeyCard} nativeID="journey-video-library">
+          <Text style={s.sectionHeader}>Practice films</Text>
+          <Text style={s.small}>Your three newest guided lessons. Return any time.</Text>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>
+            {(['single','melody','levers'] as const).map(track=><LessonLibrary key={track} track={track} persistent />)}
+          </View>
+          <TouchableOpacity accessibilityRole="link" accessibilityLabel="Browse all Earpa videos" onPress={()=>Linking.openURL(Platform.OS==='web'?new URL('/watch-library.html',window.location.href).href:'https://nachmantzuf.github.io/watch-library.html')} style={{paddingVertical:12}}>
+            <Text style={s.text}>All Earpa films & earlier versions →</Text>
+          </TouchableOpacity>
+        </View>
         {/* Sleek Practice Reminder Modal */}
         <PracticeReminderModal visible={reminderOpen} onClose={() => setReminderOpen(false)} />
       </ScrollView>

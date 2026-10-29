@@ -25,6 +25,7 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
   const [intro,setIntro]=useState((initialStage ?? db.getActiveProfile().leverStage ?? 0)===0 ? 0 : 5);
   const [playing,setPlaying]=useState(false),[playingNote,setPlayingNote]=useState(-1),[showControls,setShowControls]=useState(false);
   const [stage, setStage] = useState(Math.min(lessons.length-1,initialStage ?? db.getActiveProfile().leverStage ?? 0));
+  const totalRounds = stage === 0 ? 3 : stage === 1 ? 4 : 5;
   const [round, setRound] = useState(0);
   const [targetIndex, setTargetIndex] = useState(Math.min(lessons.length-1,initialStage ?? db.getActiveProfile().leverStage ?? 0));
   const [exploreKey,setExploreKey]=useState<string|null>(null);
@@ -70,14 +71,14 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
     db.recordTrial({sessionId: sessionId.current, levelId: `lever_stage_${stage + 1}`, track: 'levers', tonicKey: lesson.title,
       stimulusDegree: up.join('') || 'all down', guessedDegree: letters.filter((_,i) => states[i]).join('') || 'all down',
       isCorrect: correct, latencyMs: Date.now() - started.current, roundIndex: round + 1});
-    if (round === 4) {
+    if (round === totalRounds - 1) {
       const finalScore = score + (correct ? 1 : 0);
       const trials = db.getUserTrials(db.getActiveProfile().id).filter(t=>t.sessionId===sessionId.current);
       db.recordSession({trialSessionId:sessionId.current,levelId:`lever_stage_${stage+1}`,levelCode:`L${stage+1}`,track:'levers',
-        durationSeconds:(Date.now()-Number(sessionId.current.split('_')[1]))/1000,totalRounds:5,correctRounds:finalScore,
-        accuracyPct:finalScore*20,passed:finalScore>=4,averageLatencyMs:trials.reduce((n,t)=>n+t.latencyMs,0)/trials.length,
+        durationSeconds:(Date.now()-Number(sessionId.current.split('_')[1]))/1000,totalRounds,correctRounds:finalScore,
+        accuracyPct:Math.round(finalScore/totalRounds*100),passed:finalScore/totalRounds>=.8,averageLatencyMs:trials.reduce((n,t)=>n+t.latencyMs,0)/trials.length,
         fastestLatencyMs:Math.min(...trials.map(t=>t.latencyMs))});
-      if(finalScore>=4) db.updateActiveProfile({leverStage:Math.max(db.getActiveProfile().leverStage||0,Math.min(lessons.length-1,stage+1))});
+      db.updateActiveProfile({leverStage:Math.max(db.getActiveProfile().leverStage||0,Math.min(lessons.length-1,stage+1))});
     }
   };
   const [guidedFlipped, setGuidedFlipped] = useState(false);
@@ -134,16 +135,16 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
   const next = () => {
     if (!locked.current || playing) return;
     locked.current = false;
-    if(round===4&&score>=4&&stage===lessons.length-1){onBackToHome();return;}
-    if (round === 4) {
-      if (score >= 4) setStage(Math.min(lessons.length-1, stage+1));
+    if(round===totalRounds-1&&stage===lessons.length-1){onBackToHome();return;}
+    if (round === totalRounds - 1) {
+      setStage(Math.min(lessons.length-1, stage+1));
       setRound(0); setScore(0); sessionId.current = `levers_${Date.now()}`;
     } else setRound(n => n+1);
     // Introduce each available scale before random mixed practice.
-    const nextStage=round===4&&score>=4?Math.min(lessons.length-1,stage+1):stage;
-    const nextIndex=round===4?nextStage:(round%2===0?nextStage:Math.max(0,nextStage-1));
+    const nextStage=round===totalRounds-1?Math.min(lessons.length-1,stage+1):stage;
+    const nextIndex=round===totalRounds-1?nextStage:Math.max(0,nextStage-((round+1)%Math.min(nextStage+1,3)));
     setExploreKey(null);
-    setTargetIndex(nextIndex); setPractice(false); setResult(null); setSubmittedStates(null); started.current = Date.now();
+    setTargetIndex(nextIndex); setPractice(round !== totalRounds-1); setResult(null); setSubmittedStates(null); started.current = Date.now();
   };
   const pretty=(v:string)=>v.replace(/b/g,'♭').replace(/#/g,'♯');
   const mismatch=letters.map((l,i)=>({l,i,wanted:!!config[l]})).filter(x=>(submittedStates??states)[x.i]!==x.wanted);
@@ -175,9 +176,9 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
         if (intro === 4 && (i === 1 || i === 8)) {
           if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
         }
-      }} fixedInGameAngle customAngle={-0.95} customScale={0.912} targetY={0.590} minimalHeroMode style={[StyleSheet.absoluteFillObject,{width:'100%',height:'100%'}]}/>
+      }} fixedInGameAngle customAngle={-0.95} customScale={1.12} targetY={0.85} minimalHeroMode style={{position:'absolute',top:145,bottom:190,left:0,right:0,width:'100%',height:undefined}}/>
     </ErrorBoundary>
-    <View style={styles.top}><TouchableOpacity onPress={onBackToHome}><Text style={styles.text}>‹ Home</Text></TouchableOpacity><Text style={styles.text}>{round+1} / 5 · Lever journey</Text></View>
+    <View style={styles.top}><TouchableOpacity onPress={onBackToHome}><Text style={styles.text}>‹ Home</Text></TouchableOpacity><Text style={styles.text}>Level {stage+1} · {round+1} / {totalRounds}</Text></View>
     {practice&&result===null&&<><View pointerEvents="none" style={{position:'absolute',top:65,left:20,right:20}}><Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.text}>Press the levers on your harp</Text></View><View style={styles.controls}><TouchableOpacity onPress={()=>{setPractice(false);setIntro(5);}}><Text style={styles.small}>Show the circle of fifths</Text></TouchableOpacity><TouchableOpacity onPress={()=>setShowControls(!showControls)}><Text style={styles.small}>Alternative lever controls {showControls?'−':'+'}</Text></TouchableOpacity>{showControls&&<View style={{flexDirection:'row',gap:4}}>{letters.map((l,i)=><TouchableOpacity key={i} accessibilityLabel={`${l}${i===7?' upper':''} lever ${states[i]?'up':'down'}`} onPress={()=>setLever(i,!states[i])} style={styles.lever}><Text style={styles.text}>{l}{states[i]?'↑':'↓'}</Text></TouchableOpacity>)}</View>}<TouchableOpacity style={styles.button} onPress={check}><Text style={styles.text}>Confirm scale →</Text></TouchableOpacity></View></>}
     {!practice&&<Reveal key={`${intro}-${target}`} style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:28,paddingTop:76,paddingBottom:36,gap:16}}>
       <Text style={styles.small}>{intro<5?`INTERACTIVE LEVER METHOD · ${intro+1} / 5`:'LEARN THE SCALE'}</Text>
@@ -265,18 +266,18 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
         <>
           {circleView}
           {lesson.mode!=='major'&&<Text style={styles.explanation}>Use {pretty(lesson.parent)} major levers, but hear {pretty(target)} as home. Same pitches, a different tonic.</Text>}
-          <Text style={styles.explanation}>{signature === 0 ? 'No sharps or flats' : `${Math.abs(signature)} ${signature < 0 ? 'flats' : 'sharps'}`} · {up.length} raised groups from {pretty(keys[0])}</Text>
+          <Text style={styles.explanation}>{signature === 0 ? 'No sharps or flats' : `${Math.abs(signature)} ${signature < 0 ? (Math.abs(signature) === 1 ? 'flat' : 'flats') : (Math.abs(signature) === 1 ? 'sharp' : 'sharps')}`} · {up.length} raised groups from {pretty(keys[0])}</Text>
           <Text style={styles.explanation}>Raise {up.join(' · ')||'none'}<Text>{'\n'}Lower {down.join(' · ')||'none'}</Text></Text>
           <Text style={styles.small}>{up.map(l=>`${pretty(TUNING_STRING_BASELINES[tuning][l as StringLetter].open)} → ${pretty(TUNING_STRING_BASELINES[tuning][l as StringLetter].engaged)}`).join('   ·   ')||'All strings stay at their open pitch.'}</Text>
         </>
       )}
 
       <TouchableOpacity disabled={(intro===1&&!guidedFlipped)||(intro===4&&!octaveFlipped)} style={[styles.button,{opacity:(intro===1&&!guidedFlipped)||(intro===4&&!octaveFlipped)?.5:1}]} onPress={()=>{if(intro<5)setIntro(intro+1);else{timers.current.forEach(clearTimeout);timers.current=[];setPractice(true);started.current=Date.now();}}}>
-        <Text style={styles.text}>{intro<5?'Continue at your pace →':'Begin 5-round trial →'}</Text>
+        <Text style={styles.text}>{intro<5?'Continue at your pace →':`Begin ${totalRounds}-round level →`}</Text>
       </TouchableOpacity>
       {intro>0&&intro<5&&<TouchableOpacity onPress={()=>setIntro(intro-1)}><Text style={styles.small}>‹ Previous step</Text></TouchableOpacity>}
     </ScrollView></Reveal>}
-    {result!==null&&<Reveal style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:26,paddingTop:76,paddingBottom:36,gap:22}}><Text style={[styles.title,{fontSize:40}]}>{result?'Correct':'Incorrect'}</Text><Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.explanation}>{result?'Every lever is in place.':`${8-mismatch.length} of 8 levers correct`}</Text>{!!mismatch.length&&<Text style={styles.explanation}>{mismatch.map(x=>`${x.l}${x.i===7?' upper':''} ${x.wanted?'↑ raise':'↓ lower'}`).join(' · ')}</Text>}<View style={{flexDirection:'row',justifyContent:'space-between'}}>{[1,2,3,4,5,6,7,8].map((n,i)=><View key={n} style={{width:30,height:42,alignItems:'center',justifyContent:'center',borderBottomWidth:2,borderColor:playingNote===i?'#f4d499':'#81765d',backgroundColor:playingNote===i?'rgba(210,183,126,.25)':'transparent'}}><Text style={[styles.text,{fontSize:13}]}>{pretty(notes[i].label)}</Text></View>)}</View><Text style={styles.small}>Listen to the correct scale · start to finish</Text><TouchableOpacity disabled={playing} style={[styles.button,{opacity:playing ? .5 : 1}]} onPress={next}><Text style={styles.text}>{playing?'Playing the scale…':round===4?`${score} / 5 · ${score>=4?(stage===lessons.length-1?'Journey complete':'Next stage'):'Practice again'} →`:'Next scale →'}</Text></TouchableOpacity></ScrollView></Reveal>}
+    {result!==null&&<Reveal style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:26,paddingTop:76,paddingBottom:36,gap:22}}><Text style={[styles.title,{fontSize:40}]}>{round===totalRounds-1&&!playing?'Level complete':result?'Correct':'Not quite'}</Text>{round===totalRounds-1&&!playing&&<View style={{alignItems:'center',gap:12}}><Text style={{fontSize:54,color:'#ead7a9'}}>{score} / {totalRounds}</Text><Text style={styles.explanation}>{score===totalRounds?'Every scale matched.':`${score} ${score===1?'scale':'scales'} matched. Listen for the changed note as you move on.`}</Text></View>}<Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.explanation}>{result?'Every lever is in place.':`${8-mismatch.length} of 8 levers correct`}</Text>{!!mismatch.length&&<Text style={styles.explanation}>{mismatch.map(x=>`${x.l}${x.i===7?' upper':''} ${x.wanted?'↑ raise':'↓ lower'}`).join(' · ')}</Text>}<View style={{flexDirection:'row',justifyContent:'space-between'}}>{[1,2,3,4,5,6,7,8].map((n,i)=><View key={n} style={{width:30,height:42,alignItems:'center',justifyContent:'center',borderBottomWidth:2,borderColor:playingNote===i?'#f4d499':'#81765d',backgroundColor:playingNote===i?'rgba(210,183,126,.25)':'transparent'}}><Text style={[styles.text,{fontSize:13}]}>{pretty(notes[i].label)}</Text></View>)}</View><Text style={styles.small}>Listen to the correct scale · start to finish</Text><TouchableOpacity disabled={playing} style={[styles.button,{opacity:playing ? .5 : 1}]} onPress={next}><Text style={styles.text}>{playing?'Playing the scale…':round===totalRounds-1?`${score} / ${totalRounds} · ${stage===lessons.length-1?'Finish journey':'Next level'} →`:'Next scale →'}</Text></TouchableOpacity></ScrollView></Reveal>}
   </View>;
 }
 const styles=StyleSheet.create({top:{position:'absolute',top:22,left:18,right:18,flexDirection:'row',justifyContent:'space-between',zIndex:100},title:{fontFamily:'Cinzel-Bold',fontSize:30,color:'#f0d9ab',textAlign:'center'},text:{color:'#edddc0',fontSize:16,textAlign:'center',lineHeight:25},explanation:{color:'#edddc0',fontSize:18,lineHeight:29,textAlign:'center'},small:{color:'#cdbd9e',fontSize:12,lineHeight:20,textAlign:'center',padding:4},controls:{position:'absolute',bottom:28,left:16,right:16},lever:{flex:1,paddingVertical:8,borderWidth:1,borderColor:'#8c8068',backgroundColor:'rgba(54,43,30,.85)',borderRadius:8},button:{padding:17,marginTop:8,borderWidth:1,borderColor:'#c5a872',borderRadius:14,backgroundColor:'rgba(54,53,35,.9)'},overlay:{...StyleSheet.absoluteFillObject,zIndex:90,backgroundColor:'rgba(29,39,29,.7)',backgroundImage:'linear-gradient(180deg,rgba(44,50,34,.12),rgba(36,47,31,.75),rgba(44,50,34,.12))'} as any});

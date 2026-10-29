@@ -71,6 +71,15 @@ const triggerHaptic = (type: 'pluck' | 'lever' = 'pluck') => {
   }
 };
 
+function disposeScene(root: THREE.Object3D) {
+  const textures = new Set<THREE.Texture>();
+  root.traverse((obj: any) => {
+    obj.geometry?.dispose();
+    const materials = obj.material ? (Array.isArray(obj.material) ? obj.material : [obj.material]) : [];
+    materials.forEach((mat: any) => { Object.values(mat).forEach((v: any) => { if (v?.isTexture) textures.add(v); }); mat.dispose(); });
+  });
+  textures.forEach(t => t.dispose());
+}
 interface StringPhysicsState {
   mesh: THREE.Mesh;
   basePositions: Float32Array;
@@ -107,6 +116,8 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
     },
     ref
   ) => {
+    const [renderAttempt, setRenderAttempt] = useState(0);
+    const [renderError, setRenderError] = useState<string | null>(null);
     const initialLeversRef = useRef(initialLeverStates);
     initialLeversRef.current = initialLeverStates;
     const mountRef = useRef<HTMLDivElement | null>(null);
@@ -300,6 +311,20 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       if (Platform.OS !== 'web' || !mountRef.current) return;
 
       const container = mountRef.current;
+      let cancelled = false;
+      let failed = false;
+      let retryTimer: ReturnType<typeof setTimeout> | undefined;
+      setRenderError(null);
+      const fail = (message: string) => {
+        if (cancelled || failed) return;
+        failed = true;
+        setRenderError(message);
+        onModelLoaded?.(); // Release the outer splash so the recovery control is reachable.
+        if (renderAttempt < 2) retryTimer = setTimeout(() => setRenderAttempt(n => n + 1), 1200);
+      };
+      const mobileGraphics = window.matchMedia('(pointer: coarse)').matches || renderAttempt > 0;
+      stringsRef.current.clear(); leversRef.current.clear(); leverHitObjectsRef.current = [];
+
       const width = container.clientWidth || 640;
       const height = container.clientHeight || 420;
 
@@ -313,7 +338,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       // Universal multi-tier WebGL context initialization fallback (Pixel 10 Pro, Samsung, Xiaomi, iOS, Huawei)
       let renderer: THREE.WebGLRenderer | null = null;
       const rendererConfigs = [
-        { antialias: true, alpha: true, powerPreference: 'high-performance' as const },
+        { antialias: !mobileGraphics, alpha: true, powerPreference: 'default' as const },
         { antialias: true, alpha: true, powerPreference: 'default' as const },
         { antialias: false, alpha: true, powerPreference: 'default' as const },
         { antialias: false, alpha: true, powerPreference: 'low-power' as const },
@@ -331,14 +356,18 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
 
       if (!renderer) {
         console.warn('WebGL initialization failed on device; graceful fallback active.');
-        onModelLoaded?.();
-        return;
+        fail('The 3D graphics could not start. Tap to retry.');
+        return () => { cancelled = true; clearTimeout(retryTimer); };
       }
 
       const glRenderer = renderer;
+      glRenderer.debug.onShaderError = () => fail('This graphics mode could not render the harp. Tap to retry in compatibility mode.');
 
-      glRenderer.setSize(width, height);
-      glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      glRenderer.setSize(width, height, false);
+      glRenderer.domElement.style.width = '100%';
+      glRenderer.domElement.style.height = '100%';
+      glRenderer.domElement.style.display = 'block';
+      glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobileGraphics ? 1.25 : 2));
       glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
       glRenderer.toneMappingExposure = 1.10;
       glRenderer.shadowMap.enabled = true;
@@ -351,9 +380,8 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       container.appendChild(glRenderer.domElement);
 
       // Safe WebGL context lost/restored handling
-      glRenderer.domElement.addEventListener('webglcontextlost', (e) => {
-        e.preventDefault();
-      }, false);
+      const onContextLost = (e: Event) => { e.preventDefault(); fail('The 3D graphics paused. Tap to reload the harp.'); };
+      glRenderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
 
       // Safe Studio Environment reflection texture generation
       try {
@@ -378,7 +406,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
 
       // Safe texture allocation for shadow map based on GPU max texture size
       const maxTex = renderer.capabilities?.maxTextureSize || 2048;
-      const shadowMapDim = Math.min(2048, Math.max(512, maxTex >= 4096 ? 2048 : 1024));
+      const shadowMapDim = Math.min(mobileGraphics ? 1024 : 2048, maxTex);
       keyLight.shadow.mapSize.width = shadowMapDim;
       keyLight.shadow.mapSize.height = shadowMapDim;
       keyLight.shadow.camera.near = 1.0;
@@ -430,8 +458,10 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       const freqs = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25];
 
       loader.load(
-        './models/celtic_harp_8string.glb?v=25',
+        '/models/celtic_harp_8string.glb?v=25',
         (gltf) => {
+          if (cancelled) { disposeScene(gltf.scene); return; }
+          setRenderError(null);
           const root = gltf.scene;
           const harpScale = customScale ?? (minimalHeroMode ? 0.78 : 0.88);
           const stanceOffsetZ = 0.0755; // Exact center of foot contact area on floor: ([-0.046, +0.197] / 2)
@@ -597,7 +627,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         undefined,
         (err) => {
           console.error('Failed to load celtic_harp_8string.glb:', err);
-          onModelLoaded?.();
+          fail('The harp could not download. Check your connection and tap to retry.');
         }
       );
 
@@ -995,7 +1025,11 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           keyLightRef.current.intensity = 2.5 + pulseIntensityRef.current * 1.2;
         }
 
-        glRenderer.render(scene, camera);
+        if (failed) { cancelAnimationFrame(animId); return; }
+        try { glRenderer.render(scene, camera); } catch (error) {
+          console.error('Harp render failed:', error);
+          fail('The harp graphics stopped. Tap to reload in compatibility mode.');
+        }
       };
 
       animId = requestAnimationFrame(animate);
@@ -1006,20 +1040,30 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         const h = mountRef.current.clientHeight || 420;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        glRenderer.setSize(w, h);
+        glRenderer.setSize(w, h, false);
       };
       window.addEventListener('resize', handleResize);
+      const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(handleResize) : null;
+      resizeObserver?.observe(container);
+      handleResize();
 
       return () => {
+        cancelled = true; clearTimeout(retryTimer);
+        glRenderer.domElement.removeEventListener('webglcontextlost', onContextLost);
         cancelAnimationFrame(animId);
         domElem.removeEventListener('pointerdown', onPointerDown);
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
         domElem.removeEventListener('wheel', onWheel);
         window.removeEventListener('resize', handleResize);
+        resizeObserver?.disconnect();
+        disposeScene(scene);
+        scene.environment?.dispose();
         glRenderer.dispose();
+        glRenderer.forceContextLoss();
+        glRenderer.domElement.remove();
       };
-    }, []);
+    }, [renderAttempt]);
 
     const toggleSingleLever = (deg: number) => {
       const nextUp = !leverStates[deg - 1];
@@ -1077,6 +1121,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
             />
           ) : null}
 
+          {renderError && <View style={{position:'absolute',top:'40%',left:24,right:24,alignItems:'center',padding:18,borderRadius:18,backgroundColor:'rgba(18,36,28,.9)'}}><Text accessibilityRole="alert" style={{color:'#f7ecd2',textAlign:'center',marginBottom:12}}>{renderError}</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry loading the 3D harp" onPress={() => setRenderAttempt(n => n + 1)} style={{padding:14,borderRadius:20,borderWidth:1,borderColor:'#d4af37'}}><Text style={{color:'#eedcb7'}}>Reload harp</Text></TouchableOpacity></View>}
           {/* Floating Camera Angle Preset Bar */}
           {interactiveControls && !minimalHeroMode && (
             <View style={styles.cameraOverlayTop}>

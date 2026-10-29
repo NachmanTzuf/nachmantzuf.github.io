@@ -1,51 +1,23 @@
 [
   {
-    "id": "EarpaLeverMasterclass",
-    "title": "Lever masterclass",
+    "id": "SingleMotionPlus",
+    "title": "Single notes: watch and practise",
+    "track": "single",
+    "seconds": 60,
+    "url": "/videos/plus/SingleMotionPlus.mp4"
+  },
+  {
+    "id": "MelodyMotionPlus",
+    "title": "Melody: hear the whole pattern",
+    "track": "melody",
+    "seconds": 60,
+    "url": "/videos/plus/MelodyMotionPlus.mp4"
+  },
+  {
+    "id": "LeverMotionPlus",
+    "title": "Levers: watch and practise",
     "track": "levers",
     "seconds": 90,
-    "url": "/videos/mission/EarpaLeverMasterclass-review.mp4"
-  },
-  {
-    "id": "EarpaSingleA",
-    "title": "The tonic gravity pull",
-    "track": "single",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaSingleA-review.mp4"
-  },
-  {
-    "id": "EarpaSingleB",
-    "title": "Hum your home note",
-    "track": "single",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaSingleB-review.mp4"
-  },
-  {
-    "id": "EarpaMelodyA",
-    "title": "Hear a melodic shape",
-    "track": "melody",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaMelodyA-review.mp4"
-  },
-  {
-    "id": "EarpaMelodyB",
-    "title": "Follow an arpeggio",
-    "track": "melody",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaMelodyB-review.mp4"
-  },
-  {
-    "id": "EarpaLeversA",
-    "title": "One lever, one semitone",
-    "track": "levers",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaLeversA-review.mp4"
-  },
-  {
-    "id": "EarpaLeversB",
-    "title": "From E-flat to C and G",
-    "track": "levers",
-    "seconds": 20,
-    "url": "/videos/mission/EarpaLeversB-review.mp4"
+    "url": "/videos/plus/LeverMotionPlus.mp4"
   }
 ]

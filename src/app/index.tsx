@@ -497,7 +497,6 @@ export default function EarpaMasterScreen() {
                   runeColor="#fef08a"
                   runeGlow="0 0 10px rgba(254, 240, 138, 0.95), 0 0 20px rgba(245, 158, 11, 0.75)"
                   playButtonLabel="PRESS TO PLAY"
-                  secondaryAction={<LessonLibrary track="single" />}
                 />
               </View>
             )}
@@ -519,7 +518,6 @@ export default function EarpaMasterScreen() {
                   runeColor="#e0f2fe"
                   runeGlow="0 0 10px rgba(56, 189, 248, 0.95), 0 0 20px rgba(14, 165, 233, 0.8), 0 0 32px rgba(2, 132, 199, 0.55)"
                   playButtonLabel="PRESS TO PLAY"
-                  secondaryAction={<LessonLibrary track="melody" />}
                 />
               </View>
             )}
@@ -541,7 +539,6 @@ export default function EarpaMasterScreen() {
                   runeColor="#ffedd5"
                   runeGlow="0 0 10px rgba(251, 191, 36, 0.95), 0 0 20px rgba(249, 115, 22, 0.8), 0 0 32px rgba(234, 88, 12, 0.6)"
                   playButtonLabel="PRESS TO PLAY"
-                  secondaryAction={<LessonLibrary track="levers" />}
                 />
               </View>
             )}

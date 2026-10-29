@@ -1,4 +1,5 @@
 import React from 'react';
+import { LessonLibrary } from './LessonLibrary';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import {
   MegalithicDolmenIcon,
@@ -243,6 +244,7 @@ export const LiquidGlassRoadmapCard: React.FC<LiquidGlassRoadmapCardProps> = ({
         </View>
       </View>
 
+      {theme !== 'profile' && <View style={{alignItems:'flex-end', marginTop:4, marginBottom:4}}><LessonLibrary track={theme} /></View>}
       {/* Bottom of Card: Stage 10 Progress and Remaining Percentage */}
       <View style={styles.xpBarContainer}>
         <View style={styles.xpTextRow}>
