@@ -1,6 +1,7 @@
 import os
 import shutil
 import hashlib
+import re
 
 def get_sha256(filepath):
     h = hashlib.sha256()
@@ -18,20 +19,36 @@ def main():
         print("dist directory does not exist!")
         return
 
-    # 1. Enhance index.html with PWA metadata and instant loading screen
+    # 1. Enhance index.html with PWA metadata, Service Worker registration, and instant loading screen
     index_html = os.path.join(dist_dir, 'index.html')
     not_found_html = os.path.join(dist_dir, '404.html')
     if os.path.exists(index_html):
         with open(index_html, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Add PWA head links if missing
+        # Add PWA head links and Service Worker registration if missing
         pwa_head = """    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" href="/images/icons/favicon.png" />
     <link rel="apple-touch-icon" href="/images/icons/apple_touch_icon.png" />
     <meta name="theme-color" content="#090d16" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Earpa" />
+    <meta name="application-name" content="Earpa" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(function(reg) {
+              console.log('[Earpa SW] Registered with scope:', reg.scope);
+            })
+            .catch(function(err) {
+              console.warn('[Earpa SW] Registration failed:', err);
+            });
+        });
+      }
+    </script>
   </head>"""
         if '<link rel="manifest"' not in content:
             content = content.replace('</head>', pwa_head)
@@ -75,7 +92,7 @@ def main():
         with open(index_html, 'w', encoding='utf-8') as f:
             f.write(content)
         shutil.copy2(index_html, not_found_html)
-        print("Updated dist/index.html and generated dist/404.html with instant loading screen and PWA headers")
+        print("Updated dist/index.html and generated dist/404.html with instant loading screen, PWA headers, and SW registration")
 
     # 2. Ensure .nojekyll exists
     nojekyll = os.path.join(dist_dir, '.nojekyll')
@@ -100,28 +117,46 @@ def main():
     # 4. Create compatibility bundle aliases in dist/_expo/static/js/web
     js_dir = os.path.join(dist_dir, '_expo', 'static', 'js', 'web')
     if os.path.exists(js_dir):
-        entries = [f for f in os.listdir(js_dir) if f.startswith('entry-') and f.endswith('.js')]
-        print("Found JS entries:", entries)
-        latest_entry = 'entry-03da5b86f18fc9b21e8c5a2514d3f575.js'
-        latest_path = os.path.join(js_dir, latest_entry)
-        if os.path.exists(latest_path):
-            compat_names = [
-                'entry-591f221d562db681e981d133989945c4.js',
-                'entry-5fffed3a26a629f68471eb69882fc2ac.js',
-                'entry-63bc5b44169e6314d26378b2a3b84271.js',
-                'entry-8d69bb973d5da92adcfe80a2740a1c6d.js',
-                'entry-86005dad95ff916afb02c5c3ad3085ff.js',
-                'entry-241dc2b474c7dc0ebd966e8cad672510.js',
-                'entry-a06af7961980fc5b205cf9622d5a1429.js',
-                'entry-85de23aecec6a4f3ae346b50bf4463fe.js',
-                'entry-6c4df1355ef891d45fea586cbfabc9fd.js',
-                'entry-15c957fb40a97aa35069b2daee361093.js',
-                'entry-a49f2219870238787821c6d504e6b75f.js'
-            ]
-            for compat in compat_names:
-                target = os.path.join(js_dir, compat)
-                shutil.copy2(latest_path, target)
-                print(f"Created bundle alias: {compat} -> {latest_entry}")
+        latest_entry = None
+        if os.path.exists(index_html):
+            with open(index_html, 'r', encoding='utf-8') as f:
+                idx_c = f.read()
+            m = re.search(r'/_expo/static/js/web/(entry-[a-f0-9]+\.js)', idx_c)
+            if m:
+                latest_entry = m.group(1)
+
+        if not latest_entry:
+            entries = [f for f in os.listdir(js_dir) if f.startswith('entry-') and f.endswith('.js')]
+            if entries:
+                entries.sort(key=lambda x: os.path.getmtime(os.path.join(js_dir, x)), reverse=True)
+                latest_entry = entries[0]
+
+        print("Target latest JS entry:", latest_entry)
+        if latest_entry:
+            latest_path = os.path.join(js_dir, latest_entry)
+            if os.path.exists(latest_path):
+                compat_names = [
+                    'entry-03da5b86f18fc9b21e8c5a2514d3f575.js',
+                    'entry-591f221d562db681e981d133989945c4.js',
+                    'entry-5fffed3a26a629f68471eb69882fc2ac.js',
+                    'entry-63bc5b44169e6314d26378b2a3b84271.js',
+                    'entry-8d69bb973d5da92adcfe80a2740a1c6d.js',
+                    'entry-86005dad95ff916afb02c5c3ad3085ff.js',
+                    'entry-241dc2b474c7dc0ebd966e8cad672510.js',
+                    'entry-a06af7961980fc5b205cf9622d5a1429.js',
+                    'entry-85de23aecec6a4f3ae346b50bf4463fe.js',
+                    'entry-6c4df1355ef891d45fea586cbfabc9fd.js',
+                    'entry-15c957fb40a97aa35069b2daee361093.js',
+                    'entry-a49f2219870238787821c6d504e6b75f.js',
+                    'entry-fc79bdb2d21f8c68692ce218879293ee.js',
+                    'entry-fdf04d7978d5b30d71f4f802296bd236.js',
+                    'entry-38c2155d5fb7a339c32c89950b088b56.js'
+                ]
+                for compat in compat_names:
+                    if compat != latest_entry:
+                        target = os.path.join(js_dir, compat)
+                        shutil.copy2(latest_path, target)
+                        print(f"Created bundle alias: {compat} -> {latest_entry}")
 
     # 5. Verify Celtic Harp GLB integrity
     glb_path = os.path.join(dist_dir, 'models', 'celtic_harp_8string.glb')

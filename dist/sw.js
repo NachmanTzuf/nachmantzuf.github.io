@@ -1,19 +1,29 @@
-const CACHE_NAME = 'earpa-pwa-v15-lessons';
+const CACHE_NAME = 'earpa-pwa-v16';
 const ASSETS_TO_CACHE = [
-  './manifest.json',
-  './images/icons/earpa_icon_192.png',
-  './images/icons/earpa_icon_512.png',
-  './images/icons/apple_touch_icon.png',
-  './images/icons/favicon.png',
-  './images/earpa_master_loading_bg.jpg',
-  './images/earpa_journey_bg.jpg'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/images/icons/earpa_icon_192.png',
+  '/images/icons/earpa_icon_512.png',
+  '/images/icons/earpa_icon_maskable_192.png',
+  '/images/icons/earpa_icon_maskable_512.png',
+  '/images/icons/apple_touch_icon.png',
+  '/images/icons/favicon.png',
+  '/images/earpa_master_loading_bg.jpg',
+  '/images/earpa_journey_bg.jpg'
 ];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
+      return Promise.all(
+        ASSETS_TO_CACHE.map((url) => {
+          return cache.add(url).catch((err) => {
+            console.warn('[Earpa SW] Pre-cache note:', url, err);
+          });
+        })
+      );
     })
   );
 });
@@ -52,7 +62,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => caches.match(req).then((res) => res || caches.match('./index.html')))
+        .catch(() => caches.match(req).then((res) => res || caches.match('/index.html') || caches.match('/')))
     );
     return;
   }
@@ -74,18 +84,27 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-self.addEventListener('push', event => {
- let payload={};try{payload=event.data?event.data.json():{};}catch{}
- event.waitUntil(self.registration.showNotification('Earpa · Daily practice',{
-  body:typeof payload.body==='string'?payload.body:'A few minutes to listen, find your tonic, and play.',
-  icon:'/images/icons/earpa_icon_192.png',tag:'earpa-daily-practice',data:{url:'/'},
- }));
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; } catch {}
+  event.waitUntil(self.registration.showNotification('Earpa · Daily practice', {
+    body: typeof payload.body === 'string' ? payload.body : 'A few minutes to listen, find your tonic, and play.',
+    icon: '/images/icons/earpa_icon_192.png',
+    tag: 'earpa-daily-practice',
+    data: { url: '/' },
+  }));
 });
-self.addEventListener('notificationclick', event => {
- event.notification.close();
- event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(async clients=>{
-  const home=new URL('/',self.location.origin).href;
-  for(const client of clients)if(new URL(client.url).origin===self.location.origin){await client.focus();return;}
-  return self.clients.openWindow(home);
- }));
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
+    const home = new URL('/', self.location.origin).href;
+    for (const client of clients) {
+      if (new URL(client.url).origin === self.location.origin) {
+        await client.focus();
+        return;
+      }
+    }
+    return self.clients.openWindow(home);
+  }));
 });

@@ -23,6 +23,28 @@
         flex: 1;
       }
     </style>
+      <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/images/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="/images/icons/apple_touch_icon.png" />
+    <meta name="theme-color" content="#090d16" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Earpa" />
+    <meta name="application-name" content="Earpa" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(function(reg) {
+              console.log('[Earpa SW] Registered with scope:', reg.scope);
+            })
+            .catch(function(err) {
+              console.warn('[Earpa SW] Registration failed:', err);
+            });
+        });
+      }
+    </script>
   </head>
 
   <body>
@@ -33,5 +55,36 @@
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
   <script src="/_expo/static/js/web/entry-38c2155d5fb7a339c32c89950b088b56.js" defer></script>
+  <!-- Instant Cold-Boot Loading Screen: Tri-Realm Background + Smooth Indicator Bar -->
+  <div id="earpa-instant-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#090d16 url('/images/earpa_master_loading_bg.jpg') center center / cover no-repeat;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:auto;transition:opacity 0.4s ease-out;">
+    <div style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to top, rgba(5,10,16,0.85) 0%, rgba(5,10,16,0) 100%);pointer-events:none;"></div>
+    <div style="position:relative;margin-bottom:64px;width:240px;max-width:75%;height:4.5px;background:rgba(15,23,42,0.65);border:1px solid rgba(255,255,255,0.18);border-radius:999px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,0.55);">
+      <div id="earpa-instant-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg, #d97706 0%, #fbbf24 50%, #38bdf8 100%);box-shadow:0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(56,189,248,0.6);animation:earpaProgressFill 2.0s cubic-bezier(0.16,1,0.3,1) forwards;"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes earpaProgressFill {
+      0% { width: 0%; }
+      35% { width: 48%; }
+      75% { width: 85%; }
+      100% { width: 100%; }
+    }
+  </style>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      // Once React mounts its DOM inside #root, fade out the instant HTML loader
+      var check = setInterval(function() {
+        var root = document.getElementById('root');
+        if (root && root.children.length > 0) {
+          clearInterval(check);
+          var loader = document.getElementById('earpa-instant-loader');
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(function() { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 420);
+          }
+        }
+      }, 80);
+    });
+  </script>
 </body>
 </html>
