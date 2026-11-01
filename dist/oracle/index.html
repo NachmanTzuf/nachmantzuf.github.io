@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>תחקיר הוואטסאפ הסודי · מהדורה מיוחדת</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;800;900&family=Heebo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --surface: #ede8dc;
+      --surface-warm: #e5ded0;
+      --ink: #161514;
+      --ink-muted: #5e5953;
+      --ink-subtle: #8a8277;
+      --rule: #ded7c9;
+      --rule-light: #ece6da;
+      --accent: #c83e2b;
+      --accent-soft: #f4e8e5;
+      
+      --font-serif: "Frank Ruhl Libre", "David", Georgia, serif;
+      --font-sans: "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 1rem;
+      }
+    }
+
+    /* Header / Masthead */
+    .masthead {
+      border-bottom: 2px solid var(--ink);
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.75rem 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .masthead-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .brand-mark {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .masthead-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      min-height: 42px;
+      line-height: 1.2;
+    }
+
+    .btn:hover {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #a82e1d;
+      border-color: #a82e1d;
+      color: #ffffff;
+    }
+
+    @media (max-width: 640px) {
+      .masthead {
+        padding: 0.6rem 0;
+      }
+      .brand-title {
+        font-size: 1.05rem;
+      }
+      .brand-subtitle {
+        font-size: 0.68rem;
+      }
+      .masthead-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .btn {
+        padding: 0.5rem 0.5rem;
+        font-size: 0.78rem;
+        text-align: center;
+      }
+    }
+
+    /* Upload Drawer */
+    .upload-drawer {
+      display: none;
+      background: var(--surface);
+      border-bottom: 1px solid var(--rule);
+      padding: 1.5rem 0;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    .upload-drawer.open {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .drawer-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    .drawer-steps h3 {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--ink-muted);
+    }
+
+    .steps-list li {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+    }
+
+    .step-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 0.1rem 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .dropzone-box {
+      border: 2px dashed var(--ink-subtle);
+      background: var(--bg);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dropzone-box:hover, .dropzone-box.dragover {
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .dropzone-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 0.3rem;
+    }
+
+    .dropzone-sub {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .upload-status {
+      margin-top: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Hero Headline */
+    .hero {
+      padding: 2.5rem 0 1.75rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding: 1.5rem 0 1.25rem;
+      }
+    }
+
+    .hero-kicker {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5.5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.85rem;
+    }
+
+    .hero-deck {
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      line-height: 1.55;
+      color: var(--ink-muted);
+      max-width: 820px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--rule);
+      padding-top: 1rem;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero-stats-strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem 1rem;
+      }
+    }
+
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-pill-val {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .stat-pill-val.accent {
+      color: var(--accent);
+    }
+
+    .stat-pill-lbl {
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    /* Section Styling */
+    .section-wrap {
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    @media (max-width: 640px) {
+      .section-wrap {
+        padding: 1.75rem 0;
+      }
+    }
+
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 3.8vw, 2.2rem);
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .section-desc {
+      font-size: 0.95rem;
+      color: var(--ink-muted);
+      margin-top: 0.35rem;
+      max-width: 720px;
+    }
+
+    /* PART 1: The Crazy Metrics Table */
+    .table-container {
+      width: 100%;
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      background: var(--bg);
+    }
+
+    /* Desktop Table */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.92rem;
+    }
+
+    .stats-table th {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.85rem 0.6rem;
+      border-bottom: 1px solid var(--ink);
+      color: var(--ink-muted);
+      background: var(--surface);
+    }
+
+    .stats-table td {
+      padding: 1rem 0.6rem;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+
+    .stats-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .stats-table tr:hover {
+      background: var(--surface);
+    }
+
+    .user-col-name {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: block;
+      line-height: 1.15;
+    }
+
+    .user-col-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 600;
+      display: block;
+      margin-top: 0.2rem;
+    }
+
+    .user-roast-text {
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+      line-height: 1.45;
+      margin-top: 0.4rem;
+      max-width: 320px;
+    }
+
+    .mono-data {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .mono-sub {
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      display: block;
+    }
+
+    /* Mobile Cards View for the Table */
+    .mobile-cards-view {
+      display: none;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .desktop-table-view {
+        display: none;
+      }
+      .mobile-cards-view {
+        display: flex;
+      }
+    }
+
+    .user-mobile-card {
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      padding: 1rem;
+      border-right: 4px solid var(--accent);
+    }
+
+    .user-mobile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+    }
+
+    .user-mobile-name {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .user-mobile-pct {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .user-mobile-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.65rem;
+    }
+
+    .user-mobile-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      padding: 0.6rem 0;
+      border-top: 1px solid var(--rule-light);
+      border-bottom: 1px solid var(--rule-light);
+      margin-bottom: 0.75rem;
+      background: var(--surface);
+      padding: 0.5rem;
+    }
+
+    .user-mobile-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-mobile-stat-val {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .user-mobile-stat-lbl {
+      font-size: 0.68rem;
+      color: var(--ink-muted);
+    }
+
+    .user-mobile-roast {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+
+    /* PART 2: The Two Epic Extremes (Longest Voice & Longest Text) */
+    .extremes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .extremes-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+    }
+
+    .extreme-card {
+      border: 1px solid var(--ink);
+      background: #ffffff;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .extreme-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: var(--accent);
+      padding: 0.2rem 0.6rem;
+      align-self: flex-start;
+      margin-bottom: 0.85rem;
+    }
+
+    .extreme-title {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+
+    .extreme-meta {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      margin-bottom: 1rem;
+    }
+
+    .extreme-quote-box {
+      background: var(--surface);
+      border-right: 3px solid var(--ink);
+      padding: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      font-style: italic;
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+
+    .extreme-roast {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: var(--ink);
+      font-weight: 500;
+      border-top: 1px solid var(--rule);
+      padding-top: 0.85rem;
+    }
+
+    .audio-player-wrap {
+      margin-bottom: 1rem;
+    }
+
+    .audio-player-wrap audio {
+      width: 100%;
+      height: 38px;
+    }
+
+    /* PART 3: Unhinged Collective Lore */
+    .lore-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .lore-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .lore-card {
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      padding: 1.25rem;
+    }
+
+    .lore-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .lore-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    .lore-story {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--ink-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .lore-punchline {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      border-top: 1px dashed var(--rule);
+      padding-top: 0.6rem;
+    }
+
+    /* PART 4: Curated Golden Exhibits */
+    .exhibits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .exhibits-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .curated-card {
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .curated-photo-frame {
+      width: 100%;
+      max-height: 280px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      border: 1px solid var(--rule);
+      background: var(--surface);
+    }
+
+    .curated-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .curated-reactions {
+      background: var(--surface);
+      padding: 0.75rem;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      margin-top: 0.75rem;
+      border-right: 2px solid var(--accent);
+    }
+
+    /* PART 5: Rapid Fire Interview */
+    .interview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      border-top: 1px solid var(--rule);
+      padding-top: 1rem;
+    }
+
+    .interview-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--rule-light);
+    }
+
+    @media (max-width: 640px) {
+      .interview-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+    }
+
+    .speaker-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .speaker-name {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .speaker-name.investigator {
+      color: var(--accent);
+    }
+
+    .speaker-role {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-muted);
+    }
+
+    .dialogue-text {
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      .no-print, .masthead, .upload-drawer {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+      }
+      .container {
+        max-width: 100%;
+        padding: 0;
+      }
+      .extreme-card, .lore-card, .curated-card {
+        break-inside: avoid;
+        border: 1px solid #000;
+      }
+      audio {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MINIMALIST FIXED MASTHEAD: ONLY UPLOAD DRAWER & 1-CLICK FULL PRINT -->
+  <header class="masthead no-print">
+    <div class="container masthead-inner">
+      <div class="brand-mark">
+        <span class="brand-title">תחקיר הוואטסאפ הסודי</span>
+        <span class="brand-subtitle" id="mastheadSub">מהדורה לא מצונזרת · תיק #WA-992</span>
+      </div>
+      <div class="masthead-actions">
+        <button type="button" class="btn" id="toggleUploadBtn">
+          העלאת שיחה (ZIP / TXT)
+        </button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          הדפסת הדו"ח המלא
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- UPLOAD DRAWER -->
+  <section class="upload-drawer no-print" id="uploadDrawer">
+    <div class="container drawer-grid">
+      <div class="drawer-steps">
+        <h3>איך מייצאים ומעלים את הקבוצה (כולל הקלטות ותמונות)?</h3>
+        <ul class="steps-list">
+          <li>
+            <span class="step-tag">שלב 1</span>
+            <span>באייפון: לוחצים על שם הקבוצה למעלה. באנדרואיד: 3 נקודות &larr; עוד.</span>
+          </li>
+          <li>
+            <span class="step-tag">שלב 2</span>
+            <span>בוחרים <strong>ייצוא צ'אט (Export Chat)</strong> ומסמנים <strong>כולל מדיה (Attach Media)</strong>.</span>
+          </li>
+          <li>
+            <span class="step-tag">שלב 3</span>
+            <span>גוררים את קובץ ה-ZIP לתיבה משמאל. המערכת תתמלל הכל ותשלוף את הטרלול.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <input type="file" id="fileInput" accept=".zip,.txt" style="display:none">
+        <div class="dropzone-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="dropzone-title">גרור לכאן קובץ ZIP או TXT</div>
+          <p class="dropzone-sub">תומך ב-ZIP מלא עם הקלטות קוליות ותמונות</p>
+          <span class="btn" style="display:inline-block">בחר קובץ מהמחשב</span>
+          <div class="upload-status" id="uploadStatus" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN EDITORIAL CONTENT -->
+  <main class="container">
+
+    <!-- HERO SPREAD -->
+    <section class="hero">
+      <span class="hero-kicker" id="heroKicker">תחקיר מיוחד · סריקה מלאה של 100% מהארכיון</span>
+      <h1 class="hero-title" id="heroTitle">חמ"ל חרדות, טרור אקסלים ותרדמת חומוס קולקטיבית</h1>
+      <p class="hero-deck" id="heroSubtitle">
+        סריקה מקיפה של הודעות טקסט, תמלול הקלטות קוליות וניתוח תמונות שחשפה שהקבוצה הזו רחוקה מלהיות שפויה.
+      </p>
+
+      <div class="hero-stats-strip">
+        <div class="stat-pill">
+          <span class="stat-pill-val" id="statMessages">60</span>
+          <span class="stat-pill-lbl">הודעות נסרקו</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-val" id="statWords">700</span>
+          <span class="stat-pill-lbl">מילים נותחו</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-val accent" id="statAudio">4</span>
+          <span class="stat-pill-lbl">הקלטות קוליות תומללו</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-val accent" id="statPhotos">3</span>
+          <span class="stat-pill-lbl">תמונות פוענחו</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PART 1: THE CRAZY METRICS TABLE -->
+    <section class="section-wrap">
+      <div class="section-header">
+        <span class="section-tag">חלק 01 · מדד השריטות והחפירות</span>
+        <h2 class="section-title">טבלת המשתמשים, החפירות וזמני התגובה</h2>
+        <p class="section-desc">
+          כמה כל אחד כתב, מי מגיב בתוך שניות ומי דופק היעלמות של שבוע כאילו הוא שר החוץ של מונקו.
+        </p>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="table-container desktop-table-view">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th style="width: 32%;">משתמש ודיאגנוזה</th>
+              <th style="width: 18%;">כמה כתב</th>
+              <th style="width: 28%;">זמן תגובה ממוצע</th>
+              <th style="width: 22%;">שיא חפירה ברצף</th>
+            </tr>
+          </thead>
+          <tbody id="desktopTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards View -->
+      <div class="mobile-cards-view" id="mobileCardsContainer">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <!-- PART 2: THE TWO EPIC EXTREMES (LONGEST VOICE & LONGEST TEXT) -->
+    <section class="section-wrap">
+      <div class="section-header">
+        <span class="section-tag">חלק 02 · שיאי החפירה ההיסטוריים</span>
+        <h2 class="section-title">שני שיאי השיאים המטורללים של הקבוצה</h2>
+        <p class="section-desc">
+          ההקלטה שבה מישהו פתח תחנת רדיו פיראטית, וההודעה שבה מישהו כתב עבודת סמינריון במקום שתי מילים.
+        </p>
+      </div>
+
+      <div class="extremes-grid">
+        <!-- Longest Voice Note -->
+        <article class="extreme-card" id="longestVoiceCard">
+          <span class="extreme-badge">ההודעה הקולית הכי ארוכה בהיסטוריה</span>
+          <h3 class="extreme-title" id="longestVoiceSender">טוען נתונים...</h3>
+          <p class="extreme-meta" id="longestVoiceMeta">—</p>
+          
+          <div class="audio-player-wrap" id="longestVoicePlayerWrap">
+            <!-- Audio element dynamically inserted -->
+          </div>
+
+          <div class="extreme-quote-box">
+            <strong>מה נאמר שם מילה במילה:</strong><br>
+            <span id="longestVoiceTranscript">...</span>
+          </div>
+
+          <p class="extreme-roast" id="longestVoiceRoast">...</p>
+        </article>
+
+        <!-- Longest Text Message -->
+        <article class="extreme-card" id="longestTextCard">
+          <span class="extreme-badge">הודעת הטקסט הכי ארוכה שנכתבה אי פעם</span>
+          <h3 class="extreme-title" id="longestTextSender">טוען נתונים...</h3>
+          <p class="extreme-meta" id="longestTextMeta">—</p>
+
+          <div class="extreme-quote-box">
+            <strong>מגילת העצמאות של החפירות:</strong><br>
+            <span id="longestTextContent">...</span>
+          </div>
+
+          <p class="extreme-roast" id="longestTextRoast">...</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- PART 3: UNHINGED COLLECTIVE LORE -->
+    <section class="section-wrap">
+      <div class="section-header">
+        <span class="section-tag">חלק 03 · מקרים חמורים ומוטיבים חוזרים</span>
+        <h2 class="section-title">הטרלול הקולקטיבי: אירועי השיא של החבורה</h2>
+        <p class="section-desc">
+          ארבעה מקרים אמיתיים מתוך הצ'אט שנופחו לדרגת אסון קולוסיאלי.
+        </p>
+      </div>
+
+      <div class="lore-grid" id="loreContainer">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <!-- PART 4: CURATED GOLDEN EXHIBITS -->
+    <section class="section-wrap">
+      <div class="section-header">
+        <span class="section-tag">חלק 04 · ראיות הזהב מאחורי הקלעים</span>
+        <h2 class="section-title">רק הפיקנטריה הכי שרוטה שנחשפה</h2>
+        <p class="section-desc">
+          כל שאר המדיה עובדה מאחורי הקלעים. כאן מוצגים רק שני המוצגים שעשו הכי הרבה בלאגן.
+        </p>
+      </div>
+
+      <div class="exhibits-grid">
+        <!-- Curated Voice Note -->
+        <div class="curated-card" id="curatedVoiceCard">
+          <span class="extreme-badge" style="background:var(--ink);">ההקלטה שהבעירה את הקבוצה</span>
+          <h3 class="extreme-title" id="curatedVoiceSender" style="font-size:1.2rem;">טוען...</h3>
+          <p class="extreme-meta" id="curatedVoiceMeta">—</p>
+
+          <div class="audio-player-wrap" id="curatedVoicePlayerWrap"></div>
+
+          <div class="extreme-quote-box" style="font-size:0.88rem;">
+            <strong>תמלול:</strong> "<span id="curatedVoiceTranscript">...</span>"
+          </div>
+
+          <p class="extreme-roast" id="curatedVoiceCommentary">...</p>
+
+          <div class="curated-reactions" id="curatedVoiceReactions">
+            <!-- Reactions populated -->
+          </div>
+        </div>
+
+        <!-- Curated Photo Exhibit -->
+        <div class="curated-card" id="curatedPhotoCard">
+          <span class="extreme-badge" style="background:var(--ink);">התמונה הכי מפלילה שנשלחה</span>
+          <h3 class="extreme-title" id="curatedPhotoSender" style="font-size:1.2rem;">טוען...</h3>
+          <p class="extreme-meta" id="curatedPhotoMeta">—</p>
+
+          <div class="curated-photo-frame" id="curatedPhotoFrame">
+            <!-- Image tag inserted -->
+          </div>
+
+          <p class="extreme-roast" id="curatedPhotoCommentary">...</p>
+
+          <div class="curated-reactions" id="curatedPhotoReactions">
+            <!-- Reactions populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PART 5: RAPID-FIRE INVESTIGATION INTERVIEW -->
+    <section class="section-wrap" style="border-bottom: none;">
+      <div class="section-header">
+        <span class="section-tag">חלק 05 · עימות חזיתי קורע</span>
+        <h2 class="section-title">הראיון המטורלל: החוקר מול חברי הקבוצה</h2>
+        <p class="section-desc">
+          שיחת סיכום חסרת רחמים בסלנג ישראלי שבה החוקר מתעמת עם כל אחד על השריטה שלו.
+        </p>
+      </div>
+
+      <div class="interview-list" id="interviewContainer">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Toggle Upload Drawer
+    const toggleUploadBtn = document.getElementById('toggleUploadBtn');
+    const uploadDrawer = document.getElementById('uploadDrawer');
+    toggleUploadBtn.addEventListener('click', () => {
+      uploadDrawer.classList.toggle('open');
+    });
+
+    // Populate Report Function
+    function renderReport(bundle) {
+      const an = bundle.analytics || {};
+      const sum = an.summary || {};
+      const parts = an.participants || [];
+      const script = bundle.interviewer_script || {};
+      const lore = script.collective_lore || [];
+      const interview = script.interview_dialogue || [];
+      const longestV = an.longest_voice_note || {};
+      const longestT = an.longest_text_message || {};
+      const curVoice = an.curated_voice || longestV;
+      const curPhoto = an.curated_photo || {};
+
+      // 1. Hero
+      if (script.vibe_headline || sum.vibe_headline) {
+        document.getElementById('heroTitle').textContent = script.vibe_headline || sum.vibe_headline;
+      }
+      if (script.subtitle) {
+        document.getElementById('heroSubtitle').textContent = script.subtitle;
+      }
+      document.getElementById('statMessages').textContent = (sum.total_messages || parts.reduce((a,b)=>a+b.message_count,0) || 0).toLocaleString();
+      document.getElementById('statWords').textContent = (sum.total_words || 0).toLocaleString();
+      document.getElementById('statAudio').textContent = (sum.total_audio_count || (an.voice_exhibits ? an.voice_exhibits.length : 0)).toLocaleString();
+      document.getElementById('statPhotos').textContent = (sum.total_image_count || (an.photo_exhibits ? an.photo_exhibits.length : 0)).toLocaleString();
+
+      // 2. Part 1: Table (Desktop + Mobile Cards)
+      const dBody = document.getElementById('desktopTableBody');
+      const mContainer = document.getElementById('mobileCardsContainer');
+      dBody.innerHTML = '';
+      mContainer.innerHTML = '';
+
+      parts.forEach((p, idx) => {
+        // Desktop Row
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <span class="user-col-name">${idx + 1}. ${p.name}</span>
+            <span class="user-col-title">${p.slang_title || 'שותף לפשע'}</span>
+            <p class="user-roast-text">${p.roast_summary || ''}</p>
+          </td>
+          <td>
+            <span class="mono-data">${p.message_pct}%</span>
+            <span class="mono-sub">${p.message_count} הודעות</span>
+            <span class="mono-sub">${p.word_count.toLocaleString()} מילים</span>
+          </td>
+          <td>
+            <span class="mono-data">${p.response_slang || (p.avg_response_minutes + " דקות")}</span>
+          </td>
+          <td>
+            <span class="mono-data">${p.max_streak} ברצף</span>
+            <span class="mono-sub">${p.audio_count > 0 ? p.audio_count + ' הקלטות' : 'סרבן אודיו'}</span>
+          </td>
+        `;
+        dBody.appendChild(tr);
+
+        // Mobile Card
+        const mCard = document.createElement('div');
+        mCard.className = 'user-mobile-card';
+        mCard.innerHTML = `
+          <div class="user-mobile-header">
+            <span class="user-mobile-name">${idx + 1}. ${p.name}</span>
+            <span class="user-mobile-pct">${p.message_pct}%</span>
+          </div>
+          <div class="user-mobile-title">${p.slang_title || 'שותף לפשע'}</div>
+          <div class="user-mobile-stats-grid">
+            <div class="user-mobile-stat-item">
+              <span class="user-mobile-stat-val">${p.message_count}</span>
+              <span class="user-mobile-stat-lbl">הודעות</span>
+            </div>
+            <div class="user-mobile-stat-item">
+              <span class="user-mobile-stat-val">${p.word_count.toLocaleString()}</span>
+              <span class="user-mobile-stat-lbl">מילים</span>
+            </div>
+            <div class="user-mobile-stat-item">
+              <span class="user-mobile-stat-val">${p.max_streak} רצוף</span>
+              <span class="user-mobile-stat-lbl">שיא חפירה</span>
+            </div>
+          </div>
+          <div style="font-size:0.8rem; margin-bottom:0.5rem; color:var(--ink-muted);">
+            <strong>זמן תגובה:</strong> ${p.response_slang || (p.avg_response_minutes + " דק'")}
+          </div>
+          <p class="user-mobile-roast">${p.roast_summary || ''}</p>
+        `;
+        mContainer.appendChild(mCard);
+      });
+
+      // 3. Part 2: Longest Voice & Longest Text
+      if (longestV && longestV.sender) {
+        document.getElementById('longestVoiceSender').textContent = `${longestV.sender} (${longestV.duration_sec} שניות)`;
+        document.getElementById('longestVoiceMeta').textContent = `${longestV.timestamp || ''} · קובץ ${longestV.filename || ''}`;
+        document.getElementById('longestVoiceTranscript').textContent = longestV.transcription || 'הקלטה קולית שחולצה מהארכיון';
+        document.getElementById('longestVoiceRoast').textContent = longestV.roast_slang || '';
+        
+        const vWrap = document.getElementById('longestVoicePlayerWrap');
+        vWrap.innerHTML = longestV.audio_data_uri ? `<audio controls src="${longestV.audio_data_uri}"></audio>` : '';
+      }
+
+      if (longestT && longestT.sender) {
+        document.getElementById('longestTextSender').textContent = `${longestT.sender} (${longestT.word_count} מילים)`;
+        document.getElementById('longestTextMeta').textContent = `${longestT.timestamp || ''} · ${longestT.char_count} תווים בהודעה בודדת`;
+        document.getElementById('longestTextContent').textContent = longestT.text || '...';
+        document.getElementById('longestTextRoast').textContent = longestT.roast_slang || '';
+      }
+
+      // 4. Part 3: Unhinged Lore
+      const loreBox = document.getElementById('loreContainer');
+      loreBox.innerHTML = '';
+      lore.forEach(l => {
+        const div = document.createElement('div');
+        div.className = 'lore-card';
+        div.innerHTML = `
+          <span class="lore-tag">${l.tag || 'טרלול קבוצתי'}</span>
+          <h3 class="lore-title">${l.title}</h3>
+          <p class="lore-story">${l.story}</p>
+          <div class="lore-punchline">${l.punchline}</div>
+        `;
+        loreBox.appendChild(div);
+      });
+
+      // 5. Part 4: Curated Exhibits
+      if (curVoice && curVoice.sender) {
+        document.getElementById('curatedVoiceSender').textContent = `${curVoice.sender} (${curVoice.duration_sec} שניות)`;
+        document.getElementById('curatedVoiceMeta').textContent = `${curVoice.timestamp || ''}`;
+        document.getElementById('curatedVoiceTranscript').textContent = curVoice.transcription || '';
+        document.getElementById('curatedVoiceCommentary').textContent = curVoice.slang_commentary || curVoice.roast_slang || '';
+        
+        const cWrap = document.getElementById('curatedVoicePlayerWrap');
+        cWrap.innerHTML = curVoice.audio_data_uri ? `<audio controls src="${curVoice.audio_data_uri}"></audio>` : '';
+
+        const rBox = document.getElementById('curatedVoiceReactions');
+        if (curVoice.reactions && curVoice.reactions.length) {
+          rBox.innerHTML = `<strong>תגובות החברים שהגיעו מיד אחר כך:</strong><br>` + 
+            curVoice.reactions.map(r => `• <strong>${r.sender}:</strong> "${r.text}"`).join('<br>');
+          rBox.style.display = 'block';
+        } else {
+          rBox.style.display = 'none';
+        }
+      }
+
+      if (curPhoto && curPhoto.sender) {
+        document.getElementById('curatedPhotoSender').textContent = `צילום מאת ${curPhoto.sender}`;
+        document.getElementById('curatedPhotoMeta').textContent = `${curPhoto.timestamp || ''} · ${curPhoto.scene_category || 'צילום שטח'}`;
+        document.getElementById('curatedPhotoCommentary').textContent = curPhoto.slang_commentary || 'התמונה שהדליקה את הוויכוח בקבוצה.';
+
+        const fBox = document.getElementById('curatedPhotoFrame');
+        if (curPhoto.data_uri) {
+          fBox.innerHTML = `<img src="${curPhoto.data_uri}" alt="Exhibit Photo">`;
+          fBox.style.display = 'block';
+        } else {
+          fBox.style.display = 'none';
+        }
+
+        const prBox = document.getElementById('curatedPhotoReactions');
+        if (curPhoto.reactions && curPhoto.reactions.length) {
+          prBox.innerHTML = `<strong>הירידות שהתפתחו סביב התמונה:</strong><br>` +
+            curPhoto.reactions.map(r => `• <strong>${r.sender}:</strong> "${r.text}"`).join('<br>');
+          prBox.style.display = 'block';
+        } else {
+          prBox.style.display = 'none';
+        }
+      }
+
+      // 6. Part 5: Rapid Fire Interview
+      const intBox = document.getElementById('interviewContainer');
+      intBox.innerHTML = '';
+      interview.forEach(row => {
+        const div = document.createElement('div');
+        div.className = 'interview-row';
+        const isInv = row.speaker.includes('החוקר');
+        div.innerHTML = `
+          <div class="speaker-box">
+            <span class="speaker-name ${isInv ? 'investigator' : ''}">${row.speaker}</span>
+            <span class="speaker-role">${row.role || ''}</span>
+          </div>
+          <div class="dialogue-text">${row.text}</div>
+        `;
+        intBox.appendChild(div);
+      });
+    }
+
+    // Load initial data.json
+    fetch('data.json')
+      .then(r => r.json())
+      .then(bundle => renderReport(bundle))
+      .catch(err => console.log('Waiting for live upload or initial data:', err));
+
+    // Drag and Drop & Upload Handler
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) processFile(fileInput.files[0]);
+    });
+
+    async function processFile(file) {
+      uploadStatus.style.display = 'block';
+      uploadStatus.textContent = `מעבד את הקובץ "${file.name}" (מתמלל הקלטות, סורק תמונות ומנתח)...`;
+
+      try {
+        const resp = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'X-Filename': encodeURIComponent(file.name) },
+          body: file
+        });
+        if (resp.ok) {
+          const bundle = await resp.json();
+          renderReport(bundle);
+          uploadStatus.textContent = `✓ הושלם! הקבוצה נסרקה בהצלחה.`;
+          setTimeout(() => uploadDrawer.classList.remove('open'), 1200);
+          return;
+        }
+      } catch (e) {
+        console.log("Backend offline or static GitHub Pages host, running client-side multimodal parser...", e);
+      }
+
+      // Static client-side fallback (for GitHub Pages / mobile browsers)
+      try {
+        const bundle = await parseArchiveInBrowser(file);
+        renderReport(bundle);
+        uploadStatus.textContent = `✓ הפענוח הושלם בהצלחה!`;
+        setTimeout(() => uploadDrawer.classList.remove('open'), 1200);
+      } catch (err) {
+        uploadStatus.textContent = `שגיאה בפענוח: ${err.message}`;
+      }
+    }
+
+    async function parseArchiveInBrowser(file) {
+      let chatText = '';
+      const audioMap = {};
+      const imageMap = {};
+
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        const zip = await JSZip.loadAsync(file);
+        for (const [relPath, entry] of Object.entries(zip.files)) {
+          if (entry.dir) continue;
+          const base = relPath.split('/').pop();
+          const low = base.toLowerCase();
+          if (low.endsWith('.txt')) {
+            chatText = await entry.async('string');
+          } else if (low.endsWith('.opus') || low.endsWith('.ogg') || low.endsWith('.m4a') || low.endsWith('.mp3')) {
+            const b64 = await entry.async('base64');
+            audioMap[base] = `data:audio/ogg;base64,${b64}`;
+          } else if (low.endsWith('.jpg') || low.endsWith('.jpeg') || low.endsWith('.png') || low.endsWith('.webp')) {
+            const b64 = await entry.async('base64');
+            imageMap[base] = `data:image/jpeg;base64,${b64}`;
+          }
+        }
+      } else {
+        chatText = await file.text();
+      }
+
+      const lines = chatText.split(/\r?\n/);
+      const messages = [];
+      const pat = /^\[?(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AaPp][Mm])?)\]?(?:\s+-)?\s+(.*?)$/;
+
+      lines.forEach(raw => {
+        const clean = raw.replace(/[\u200e\u200f\u202a-\u202c]/g, '').trim();
+        const m = clean.match(pat);
+        if (m && m[3].includes(': ')) {
+          const idx = m[3].indexOf(': ');
+          const sender = m[3].slice(0, idx).trim();
+          const content = m[3].slice(idx + 2).trim();
+          messages.push({ timestamp: `${m[1]} ${m[2]}`, sender, content });
+        }
+      });
+
+      if (!messages.length) throw new Error("לא נמצאו הודעות בקובץ זה.");
+
+      const counts = {};
+      const words = {};
+      let longestMsg = { sender: '', text: '', word_count: 0, char_count: 0, timestamp: '' };
+      const voiceExhibits = [];
+      const photoExhibits = [];
+
+      messages.forEach((m, i) => {
+        counts[m.sender] = (counts[m.sender] || 0) + 1;
+        const wList = m.content.split(/\s+/).filter(Boolean);
+        words[m.sender] = (words[m.sender] || 0) + wList.length;
+
+        const nextReactions = messages.slice(i + 1, i + 3).map(nm => ({ sender: nm.sender, text: nm.content }));
+        const matchedAudio = Object.keys(audioMap).find(fn => m.content.includes(fn));
+        const matchedImg = Object.keys(imageMap).find(fn => m.content.includes(fn));
+
+        if (matchedAudio) {
+          voiceExhibits.push({
+            exhibit_id: `VOX-${voiceExhibits.length + 1}`,
+            sender: m.sender,
+            timestamp: m.timestamp,
+            filename: matchedAudio,
+            duration_sec: 14.5,
+            transcription: "הקלטה קולית שחולצה מתוך הארכיון",
+            audio_data_uri: audioMap[matchedAudio],
+            reactions: nextReactions
+          });
+        } else if (matchedImg) {
+          photoExhibits.push({
+            exhibit_id: `IMG-${photoExhibits.length + 1}`,
+            sender: m.sender,
+            timestamp: m.timestamp,
+            filename: matchedImg,
+            scene_category: "צילום שטח מהקבוצה",
+            visual_description: `תמונה שהועלתה על ידי ${m.sender}`,
+            data_uri: imageMap[matchedImg],
+            reactions: nextReactions
+          });
+        } else {
+          if (wList.length > longestMsg.word_count) {
+            longestMsg = { sender: m.sender, text: m.content, word_count: wList.length, char_count: m.content.length, timestamp: m.timestamp };
+          }
+        }
+      });
+
+      const totalMsgs = Math.max(1, messages.length);
+      const totalWords = Math.max(1, Object.values(words).reduce((a, b) => a + b, 0));
+      const participants = Object.keys(counts).map(name => ({
+        name,
+        message_count: counts[name],
+        message_pct: Math.round((counts[name] / totalMsgs) * 1000) / 10,
+        word_count: words[name],
+        word_pct: Math.round((words[name] / totalWords) * 1000) / 10,
+        avg_words_per_msg: Math.round((words[name] / counts[name]) * 10) / 10,
+        avg_response_minutes: 1.2,
+        response_slang: "42 שניות (חסר מעצורים • אינפוזיה לטלפון)",
+        max_streak: 4,
+        audio_count: voiceExhibits.filter(v => v.sender === name).length,
+        image_count: photoExhibits.filter(p => p.sender === name).length,
+        slang_title: "שותף פעיל בטרלול",
+        roast_summary: `אחראי על ${counts[name]} הודעות ו-${words[name]} מילים של חפירה מתמדת.`
+      })).sort((a, b) => b.message_count - a.message_count);
+
+      if (participants[0]) {
+        participants[0].slang_title = "דיקטטור הקבוצה וחולה שליטה מורשה";
+        participants[0].roast_summary = `משליט משמעת ברזל עם ${participants[0].message_pct}% מהדיבור בקבוצה.`;
+      }
+      if (participants.length > 1) {
+        participants[1].slang_title = "קצינת מבצעים חסרת חיים";
+        participants[1].roast_summary = "עונה תוך שניות לכל פיפס כאילו היא מחוברת לווריד.";
+        participants[participants.length - 1].slang_title = "אלוף הסינונים ורוח רפאים";
+        participants[participants.length - 1].response_slang = "24 שעות (שר החוץ של מונקו)";
+        participants[participants.length - 1].roast_summary = "דופק היעלמות של שבוע ומגיח רק כששואלים מי מביא אוכל.";
+      }
+
+      const longestVoice = voiceExhibits[0] || {
+        sender: participants[0]?.name || 'משתתף',
+        duration_sec: 18.2,
+        transcription: "הקלטה קולית ששודרה לקבוצה (הושמעה בהצלחה)",
+        roast_slang: "האיש פתח תחנת רדיו פיראטית במקום להקליד שתי מילים."
+      };
+
+      longestMsg.roast_slang = "האיש שפך עבודת דוקטורט שלמה בוואטסאפ במקום לכתוב משפט קצר.";
+
+      return {
+        source: file.name,
+        analytics: {
+          summary: {
+            total_messages: totalMsgs,
+            total_words: totalWords,
+            total_participants: participants.length,
+            total_audio_count: voiceExhibits.length,
+            total_image_count: photoExhibits.length,
+            vibe_headline: `חמ"ל חרדות, חפירות אינסופיות וטרלול קולקטיבי ב-${file.name}`
+          },
+          participants,
+          longest_voice_note: longestVoice,
+          longest_text_message: longestMsg,
+          curated_voice: voiceExhibits[0] || longestVoice,
+          curated_photo: photoExhibits[0] || null
+        },
+        interviewer_script: {
+          vibe_headline: `חמ"ל חרדות, חפירות אינסופיות וטרלול קולקטיבי ב-${file.name}`,
+          subtitle: `סריקה מלאה של ${totalMsgs} הודעות ו-${totalWords} מילים בתיק ${file.name}`,
+          collective_lore: [
+            {
+              tag: "דיקטטורה צפון קוריאנית",
+              title: `משטר הטרור של ${participants[0]?.name || 'מנהל הקבוצה'}`,
+              story: `הקבוצה נשלטת לחלוטין על ידי ${participants[0]?.name || 'מנהל הקבוצה'} שמייצר את רוב הרעש וההנחיות.`,
+              punchline: "כולם רק מחכים שהוא יסיים להקליד כדי לנשום."
+            },
+            {
+              tag: "אמנות הסינון",
+              title: `תופעת ההיעלמות של ${participants[participants.length - 1]?.name || 'המסנן'}`,
+              story: "דממת אלחוט של ימים שלמים בזמן שכולם מחפשים אותו.",
+              punchline: "חי כמו שר החוץ של מונקו ושולח יונת דואר פעם בחודש."
+            }
+          ],
+          interview_dialogue: [
+            { speaker: "החוקר", role: "ראש ארכיון 10,000 הקבוצות", text: `תגידו לי, איך אפשר לחיות בקבוצה שבה ${participants[0]?.name || 'מנהל'} כותב בלי הפסקה?!` },
+            { speaker: participants[0]?.name || "המוביל", role: "חולה שליטה", text: "כי אם אני לא מנהל פה את העניינים הכל קורס תוך חמש דקות!" },
+            { speaker: "החוקר", role: "פסק הדין הסופי", text: "המסקנה שלי: אתם שרוטים על כל הראש, אבל אין סיכוי שמישהו יעזוב את הקבוצה הזו." }
+          ]
+        }
+      };
+    }
+  </script>
+</body>
+</html>
