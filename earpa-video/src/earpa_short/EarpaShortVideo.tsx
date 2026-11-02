@@ -82,8 +82,8 @@ export const EarpaShortVideo: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#05080f' }}>
-      {/* Master 45-Second Synchronized Acoustic Harp, ASMR Haptics & Relaxed Human Voiceover Track */}
-      <Audio src={staticFile('audio/earpa_master_30s.mp3')} volume={1} />
+      {/* Master 45-Second Synchronized Acoustic Harp, Pure Low ASMR Haptics & Relaxed Human Voiceover Track */}
+      <Audio src={staticFile('audio/earpa_master_v5_satisfying.mp3')} volume={1} />
 
       {/* Scene 1: The Hook (0 - 400) */}
       <Sequence

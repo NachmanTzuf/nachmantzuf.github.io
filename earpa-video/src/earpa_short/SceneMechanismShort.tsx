@@ -9,6 +9,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { Harp3DCanvas, PluckEvent } from '../earpa/Harp3DCanvas';
+import { PhoneFrame } from './PhoneFrame';
 
 // Scene 3 runs from global frame 660 to 930 (270 frames: local 0..270)
 const MECHANISM_PLUCKS: PluckEvent[] = [
@@ -500,57 +501,14 @@ export const SceneMechanismShort: React.FC = () => {
             ))}
           </div>
 
-          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
-          <div
-            style={{
-              flex: 1,
-              marginTop: 10,
-              borderRadius: 44,
-              padding: 8,
-              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
-              border: '2px solid rgba(16, 185, 129, 0.75)',
-              boxShadow: '0 30px 80px rgba(0,0,0,0.9), 0 0 45px rgba(16, 185, 129, 0.3)',
-              display: 'flex',
-              flexDirection: 'column',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Phone Dynamic Island */}
-            <div
-              style={{
-                width: 140,
-                height: 24,
-                borderRadius: 20,
-                background: '#020617',
-                margin: '2px auto 6px auto',
-                border: '1px solid rgba(255,255,255,0.12)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                flexShrink: 0,
-              }}
-            >
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
-            </div>
-
-            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
-            <div
-              style={{
-                flex: 1,
-                borderRadius: 36,
-                overflow: 'hidden',
-                background: '#030712',
-                position: 'relative',
-              }}
-            >
+          {/* Sleek Titanium Phone Frame (100% Edge-to-Edge Screen Cover) */}
+          <div style={{ marginTop: 10, display: 'flex', justifyContent: 'center' }}>
+            <PhoneFrame width={660} accent="#10b981">
               <Img
                 src={staticFile('textures/real/app_screen_resolution_walk.png')}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
-            </div>
+            </PhoneFrame>
           </div>
         </div>
       )}

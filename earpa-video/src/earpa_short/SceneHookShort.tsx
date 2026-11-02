@@ -9,6 +9,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { Harp3DCanvas, PluckEvent } from '../earpa/Harp3DCanvas';
+import { PhoneFrame } from './PhoneFrame';
 
 const HOOK_PLUCKS: PluckEvent[] = [
   // Live human-played Celtic harp solo run (0.0s to 2.4s)
@@ -391,10 +392,9 @@ export const SceneHookShort: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            left: 180,
-            width: 720,
-            top: 275,
-            height: 1410,
+            left: 190,
+            top: 240,
+            width: 700,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -407,17 +407,17 @@ export const SceneHookShort: React.FC = () => {
           {/* Feature Badge Floating Above Phone */}
           <div
             style={{
-              padding: '10px 24px',
+              padding: '8px 22px',
               borderRadius: 999,
               background: 'rgba(10, 16, 26, 0.94)',
               border: `1.5px solid ${currentCard.accent}`,
               boxShadow: `0 8px 30px rgba(0,0,0,0.8), 0 0 24px ${currentCard.accent}55`,
               color: currentCard.accent,
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 900,
               letterSpacing: 1.5,
-              marginBottom: 16,
+              marginBottom: 12,
               display: 'flex',
               alignItems: 'center',
               gap: 10,
@@ -429,122 +429,103 @@ export const SceneHookShort: React.FC = () => {
             <span>{currentCard.badge}</span>
           </div>
 
-          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
-          <div
-            style={{
-              width: 720,
-              height: 1380,
-              borderRadius: 48,
-              padding: 8,
-              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
-              border: `2px solid ${currentCard.accent}99`,
-              boxShadow: `0 35px 90px rgba(0,0,0,0.9), 0 0 45px ${currentCard.accent}33`,
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Phone Dynamic Island */}
-            <div
+          {/* Sleek Titanium Phone Frame (100% Edge-to-Edge Screen Cover) */}
+          <PhoneFrame width={700} accent={currentCard.accent}>
+            <Img
+              src={staticFile(currentCard.img)}
               style={{
-                width: 140,
-                height: 26,
-                borderRadius: 20,
-                background: '#020617',
-                margin: '4px auto 6px auto',
-                border: '1px solid rgba(255,255,255,0.12)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                flexShrink: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
               }}
-            >
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
-            </div>
-
-            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
-            <div
-              style={{
-                flex: 1,
-                borderRadius: 40,
-                overflow: 'hidden',
-                background: '#030712',
-                position: 'relative',
-              }}
-            >
-              <Img
-                src={staticFile(currentCard.img)}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            </div>
-          </div>
+            />
+          </PhoneFrame>
         </div>
       )}
 
-      {/* 6. ACOUSTIC SOUND WAVES: Dynamic Luminous Spectrum (Resonant Solo Framing & Tactile Pulses) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 80,
-          right: 80,
-          top: frame < 215 ? 1380 : 1720,
-          height: frame < 215 ? 75 : 36,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: 5,
-          zIndex: 25,
-          pointerEvents: 'none',
-          transition: 'all 0.3s ease',
-        }}
-      >
-        {Array.from({ length: 36 }).map((_, barIdx) => {
-          const barFreq = 0.08 * (barIdx + 1);
-          const isPluckActive = HOOK_PLUCKS.some((p) => {
-            const dt = frame - p.startFrame;
-            return dt >= 0 && dt <= 32;
-          });
-          const baseAmp = isPluckActive ? (frame < 215 ? 1.0 : 0.45) : (frame < 215 ? 0.22 : 0.1);
-          const maxHeight = frame < 215 ? 68 : 30;
-          const barHeight = Math.min(
-            maxHeight,
-            Math.max(
-              6,
-              (Math.sin(frame * barFreq + barIdx * 0.38) * 0.5 + 0.5) * maxHeight * baseAmp + 6
-            )
-          );
-          const isHighBar = barIdx % 3 === 0;
-          const isMidBar = barIdx % 2 === 0;
-          return (
-            <div
-              key={barIdx}
-              style={{
-                flex: 1,
-                height: barHeight,
-                borderRadius: 4,
-                background: isHighBar
-                  ? 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)'
-                  : isMidBar
-                  ? 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)'
-                  : 'linear-gradient(180deg, #34d399 0%, #059669 100%)',
-                boxShadow: isHighBar
-                  ? '0 0 12px rgba(251, 191, 36, 0.7)'
-                  : isMidBar
-                  ? '0 0 10px rgba(56, 189, 248, 0.6)'
-                  : 'none',
-                opacity: frame < 215 ? 0.95 : 0.65,
-              }}
-            />
-          );
-        })}
-      </div>
+      {/* 6. ACOUSTIC SOUND SPECTRUM (Frames 0-210 Solo Visualizer, then gracefully hides) */}
+      {frame < 212 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 120,
+            right: 120,
+            top: 1410,
+            padding: '12px 20px',
+            borderRadius: 20,
+            background: 'rgba(8, 14, 24, 0.82)',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.7)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            zIndex: 25,
+            opacity: interpolate(frame, [195, 210], [1, 0], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: 11,
+              fontWeight: 800,
+              color: '#94a3b8',
+              letterSpacing: 1.2,
+            }}
+          >
+            <span>CELTIC HARP ACOUSTIC SPECTRUM</span>
+            <span style={{ color: '#fbbf24' }}>44.1 kHz REAL-TIME</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: 4,
+              height: 48,
+            }}
+          >
+            {Array.from({ length: 32 }).map((_, barIdx) => {
+              const barFreq = 0.09 * (barIdx + 1);
+              const isPluckActive = HOOK_PLUCKS.some((p) => {
+                const dt = frame - p.startFrame;
+                return dt >= 0 && dt <= 28;
+              });
+              const baseAmp = isPluckActive ? 1.0 : 0.28;
+              const barHeight = Math.min(
+                44,
+                Math.max(
+                  6,
+                  (Math.sin(frame * barFreq + barIdx * 0.36) * 0.5 + 0.5) * 40 * baseAmp + 6
+                )
+              );
+              const isHighBar = barIdx === 7 || barIdx === 21;
+              const isMidBar = barIdx % 3 === 0;
+              return (
+                <div
+                  key={barIdx}
+                  style={{
+                    flex: 1,
+                    height: barHeight,
+                    borderRadius: 3,
+                    background: isHighBar
+                      ? '#fbbf24'
+                      : isMidBar
+                      ? '#38bdf8'
+                      : 'rgba(212, 175, 55, 0.75)',
+                    boxShadow: isHighBar ? '0 0 10px rgba(251, 191, 36, 0.8)' : 'none',
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </AbsoluteFill>
   );
 };

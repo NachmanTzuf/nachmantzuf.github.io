@@ -9,6 +9,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { Harp3DCanvas, LeverFlipEvent, PluckEvent } from '../earpa/Harp3DCanvas';
+import { PhoneFrame } from './PhoneFrame';
 
 // Scene 4 runs from global frame 930 to 1165 (235 frames: local 0..235)
 const GAMEPLAY_PLUCKS: PluckEvent[] = [
@@ -27,8 +28,10 @@ const GAMEPLAY_PLUCKS: PluckEvent[] = [
 const GAMEPLAY_LEVERS: LeverFlipEvent[] = [
   // Camac Lever 3 (E3) flips up (+1.75 rad) at local frame 170 with mechanical click
   { leverNum: 3, flipFrame: 170 },
-  // Camac Lever 4 (F4) flips up (+1.75 rad) at local frame 200 with mechanical click
-  { leverNum: 4, flipFrame: 200 },
+  // Camac Lever 4 (F4) flips up (+1.75 rad) at local frame 195 with mechanical click
+  { leverNum: 4, flipFrame: 195 },
+  // Camac Lever 6 (A4) flips up (+1.75 rad) at local frame 215 with mechanical click
+  { leverNum: 6, flipFrame: 215 },
 ];
 
 export const SceneGameplayShort: React.FC = () => {
@@ -254,58 +257,19 @@ export const SceneGameplayShort: React.FC = () => {
             </span>
           </div>
 
-          {/* Sleek Real iPhone 15 Pro Titanium Frame (Single Phone, No Inception) */}
+          {/* Sleek Titanium Phone Frame (100% Edge-to-Edge Screen Cover) */}
           <div
             style={{
-              width: 720,
-              height: 1240,
-              borderRadius: 48,
-              padding: 8,
-              background: 'linear-gradient(145deg, #334155 0%, #1e293b 45%, #0f172a 100%)',
-              border: `2px solid ${currentPath.accent}99`,
-              boxShadow: `0 35px 90px rgba(0,0,0,0.9), 0 0 45px ${currentPath.accent}33`,
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
               transform: `perspective(1200px) rotateY(${phoneRotateY}deg)`,
+              margin: '10px auto',
             }}
           >
-            {/* Phone Dynamic Island */}
-            <div
-              style={{
-                width: 140,
-                height: 26,
-                borderRadius: 20,
-                background: '#020617',
-                margin: '4px auto 6px auto',
-                border: '1px solid rgba(255,255,255,0.12)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                flexShrink: 0,
-              }}
-            >
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1e293b' }} />
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#1e293b' }} />
-            </div>
-
-            {/* Pure Screen Content: Edge-to-Edge 786x1704 Native App Display */}
-            <div
-              style={{
-                flex: 1,
-                borderRadius: 40,
-                overflow: 'hidden',
-                background: '#030712',
-                position: 'relative',
-              }}
-            >
+            <PhoneFrame width={680} accent={currentPath.accent}>
               <Img
                 src={staticFile(currentPath.phoneImg)}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
-            </div>
+            </PhoneFrame>
           </div>
 
           {/* Sanctuary Realm Tag */}
