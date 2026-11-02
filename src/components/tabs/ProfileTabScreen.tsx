@@ -1,4 +1,3 @@
-import {LessonLibrary} from '../common/LessonLibrary';
 import {TesterFeedback} from '../common/TesterFeedback';
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -12,6 +11,7 @@ import {
   Switch,
   Platform,
   Linking,
+  Modal,
 } from 'react-native';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 import { PhotoPicker, ProfilePhoto } from '../account/ProfilePhoto';
@@ -30,6 +30,38 @@ interface ProfileTabScreenProps {
   onOpenRoadmap: (realm?: 'single' | 'melody' | 'levers') => void;
   onOpenSocial: () => void;
 }
+
+const PRACTICE_VIDEOS = [
+  {
+    id: 'single',
+    title: 'Single Note',
+    subtitle: 'Find Tonic',
+    duration: '60s',
+    poster: '/videos/plus/SingleMotionPlus-poster.jpg',
+    url: '/videos/plus/SingleMotionPlus.mp4',
+    accent: '#34d399',
+  },
+  {
+    id: 'melody',
+    title: 'Melody',
+    subtitle: 'Hear Pattern',
+    duration: '60s',
+    poster: '/videos/plus/MelodyMotionPlus-poster.jpg',
+    url: '/videos/plus/MelodyMotionPlus.mp4',
+    accent: '#38bdf8',
+  },
+  {
+    id: 'levers',
+    title: 'Levers',
+    subtitle: 'Learn by Doing',
+    duration: '90s',
+    poster: '/videos/plus/LeverMotionPlus-poster.jpg',
+    url: '/videos/plus/LeverMotionPlus.mp4',
+    accent: '#fbbf24',
+  },
+] as const;
+
+type PracticeVideo = (typeof PRACTICE_VIDEOS)[number];
 
 const Bar = ({ label, value, detail }: { label: string; value: number; detail: string }) => (
   <View style={{ gap: 7, marginVertical: 7 }}>
@@ -58,6 +90,16 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
   const [create, setCreate] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [selectedRealm, setSelectedRealm] = useState<'single' | 'melody' | 'levers'>('single');
+  const [selectedPracticeVideo, setSelectedPracticeVideo] = useState<PracticeVideo | null>(null);
+
+  useEffect(() => {
+    if (!selectedPracticeVideo || Platform.OS !== 'web') return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPracticeVideo(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedPracticeVideo]);
 
   const maxDay = Math.max(60, ...days.map((d) => d.practiceSeconds));
   const recent = trials.slice(-20);
@@ -397,14 +439,103 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
 
         <View style={s.journeyCard} nativeID="journey-video-library">
           <Text style={s.sectionHeader}>Practice films</Text>
-          <Text style={s.small}>Your three newest guided lessons. Return any time.</Text>
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>
-            {(['single','melody','levers'] as const).map(track=><LessonLibrary key={track} track={track} persistent />)}
+          <Text style={s.small}>Guided walkthroughs for your ear training journey.</Text>
+          <View style={s.practiceFilmsRow}>
+            {PRACTICE_VIDEOS.map((v) => (
+              <TouchableOpacity
+                key={v.id}
+                activeOpacity={0.82}
+                accessibilityRole="button"
+                accessibilityLabel={`Watch ${v.title} practice film`}
+                onPress={() => setSelectedPracticeVideo(v)}
+                style={s.practiceFilmCard}
+              >
+                <View style={s.practicePosterContainer}>
+                  <Image
+                    source={{ uri: v.poster }}
+                    style={s.practicePosterImg}
+                    resizeMode="cover"
+                  />
+                  <View style={s.practicePosterScrim} />
+                  <View style={s.practicePlayBadge}>
+                    <Text style={s.practicePlayIcon}>▶</Text>
+                  </View>
+                  <View style={s.practiceDurationBadge}>
+                    <Text style={s.practiceDurationText}>{v.duration}</Text>
+                  </View>
+                </View>
+                <View style={s.practiceMetaContainer}>
+                  <Text style={[s.practiceCardTitle, { color: v.accent }]} numberOfLines={1}>
+                    {v.title}
+                  </Text>
+                  <Text style={s.practiceCardSub} numberOfLines={1}>
+                    {v.subtitle}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-          <TouchableOpacity accessibilityRole="link" accessibilityLabel="Browse all Earpa videos" onPress={()=>Linking.openURL(Platform.OS==='web'?new URL('/watch-library.html',window.location.href).href:'https://nachmantzuf.github.io/watch-library.html')} style={{paddingVertical:12}}>
-            <Text style={s.text}>All Earpa films & earlier versions →</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Full-Screen Video Theater Modal */}
+        <Modal
+          visible={!!selectedPracticeVideo}
+          transparent={false}
+          animationType="fade"
+          statusBarTranslucent
+          onRequestClose={() => setSelectedPracticeVideo(null)}
+        >
+          <View style={{ flex: 1, backgroundColor: '#07120c' }}>
+            {selectedPracticeVideo && (
+              Platform.OS === 'web' ? (
+                <video
+                  key={selectedPracticeVideo.url}
+                  aria-label={selectedPracticeVideo.title}
+                  autoPlay
+                  controls
+                  playsInline
+                  src={selectedPracticeVideo.url}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    background: '#07120c',
+                  }}
+                />
+              ) : (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(selectedPracticeVideo.url)}
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <Text style={{ color: '#eedcb7', fontSize: 16 }}>Play lesson</Text>
+                </TouchableOpacity>
+              )
+            )}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Close practice film"
+              onPress={() => setSelectedPracticeVideo(null)}
+              style={{
+                position: 'absolute',
+                top: Platform.OS === 'web' ? 16 : 48,
+                left: 16,
+                zIndex: 100,
+                minHeight: 40,
+                paddingHorizontal: 16,
+                justifyContent: 'center',
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: '#eedcb755',
+                backgroundColor: 'rgba(7, 18, 12, 0.85)',
+              }}
+            >
+              <Text style={{ color: '#fff5dc', fontSize: 15, fontWeight: '600' }}>✕ Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
         {/* Sleek Practice Reminder Modal */}
         <PracticeReminderModal visible={reminderOpen} onClose={() => setReminderOpen(false)} />
       </ScrollView>
@@ -580,5 +711,98 @@ const s = StyleSheet.create({
     padding: 12,
     borderBottomWidth: 1,
     borderColor: '#9d8965',
+  },
+  practiceFilmsRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 8,
+    marginTop: 4,
+  },
+  practiceFilmCard: {
+    flex: 1,
+    borderRadius: 14,
+    backgroundColor: 'rgba(14, 25, 20, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.32)',
+    overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
+          transition: 'transform 0.2s ease, borderColor 0.2s ease',
+        } as any)
+      : {}),
+  },
+  practicePosterContainer: {
+    width: '100%',
+    aspectRatio: 9 / 13,
+    position: 'relative',
+    backgroundColor: '#0a1610',
+    overflow: 'hidden',
+  },
+  practicePosterImg: {
+    width: '100%',
+    height: '100%',
+  },
+  practicePosterScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  practicePlayBadge: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -15 }, { translateY: -15 }],
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(212, 175, 55, 0.35)',
+    borderWidth: 1,
+    borderColor: '#fae8c2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+        } as any)
+      : {}),
+  },
+  practicePlayIcon: {
+    fontSize: 11,
+    color: '#ffffff',
+    marginLeft: 2,
+  },
+  practiceDurationBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: 'rgba(5, 12, 9, 0.8)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  practiceDurationText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#cbd5e1',
+    fontFamily: Platform.OS === 'web' ? 'ui-monospace, monospace' : undefined,
+  },
+  practiceMetaContainer: {
+    padding: 6,
+    alignItems: 'center',
+  },
+  practiceCardTitle: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  practiceCardSub: {
+    fontSize: 8.5,
+    color: '#94a3b8',
+    textAlign: 'center',
   },
 });

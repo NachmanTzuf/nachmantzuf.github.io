@@ -848,7 +848,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
             interactiveControls={true}
             fixedInGameAngle={true}
             customAngle={inGameAngle}
-            customScale={0.912}
+            customScale={0.938}
             targetY={0.590}
             minimalHeroMode={true}
           />

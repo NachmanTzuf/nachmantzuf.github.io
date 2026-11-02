@@ -335,10 +335,10 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
 
       const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 25);
 
-      // Universal multi-tier WebGL context initialization fallback (Pixel 10 Pro, Samsung, Xiaomi, iOS, Huawei)
+      // Universal multi-tier WebGL context initialization fallback with antialiasing enabled
       let renderer: THREE.WebGLRenderer | null = null;
       const rendererConfigs = [
-        { antialias: !mobileGraphics, alpha: true, powerPreference: 'default' as const },
+        { antialias: true, alpha: true, powerPreference: 'high-performance' as const },
         { antialias: true, alpha: true, powerPreference: 'default' as const },
         { antialias: false, alpha: true, powerPreference: 'default' as const },
         { antialias: false, alpha: true, powerPreference: 'low-power' as const },
@@ -367,7 +367,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       glRenderer.domElement.style.width = '100%';
       glRenderer.domElement.style.height = '100%';
       glRenderer.domElement.style.display = 'block';
-      glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobileGraphics ? 1.25 : 2));
+      glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
       glRenderer.toneMappingExposure = 1.10;
       glRenderer.shadowMap.enabled = true;
@@ -546,16 +546,29 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
               // Capture String_1 .. String_8 for standing-wave vibration physics
               if (child.name === `String_${d}` && child.isMesh) {
                 child.material = child.material.clone();
-                child.material.emissive = new THREE.Color(0x000000);
-                child.material.emissiveIntensity = 0.0;
+
                 let glowColor = new THREE.Color(0xffaa44); // Rich warm golden amber radiance
-                if (d === 1 || d === 8) glowColor = new THREE.Color(0xff3333); // Vivid red for C
-                else if (d === 4) glowColor = new THREE.Color(0x38bdf8); // Vivid cyan sky-blue for F
+                let restingBaseColor = new THREE.Color(0xfff5ea); // Luminous ivory nylon
+                let restingEmissive = new THREE.Color(0x382810); // Warm standing radiance
+
+                if (d === 1 || d === 8) {
+                  glowColor = new THREE.Color(0xff3333); // Vivid red for C
+                  restingBaseColor = new THREE.Color(0xef4444);
+                  restingEmissive = new THREE.Color(0x3a0a0a);
+                } else if (d === 4) {
+                  glowColor = new THREE.Color(0x38bdf8); // Vivid cyan sky-blue for F
+                  restingBaseColor = new THREE.Color(0x2563eb);
+                  restingEmissive = new THREE.Color(0x0a1a38);
+                }
+
+                child.material.color = restingBaseColor;
+                child.material.emissive = restingEmissive;
+                child.material.emissiveIntensity = 0.24; // Clear, continuous visibility across all backgrounds
+                child.material.roughness = 0.16;
+                child.material.metalness = 0.05;
 
                 const geom = child.geometry as THREE.BufferGeometry;
                 const posAttr = geom.attributes.position;
-                const basePositions = new Float32Array(posAttr.array.length);
-                basePositions.set(posAttr.array);
 
                 let minY = Infinity;
                 let maxY = -Infinity;
@@ -575,6 +588,36 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                 }
 
                 const dirVec = topPt.clone().sub(botPt).normalize();
+
+                // Radially thicken string geometry around its central axis (2.25x thickness)
+                // Transforms thin 1px wire into tactile, prominent, visible Celtic harp strings
+                const stringThicknessMult = 2.25;
+                for (let i = 0; i < posAttr.count; i++) {
+                  const vx = posAttr.getX(i);
+                  const vy = posAttr.getY(i);
+                  const vz = posAttr.getZ(i);
+                  const diffX = vx - botPt.x;
+                  const diffY = vy - botPt.y;
+                  const diffZ = vz - botPt.z;
+                  const proj = diffX * dirVec.x + diffY * dirVec.y + diffZ * dirVec.z;
+                  const perpX = diffX - proj * dirVec.x;
+                  const perpY = diffY - proj * dirVec.y;
+                  const perpZ = diffZ - proj * dirVec.z;
+                  posAttr.setXYZ(
+                    i,
+                    botPt.x + proj * dirVec.x + perpX * stringThicknessMult,
+                    botPt.y + proj * dirVec.y + perpY * stringThicknessMult,
+                    botPt.z + proj * dirVec.z + perpZ * stringThicknessMult
+                  );
+                }
+                posAttr.needsUpdate = true;
+                if (geom.attributes.normal) {
+                  geom.computeVertexNormals();
+                }
+
+                const basePositions = new Float32Array(posAttr.array.length);
+                basePositions.set(posAttr.array);
+
                 const pluckDirA = new THREE.Vector3(0, 0, 1).cross(dirVec).normalize();
                 const pluckDirB = dirVec.clone().cross(pluckDirA).normalize();
 
@@ -691,17 +734,21 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       };
 
       const getClosestStringDegree = (ray: THREE.Ray): number => {
-        // Reject the whole mounting/upper-string region before finding a playable string.
-        // This also prevents a nearby string from winning when a lever is between strings.
-        for (const st of stringsRef.current.values()) {
-          const bottom = st.botPt.clone().applyMatrix4(st.mesh.matrixWorld);
-          const top = st.topPt.clone().applyMatrix4(st.mesh.matrixWorld);
-          const boundary = bottom.clone().lerp(top, 0.74);
-          if (ray.distanceSqToSegment(boundary, top) < 0.0009) return -1;
+        // In free-orbit 360 inspection mode, reject lever mounting boundary
+        if (!fixedInGameAngle) {
+          for (const st of stringsRef.current.values()) {
+            const bottom = st.botPt.clone().applyMatrix4(st.mesh.matrixWorld);
+            const top = st.topPt.clone().applyMatrix4(st.mesh.matrixWorld);
+            const boundary = bottom.clone().lerp(top, 0.74);
+            if (ray.distanceSqToSegment(boundary, top) < 0.0009) return -1;
+          }
+          if (checkLeverInteraction(ray) !== -1) return -1;
         }
-        if (checkLeverInteraction(ray) !== -1) return -1;
+
         let bestDeg = -1;
-        let bestDistSq = 0.0001; // ~15.8cm generous touch proximity radius in world coordinates (~60px on mobile screen)
+        // Generous touch target proximity radius in world coordinates:
+        // 0.0081 m^2 => 0.09m (9cm radius, ~41px on mobile screen), allowing effortless finger pressing
+        let bestDistSq = 0.0081;
         const pBot = new THREE.Vector3();
         const pTop = new THREE.Vector3();
         const pPlayingTop = new THREE.Vector3();
@@ -710,8 +757,8 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           pBot.copy(st.botPt).applyMatrix4(st.mesh.matrixWorld);
           pTop.copy(st.topPt).applyMatrix4(st.mesh.matrixWorld);
 
-          // Pluck zone covers 92% of the string length
-          pPlayingTop.copy(pBot).lerp(pTop, 0.70);
+          // In-game pluck zone covers 96% of string height
+          pPlayingTop.copy(pBot).lerp(pTop, fixedInGameAngle ? 0.96 : 0.72);
 
           const distSq = ray.distanceSqToSegment(pBot, pPlayingTop);
           if (distSq < bestDistSq) {
@@ -772,14 +819,26 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         activeLeverDeg = -1;
         leverActionTaken = false;
 
-        // Priority 2: Check if user touched or is near a Camac lever!
-        const hitLever = checkLeverInteraction(raycaster.ray);
-        if (hitLever > 0) {
-          isLeverInteracting = true;
-          activeLeverDeg = hitLever;
-          leverTouchStartY = e.clientY;
-          orbitRef.current.isDragging = false;
-          return; // STOP! Never pluck string or rotate camera when touching lever
+        // In fixed in-game mode, string plucking is priority #1!
+        if (fixedInGameAngle) {
+          const hitString = handlePointerStringCheck(e.clientX, e.clientY);
+          if (hitString) {
+            isStrumming = true;
+            orbitRef.current.isDragging = false;
+            return;
+          }
+        }
+
+        // Priority 2: Check if user touched or is near a Camac lever (in free-orbit lever inspection)
+        if (!fixedInGameAngle) {
+          const hitLever = checkLeverInteraction(raycaster.ray);
+          if (hitLever > 0) {
+            isLeverInteracting = true;
+            activeLeverDeg = hitLever;
+            leverTouchStartY = e.clientY;
+            orbitRef.current.isDragging = false;
+            return;
+          }
         }
 
         // Priority 1: Check if user touched or is near strings (Direct Pluck Guess Priority)
@@ -828,7 +887,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         }
 
         // Responsive glissando strumming & swipe-to-pluck across strings
-        const hitMovedString = isStrumming && e.buttons !== 0
+        const hitMovedString = (isStrumming || fixedInGameAngle) && (e.buttons !== 0 || e.pointerType === 'touch')
           && handlePointerStringCheck(e.clientX, e.clientY);
         if (hitMovedString) {
           isStrumming = true;
@@ -936,13 +995,12 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
             // High-speed visual oscillation phase
             st.phase += dt * 58.0;
 
-            // Subtle glowing light feedback: starts radiant, fades smoothly in exact lockstep with vibration down to total extinction
-            // Subtle glowing light strictly on the thin string filament itself, fading in exact lockstep with vibration
+            // Glowing light strictly on the string, pulsing on pluck and settling to resting floor
             const decayFrac = Math.max(0.0, Math.min(1.0, st.amplitude / 0.009));
             const meshMat = st.mesh.material as THREE.MeshStandardMaterial;
             if (meshMat) {
               meshMat.emissive.copy(st.glowColor);
-              meshMat.emissiveIntensity = decayFrac * 0.85;
+              meshMat.emissiveIntensity = 0.24 + decayFrac * 0.71;
             }
 
             const posAttr = st.mesh.geometry.attributes.position as THREE.BufferAttribute;
@@ -1004,11 +1062,11 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
               posA.needsUpdate = true;
               posB.needsUpdate = true;
             }
-          } else if (st.amplitude > 0 || ((st.mesh.material as THREE.MeshStandardMaterial)?.emissiveIntensity ?? 0) > 0) {
+          } else if (st.amplitude > 0 || ((st.mesh.material as THREE.MeshStandardMaterial)?.emissiveIntensity ?? 0) > 0.24) {
             st.amplitude = 0;
             const meshMat = st.mesh.material as THREE.MeshStandardMaterial;
             if (meshMat) {
-              meshMat.emissiveIntensity = 0.0;
+              meshMat.emissiveIntensity = 0.24;
             }
             const posAttr = st.mesh.geometry.attributes.position as THREE.BufferAttribute;
             (posAttr.array as Float32Array).set(st.basePositions);
