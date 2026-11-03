@@ -42,6 +42,7 @@ export interface CelticHarpCanvasRef {
   transitionCamera: (preset: CameraPreset) => void;
   applyTimberColor: (colorHex: string, roughness?: number, metalness?: number) => void;
   applyStringGlowColor: (colorHex: string) => void;
+  applyLeverColor: (colorHex: string) => void;
 }
 
 interface CelticHarpCanvasProps {
@@ -324,6 +325,16 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         const color = new THREE.Color(colorHex);
         stringsRef.current.forEach((st) => {
           st.glowColor.copy(color);
+        });
+      },
+      applyLeverColor: (colorHex: string) => {
+        if (!harpRootRef.current) return;
+        const color = new THREE.Color(colorHex);
+        harpRootRef.current.traverse((child: any) => {
+          if (child.isMesh && child.material && child.name.startsWith('Lever_')) {
+            child.material.color.copy(color);
+            child.material.needsUpdate = true;
+          }
         });
       },
     }));

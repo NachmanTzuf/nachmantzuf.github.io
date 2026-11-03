@@ -243,6 +243,20 @@ export default function EarpaMasterScreen() {
 
   const rootMidi = 60 + activeRootPc;
 
+  const handleHarpModelLoaded = () => {
+    setIsHarpLoaded(true);
+    try {
+      const eq = garageEngineRef.current.getEquipped();
+      if (eq) {
+        canvasRef.current?.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
+        canvasRef.current?.applyStringGlowColor(eq.strings.colorHex);
+        canvasRef.current?.applyLeverColor(eq.lever.colorHex);
+        const timbre = eq.sound.id === 'gut_string_warmth' ? 'gut_string_warmth' : eq.sound.id === 'subtle_cathedral_reverb' ? 'subtle_cathedral_reverb' : 'celtic_nylon';
+        synthRef.current.setTimbre(timbre);
+      }
+    } catch {}
+  };
+
   const handleStartTrial = async () => {
     if (!fsmRef.current) return;
     setGuessedDegree(null);
@@ -488,7 +502,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('single')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('single')}
-                  onModelLoaded={() => setIsHarpLoaded(true)}
+                  onModelLoaded={handleHarpModelLoaded}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={profile.totalTrialsAttempted * 10}
                   nextMilestoneXp={500}
@@ -509,7 +523,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('melody')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('melody')}
-                  onModelLoaded={() => setIsHarpLoaded(true)}
+                  onModelLoaded={handleHarpModelLoaded}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={180}
                   nextMilestoneXp={400}
@@ -530,7 +544,7 @@ export default function EarpaMasterScreen() {
                   onPressPlay={() => handleLaunchInGame('single')}
                   onStringPlucked={handleDirectStringPluck}
                   onOpenRoadmap={() => handleOpenRoadmapWithTheme('levers')}
-                  onModelLoaded={() => setIsHarpLoaded(true)}
+                  onModelLoaded={handleHarpModelLoaded}
                   streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
                   currentXp={260}
                   nextMilestoneXp={450}
@@ -621,6 +635,11 @@ export default function EarpaMasterScreen() {
                 canvasRef.current?.applyTimberColor(colorHex);
               } else if (type === 'strings') {
                 canvasRef.current?.applyStringGlowColor(colorHex);
+              } else if (type === 'lever') {
+                canvasRef.current?.applyLeverColor(colorHex);
+              } else if (type === 'sound') {
+                const timbre = colorHex === 'gut_string_warmth' ? 'gut_string_warmth' : colorHex === 'subtle_cathedral_reverb' ? 'subtle_cathedral_reverb' : 'celtic_nylon';
+                synthRef.current.setTimbre(timbre);
               }
             }}
           />

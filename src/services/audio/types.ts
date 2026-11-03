@@ -45,7 +45,12 @@ export interface MusicalNote {
 
 export type CadenceVoicing = 'root' | 'inverted' | 'celtic_arpeggiated';
 
-export type TimbreType = 'celtic_nylon' | 'celtic_wire' | 'concert_piano';
+export type TimbreType =
+  | 'celtic_nylon'
+  | 'celtic_wire'
+  | 'concert_piano'
+  | 'gut_string_warmth'
+  | 'subtle_cathedral_reverb';
 
 export type ResolutionDirection = 'natural' | 'down' | 'up' | 'closest';
 

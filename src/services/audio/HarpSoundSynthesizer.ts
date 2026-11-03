@@ -40,6 +40,20 @@ export class HarpSoundSynthesizer {
 
   private currentTimbre: TimbreType = 'celtic_nylon';
   private bufferCache: Map<string, AudioBuffer> = new Map();
+  private static sharedPreviewSynth: HarpSoundSynthesizer | null = null;
+
+  public static playWarmHarpChime(timbre: TimbreType = 'celtic_nylon', freqHz: number = 330): void {
+    if (typeof window === 'undefined') return;
+    if (!this.sharedPreviewSynth) {
+      this.sharedPreviewSynth = new HarpSoundSynthesizer(timbre);
+    }
+    this.sharedPreviewSynth.initAudio().then(() => {
+      if (this.sharedPreviewSynth) {
+        this.sharedPreviewSynth.setTimbre(timbre);
+        this.sharedPreviewSynth.playPluck(freqHz, 2200, 0.88);
+      }
+    });
+  }
 
   constructor(timbre: TimbreType = 'celtic_nylon') {
     this.currentTimbre = timbre;
@@ -84,7 +98,7 @@ export class HarpSoundSynthesizer {
         // 3. Acoustic high-cut roll-off filter (calibrated to physical harp steep roll-off above 2400Hz)
         this.highCutFilter = ctx.createBiquadFilter();
         this.highCutFilter.type = 'lowpass';
-        this.highCutFilter.frequency.setValueAtTime(2100, ctx.currentTime);
+        this.highCutFilter.frequency.setValueAtTime(1950, ctx.currentTime);
         this.highCutFilter.Q.setValueAtTime(0.707, ctx.currentTime);
 
         // Connect Formant Chain
@@ -294,7 +308,11 @@ export class HarpSoundSynthesizer {
     const midi = 69 + 12 * Math.log2(f0 / 440);
     const t = Math.max(0, Math.min(1, (midi - 36) / (84 - 36)));
     let rho = 0.996 - t * (0.996 - 0.991);
-    if (timbre === 'celtic_wire') {
+    if (timbre === 'gut_string_warmth') {
+      rho = Math.min(0.9972, rho + 0.0008); // Rich long woody sustain
+    } else if (timbre === 'subtle_cathedral_reverb') {
+      rho = Math.min(0.9978, rho + 0.0014); // Airy, expansive lingering sustain
+    } else if (timbre === 'celtic_wire') {
       rho = Math.min(0.998, rho + 0.0012);
     } else if (timbre === 'concert_piano') {
       rho = Math.max(0.988, rho - 0.0012);
@@ -312,8 +330,10 @@ export class HarpSoundSynthesizer {
       pink[i] = b0 + b1 + b2 + white * 0.1848;
     }
 
-    // Lowpass filter pink noise (~600Hz fleshy finger pad contact damping)
-    const alphaLP = Math.exp((-2 * Math.PI * 600) / sampleRate);
+    // Lowpass filter pink noise (warm fleshy finger pad contact damping - ultra soft attack)
+    const lpCutoff =
+      timbre === 'gut_string_warmth' ? 330 : timbre === 'subtle_cathedral_reverb' ? 390 : 450;
+    const alphaLP = Math.exp((-2 * Math.PI * lpCutoff) / sampleRate);
     let lpState = 0;
     for (let i = 0; i < N_exc; i++) {
       lpState = (1 - alphaLP) * pink[i] + alphaLP * lpState;
@@ -322,7 +342,15 @@ export class HarpSoundSynthesizer {
 
     // Blend warm fundamental displacement window with pink noise
     const fundWeight =
-      timbre === 'celtic_nylon' ? 0.72 : timbre === 'celtic_wire' ? 0.42 : 0.55;
+      timbre === 'gut_string_warmth'
+        ? 0.94 // Exceptionally deep, warm, velvety fundamental
+        : timbre === 'subtle_cathedral_reverb'
+        ? 0.88
+        : timbre === 'celtic_nylon'
+        ? 0.84
+        : timbre === 'celtic_wire'
+        ? 0.45
+        : 0.65;
     const noiseWeight = 1.0 - fundWeight;
     let excSum = 0;
     for (let i = 0; i < N_exc; i++) {

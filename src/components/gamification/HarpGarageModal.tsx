@@ -2,7 +2,8 @@
  * EARPA HARP ARTISAN WORKSHOP (HARP GARAGE)
  * Spend earned Shards to customize your Celtic harp with authentic natural timbers,
  * hand-carved soundboard inlays, illuminated LED strings, acoustic sound packs, and Camac levers.
- * Styled with the Journey sunglasses background and liquid glass aesthetic.
+ * Features real-time visual Celtic harp preview, dynamic color accuracy,
+ * and velvety soft, warm acoustic harp plucks.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -26,6 +27,9 @@ import {
   CosmeticItem,
 } from '../../services/gamification/types';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
+import { HarpShopPreview } from './HarpShopPreview';
+import { HarpSoundSynthesizer } from '../../services/audio/HarpSoundSynthesizer';
+import { TimbreType } from '../../services/audio/types';
 
 interface HarpGarageModalProps {
   visible: boolean;
@@ -47,19 +51,67 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   const [userShards, setUserShards] = useState<number>(db.getShards());
   const [toastMessage, setToastMessage] = useState<string>('');
 
+  // Live preview state (defaults to equipped items)
+  const equipped = garageEngine.getEquipped();
+  const [previewTimber, setPreviewTimber] = useState<CosmeticItem<TimberFinishId>>(equipped.timber);
+  const [previewRosette, setPreviewRosette] = useState<CosmeticItem<SoundboardRosetteId>>(equipped.rosette);
+  const [previewStrings, setPreviewStrings] = useState<CosmeticItem<ResonanceStringShaderId>>(equipped.strings);
+  const [previewSound, setPreviewSound] = useState<CosmeticItem<SoundPackId>>(equipped.sound);
+  const [previewLever, setPreviewLever] = useState<CosmeticItem<LeverFinishId>>(equipped.lever);
+  const [previewItemName, setPreviewItemName] = useState<string>('');
+
   useEffect(() => {
     if (visible) {
       setUserShards(db.getShards());
       setToastMessage('');
+      const eq = garageEngine.getEquipped();
+      setPreviewTimber(eq.timber);
+      setPreviewRosette(eq.rosette);
+      setPreviewStrings(eq.strings);
+      setPreviewSound(eq.sound);
+      setPreviewLever(eq.lever);
+      setPreviewItemName('');
     }
   }, [visible]);
 
-  const equipped = garageEngine.getEquipped();
   const timbers = garageEngine.getTimbers();
   const rosettes = garageEngine.getRosettes();
   const strings = garageEngine.getStrings();
   const sounds = garageEngine.getSounds();
   const levers = garageEngine.getLevers();
+
+  const getTimbreForSoundId = (id: string): TimbreType => {
+    if (id === 'gut_string_warmth') return 'gut_string_warmth';
+    if (id === 'subtle_cathedral_reverb') return 'subtle_cathedral_reverb';
+    return 'celtic_nylon';
+  };
+
+  const handlePreviewItem = (category: StoreCategory, item: CosmeticItem<any>) => {
+    setPreviewItemName(item.name);
+    let noteFreq = 329.63; // E4 warm note
+    let soundTimbre = getTimbreForSoundId(previewSound.id);
+
+    if (category === 'TIMBER') {
+      setPreviewTimber(item);
+      noteFreq = 261.63; // Rich deep C4
+    } else if (category === 'ROSETTE') {
+      setPreviewRosette(item);
+      noteFreq = 392.00; // Resonant G4
+    } else if (category === 'STRINGS') {
+      setPreviewStrings(item);
+      noteFreq = 523.25; // Shimmering C5
+    } else if (category === 'SOUND') {
+      setPreviewSound(item);
+      soundTimbre = getTimbreForSoundId(item.id);
+      noteFreq = 349.23; // F4
+    } else if (category === 'LEVERS') {
+      setPreviewLever(item);
+      noteFreq = 369.99; // F#4 Semitone lever shift
+    }
+
+    // Play ultra soft, warm, satisfying chime on touch
+    HarpSoundSynthesizer.playWarmHarpChime(soundTimbre, noteFreq);
+  };
 
   const handleEquip = (category: StoreCategory, id: string, colorHex: string) => {
     let success = false;
@@ -70,8 +122,23 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     else if (category === 'LEVERS') success = garageEngine.equipLever(id as LeverFinishId);
 
     if (success) {
-      onApplyCosmetic(category.toLowerCase() as any, colorHex);
+      const eq = garageEngine.getEquipped();
+      setPreviewTimber(eq.timber);
+      setPreviewRosette(eq.rosette);
+      setPreviewStrings(eq.strings);
+      setPreviewSound(eq.sound);
+      setPreviewLever(eq.lever);
+      setPreviewItemName('');
+
+      onApplyCosmetic(category.toLowerCase() as any, category === 'SOUND' ? id : colorHex);
       setToastMessage(`Fitted ${category.toLowerCase()} to your Celtic harp.`);
+
+      // Play warm celebration chord
+      const timbre = getTimbreForSoundId(eq.sound.id);
+      HarpSoundSynthesizer.playWarmHarpChime(timbre, 261.63);
+      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 329.63), 100);
+      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 392.00), 200);
+      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 523.25), 300);
     }
   };
 
@@ -80,9 +147,23 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     if (res.success) {
       setUserShards(db.getShards());
       setToastMessage(res.message);
+      const eq = garageEngine.getEquipped();
+      setPreviewTimber(eq.timber);
+      setPreviewRosette(eq.rosette);
+      setPreviewStrings(eq.strings);
+      setPreviewSound(eq.sound);
+      setPreviewLever(eq.lever);
+      setPreviewItemName('');
+
       if (res.colorHex) {
-        onApplyCosmetic(category.toLowerCase() as any, res.colorHex);
+        onApplyCosmetic(category.toLowerCase() as any, category === 'SOUND' ? id : res.colorHex);
       }
+
+      // Play warm affirmation arpeggio
+      const timbre = getTimbreForSoundId(eq.sound.id);
+      HarpSoundSynthesizer.playWarmHarpChime(timbre, 329.63);
+      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 392.00), 120);
+      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 523.25), 240);
     } else {
       setToastMessage(res.message);
     }
@@ -126,10 +207,23 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.eyebrow}>EARPA · ARTISAN WORKSHOP</Text>
-              <Text style={styles.title}>The Luthier Vault</Text>
+              <View style={styles.headerTopRow}>
+                <View>
+                  <Text style={styles.eyebrow}>EARPA · ARTISAN WORKSHOP</Text>
+                  <Text style={styles.title}>The Luthier Vault</Text>
+                </View>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Close workshop"
+                  onPress={onClose}
+                  style={styles.closeHeaderBtn}
+                >
+                  <Text style={styles.closeHeaderText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
               <Text style={styles.subtitle}>
-                Spend your earned Shards on handcrafted woods, carvings, gut warmth, and golden levers.
+                Spend earned Shards on handcrafted woods, carvings, gut string warmth, and Camac levers.
               </Text>
 
               {/* Shards Currency Counter */}
@@ -144,6 +238,22 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                 </View>
               )}
             </View>
+
+            {/* LIVE DYNAMIC CELTIC HARP SHOWCASE */}
+            <HarpShopPreview
+              timberColor={previewTimber.colorHex}
+              timberName={previewTimber.name}
+              rosetteColor={previewRosette.colorHex}
+              rosetName={previewRosette.name}
+              stringsColor={previewStrings.colorHex}
+              stringsName={previewStrings.name}
+              leverColor={previewLever.colorHex}
+              leverName={previewLever.name}
+              soundPackId={previewSound.id}
+              soundPackName={previewSound.name}
+              isPreviewing={!!previewItemName}
+              previewItemName={previewItemName}
+            />
 
             {/* Category Tabs: Woods, Carvings, LED, Sound, Levers */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBar}>
@@ -197,15 +307,19 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             <View style={styles.itemList}>
               {currentItems.map((item) => {
                 const isEquipped = currentEquippedId === item.id;
+                const isPreviewed = previewItemName === item.name;
                 const canAfford = userShards >= (item.shardCost || 0);
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={item.id}
+                    activeOpacity={0.85}
+                    onPress={() => handlePreviewItem(activeTab, item)}
                     style={[
                       styles.itemCard,
                       !item.isUnlocked && styles.cardLocked,
                       isEquipped && styles.cardEquipped,
+                      isPreviewed && styles.cardPreviewed,
                     ]}
                   >
                     <View style={styles.itemHeader}>
@@ -213,7 +327,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                       <View style={styles.itemMeta}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Text style={styles.itemName}>{item.name}</Text>
-                          {isEquipped && <Text style={styles.equippedBadge}>EQUIPPED</Text>}
+                          {isEquipped ? (
+                            <Text style={styles.equippedBadge}>EQUIPPED</Text>
+                          ) : isPreviewed ? (
+                            <Text style={styles.previewBadge}>PREVIEWING</Text>
+                          ) : null}
                         </View>
                         <Text style={styles.itemLore}>{item.lore}</Text>
                       </View>
@@ -222,7 +340,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                     <View style={styles.actionRow}>
                       <Text style={styles.requirementText}>
                         {item.isUnlocked
-                          ? 'Unlocked in collection'
+                          ? 'Tap to preview tone'
                           : `${item.shardCost || 0} Shards`}
                       </Text>
 
@@ -248,7 +366,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                         </TouchableOpacity>
                       )}
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -280,29 +398,40 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: '100%',
-    maxWidth: 440,
-    maxHeight: '90%',
+    maxWidth: 460,
+    maxHeight: '92%',
     borderRadius: 24,
     backgroundColor: '#090d16',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.45)',
     overflow: 'hidden',
     position: 'relative',
-    boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
-  } as any,
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
+        } as any)
+      : {}),
+  },
   sunglassesTint: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(9, 13, 22, 0.86)',
   },
   scrollContent: {
-    padding: 20,
+    padding: 18,
     gap: 16,
     position: 'relative',
     zIndex: 10,
+    paddingBottom: 28,
   },
   header: {
     alignItems: 'center',
     gap: 6,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   eyebrow: {
     color: '#d4af37',
@@ -314,8 +443,22 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#fef08a',
     fontWeight: '900',
-    textAlign: 'center',
     letterSpacing: 0.5,
+  },
+  closeHeaderBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(220, 198, 154, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeHeaderText: {
+    color: '#fae8c2',
+    fontSize: 14,
+    fontWeight: '700',
   },
   subtitle: {
     fontSize: 12,
@@ -354,94 +497,99 @@ const styles = StyleSheet.create({
   },
   toastText: {
     color: '#a7f3d0',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   tabBar: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    borderRadius: 14,
-    padding: 4,
-    gap: 6,
+    gap: 8,
+    paddingVertical: 4,
   },
   tabItem: {
     paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   tabActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(254, 240, 138, 0.55)',
+    backgroundColor: 'rgba(212, 175, 55, 0.22)',
+    borderColor: '#fbbf24',
   },
   tabText: {
-    fontSize: 11,
     color: '#94a3b8',
+    fontSize: 12,
     fontWeight: '600',
-    textAlign: 'center',
   },
   tabTextActive: {
     color: '#fef08a',
     fontWeight: '800',
   },
   itemList: {
-    gap: 12,
-  },
-  itemCard: {
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
     gap: 10,
   },
+  itemCard: {
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    gap: 8,
+  },
   cardLocked: {
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   cardEquipped: {
-    borderColor: 'rgba(251, 191, 36, 0.7)',
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    borderColor: '#34d399',
+    backgroundColor: 'rgba(6, 78, 59, 0.28)',
+  },
+  cardPreviewed: {
+    borderColor: '#fbbf24',
+    backgroundColor: 'rgba(245, 158, 11, 0.16)',
   },
   itemHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 12,
   },
   colorSwatch: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255, 255, 255, 0.35)',
   },
   itemMeta: {
     flex: 1,
     gap: 2,
   },
   itemName: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '800',
-  },
-  equippedBadge: {
-    fontSize: 9.5,
-    color: '#fbbf24',
-    fontWeight: '900',
-    letterSpacing: 0.8,
-    borderWidth: 1,
-    borderColor: '#fbbf24',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
-    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    color: '#f8fafc',
+    fontSize: 13.5,
+    fontWeight: '700',
   },
   itemLore: {
-    fontSize: 11,
     color: '#94a3b8',
+    fontSize: 11,
     lineHeight: 15,
+  },
+  equippedBadge: {
+    color: '#34d399',
+    fontSize: 10,
+    fontWeight: '800',
+    backgroundColor: 'rgba(52, 211, 153, 0.18)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  previewBadge: {
+    color: '#fef08a',
+    fontSize: 10,
+    fontWeight: '800',
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   actionRow: {
     flexDirection: 'row',
@@ -452,56 +600,47 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   requirementText: {
-    fontSize: 11.5,
-    color: '#d4af37',
-    fontWeight: '700',
+    color: '#cbd5e1',
+    fontSize: 11,
   },
   actionBtn: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   btnEquip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#0284c7',
   },
   btnEquipped: {
-    backgroundColor: 'rgba(251, 191, 36, 0.25)',
-    borderWidth: 1,
-    borderColor: 'rgba(251, 191, 36, 0.5)',
+    backgroundColor: 'rgba(52, 211, 153, 0.25)',
   },
   btnBuy: {
     backgroundColor: '#d97706',
-    boxShadow: '0 2px 8px rgba(217, 119, 6, 0.4)',
-  } as any,
+  },
   btnDisabled: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   actionBtnText: {
     color: '#ffffff',
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '800',
   },
   btnTextEquipped: {
-    color: '#fbbf24',
+    color: '#34d399',
   },
   closeBtn: {
-    marginTop: 8,
-    paddingVertical: 12,
+    height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 6,
   },
   closeBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
+    color: '#fae8c2',
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 0.5,
   },
 });
