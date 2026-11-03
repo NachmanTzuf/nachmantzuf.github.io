@@ -48,10 +48,21 @@ export type ResonanceStringShaderId =
   | 'aurora_wave'
   | 'starlight_phosphor';
 
+export type SoundPackId =
+  | 'standard_celtic'
+  | 'gut_string_warmth'
+  | 'subtle_cathedral_reverb';
+
+export type LeverFinishId =
+  | 'standard_brass'
+  | 'polished_24k_gold'
+  | 'antique_celtic_bronze'
+  | 'silver_chrome';
+
 export interface CosmeticItem<T> {
   id: T;
   name: string;
-  category: 'TIMBER' | 'ROSETTE' | 'STRINGS';
+  category: 'TIMBER' | 'ROSETTE' | 'STRINGS' | 'SOUND' | 'LEVERS';
   lore: string;
   unlockRequirement: string;
   isUnlocked: boolean;

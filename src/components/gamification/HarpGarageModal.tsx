@@ -1,7 +1,8 @@
 /**
  * EARPA HARP ARTISAN WORKSHOP (HARP GARAGE)
- * Spend earned Shards to customize your Celtic harp with authentic timbers,
- * carved soundboard rosettes, and illuminated LED resonance string shaders.
+ * Spend earned Shards to customize your Celtic harp with authentic natural timbers,
+ * hand-carved soundboard inlays, illuminated LED strings, acoustic sound packs, and Camac levers.
+ * Styled with the Journey sunglasses background and liquid glass aesthetic.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,12 +14,16 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Image,
 } from 'react-native';
 import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
 import {
   TimberFinishId,
   SoundboardRosetteId,
   ResonanceStringShaderId,
+  SoundPackId,
+  LeverFinishId,
+  CosmeticItem,
 } from '../../services/gamification/types';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 
@@ -26,8 +31,10 @@ interface HarpGarageModalProps {
   visible: boolean;
   onClose: () => void;
   garageEngine: HarpGarageEngine;
-  onApplyCosmetic: (type: 'timber' | 'rosette' | 'strings', colorHex: string) => void;
+  onApplyCosmetic: (type: 'timber' | 'rosette' | 'strings' | 'sound' | 'lever', colorHex: string) => void;
 }
+
+type StoreCategory = 'TIMBER' | 'ROSETTE' | 'STRINGS' | 'SOUND' | 'LEVERS';
 
 export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   visible,
@@ -36,7 +43,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   onApplyCosmetic,
 }) => {
   const db = UserAccountDatabase.getInstance();
-  const [activeTab, setActiveTab] = useState<'TIMBER' | 'ROSETTE' | 'STRINGS'>('TIMBER');
+  const [activeTab, setActiveTab] = useState<StoreCategory>('TIMBER');
   const [userShards, setUserShards] = useState<number>(db.getShards());
   const [toastMessage, setToastMessage] = useState<string>('');
 
@@ -51,29 +58,24 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   const timbers = garageEngine.getTimbers();
   const rosettes = garageEngine.getRosettes();
   const strings = garageEngine.getStrings();
+  const sounds = garageEngine.getSounds();
+  const levers = garageEngine.getLevers();
 
-  const handleEquipTimber = (id: TimberFinishId, colorHex: string) => {
-    if (garageEngine.equipTimber(id)) {
-      onApplyCosmetic('timber', colorHex);
-      setToastMessage('Fitted finish to harp.');
+  const handleEquip = (category: StoreCategory, id: string, colorHex: string) => {
+    let success = false;
+    if (category === 'TIMBER') success = garageEngine.equipTimber(id as TimberFinishId);
+    else if (category === 'ROSETTE') success = garageEngine.equipRosette(id as SoundboardRosetteId);
+    else if (category === 'STRINGS') success = garageEngine.equipStrings(id as ResonanceStringShaderId);
+    else if (category === 'SOUND') success = garageEngine.equipSound(id as SoundPackId);
+    else if (category === 'LEVERS') success = garageEngine.equipLever(id as LeverFinishId);
+
+    if (success) {
+      onApplyCosmetic(category.toLowerCase() as any, colorHex);
+      setToastMessage(`Fitted ${category.toLowerCase()} to your Celtic harp.`);
     }
   };
 
-  const handleEquipRosette = (id: SoundboardRosetteId, colorHex: string) => {
-    if (garageEngine.equipRosette(id)) {
-      onApplyCosmetic('rosette', colorHex);
-      setToastMessage('Fitted rosette inlay to soundboard.');
-    }
-  };
-
-  const handleEquipStrings = (id: ResonanceStringShaderId, colorHex: string) => {
-    if (garageEngine.equipStrings(id)) {
-      onApplyCosmetic('strings', colorHex);
-      setToastMessage('Fitted illuminated strings to harp.');
-    }
-  };
-
-  const handleBuy = (category: 'TIMBER' | 'ROSETTE' | 'STRINGS', id: string) => {
+  const handleBuy = (category: StoreCategory, id: string) => {
     const res = garageEngine.buyWithShards(category, id);
     if (res.success) {
       setUserShards(db.getShards());
@@ -86,17 +88,48 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     }
   };
 
+  const getItemsForTab = (): CosmeticItem<any>[] => {
+    switch (activeTab) {
+      case 'TIMBER': return timbers;
+      case 'ROSETTE': return rosettes;
+      case 'STRINGS': return strings;
+      case 'SOUND': return sounds;
+      case 'LEVERS': return levers;
+    }
+  };
+
+  const getEquippedId = (): string => {
+    switch (activeTab) {
+      case 'TIMBER': return equipped.timber.id;
+      case 'ROSETTE': return equipped.rosette.id;
+      case 'STRINGS': return equipped.strings.id;
+      case 'SOUND': return equipped.sound.id;
+      case 'LEVERS': return equipped.lever.id;
+    }
+  };
+
+  const currentItems = getItemsForTab();
+  const currentEquippedId = getEquippedId();
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.modalCard}>
+          {/* Journey Sunglasses Background Layer */}
+          <Image
+            source={{ uri: '/images/earpa_journey_bg.jpg' }}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="cover"
+          />
+          <View style={styles.sunglassesTint} />
+
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.eyebrow}>EARPA · ARTISAN WORKSHOP</Text>
               <Text style={styles.title}>The Luthier Vault</Text>
               <Text style={styles.subtitle}>
-                Spend your earned Shards on handcrafted woods, carvings, and illuminated LED strings.
+                Spend your earned Shards on handcrafted woods, carvings, gut warmth, and golden levers.
               </Text>
 
               {/* Shards Currency Counter */}
@@ -112,190 +145,117 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
               )}
             </View>
 
-            {/* Category Tabs */}
-            <View style={styles.tabBar}>
+            {/* Category Tabs: Woods, Carvings, LED, Sound, Levers */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBar}>
               <TouchableOpacity
                 style={[styles.tabItem, activeTab === 'TIMBER' && styles.tabActive]}
                 onPress={() => { setActiveTab('TIMBER'); setToastMessage(''); }}
               >
                 <Text style={[styles.tabText, activeTab === 'TIMBER' && styles.tabTextActive]}>
-                  Woods & Finishes ({timbers.length})
+                  🌲 Natural Woods ({timbers.length})
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tabItem, activeTab === 'STRINGS' && styles.tabActive]}
-                onPress={() => { setActiveTab('STRINGS'); setToastMessage(''); }}
-              >
-                <Text style={[styles.tabText, activeTab === 'STRINGS' && styles.tabTextActive]}>
-                  LED Strings ({strings.length})
-                </Text>
-              </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.tabItem, activeTab === 'ROSETTE' && styles.tabActive]}
                 onPress={() => { setActiveTab('ROSETTE'); setToastMessage(''); }}
               >
                 <Text style={[styles.tabText, activeTab === 'ROSETTE' && styles.tabTextActive]}>
-                  Rosettes ({rosettes.length})
+                  ⚜️ Carved Inlays ({rosettes.length})
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tabItem, activeTab === 'SOUND' && styles.tabActive]}
+                onPress={() => { setActiveTab('SOUND'); setToastMessage(''); }}
+              >
+                <Text style={[styles.tabText, activeTab === 'SOUND' && styles.tabTextActive]}>
+                  🎵 Sound Packs ({sounds.length})
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tabItem, activeTab === 'LEVERS' && styles.tabActive]}
+                onPress={() => { setActiveTab('LEVERS'); setToastMessage(''); }}
+              >
+                <Text style={[styles.tabText, activeTab === 'LEVERS' && styles.tabTextActive]}>
+                  🔧 Camac Levers ({levers.length})
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tabItem, activeTab === 'STRINGS' && styles.tabActive]}
+                onPress={() => { setActiveTab('STRINGS'); setToastMessage(''); }}
+              >
+                <Text style={[styles.tabText, activeTab === 'STRINGS' && styles.tabTextActive]}>
+                  ✨ LED Strings ({strings.length})
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            {/* Catalog Items */}
+            <View style={styles.itemList}>
+              {currentItems.map((item) => {
+                const isEquipped = currentEquippedId === item.id;
+                const canAfford = userShards >= (item.shardCost || 0);
+
+                return (
+                  <View
+                    key={item.id}
+                    style={[
+                      styles.itemCard,
+                      !item.isUnlocked && styles.cardLocked,
+                      isEquipped && styles.cardEquipped,
+                    ]}
+                  >
+                    <View style={styles.itemHeader}>
+                      <View style={[styles.colorSwatch, { backgroundColor: item.colorHex }]} />
+                      <View style={styles.itemMeta}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Text style={styles.itemName}>{item.name}</Text>
+                          {isEquipped && <Text style={styles.equippedBadge}>EQUIPPED</Text>}
+                        </View>
+                        <Text style={styles.itemLore}>{item.lore}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.actionRow}>
+                      <Text style={styles.requirementText}>
+                        {item.isUnlocked
+                          ? 'Unlocked in collection'
+                          : `${item.shardCost || 0} Shards`}
+                      </Text>
+
+                      {item.isUnlocked ? (
+                        <TouchableOpacity
+                          disabled={isEquipped}
+                          style={[styles.actionBtn, isEquipped ? styles.btnEquipped : styles.btnEquip]}
+                          onPress={() => handleEquip(activeTab, item.id, item.colorHex)}
+                        >
+                          <Text style={[styles.actionBtnText, isEquipped && styles.btnTextEquipped]}>
+                            {isEquipped ? 'Fitted' : 'Equip'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          disabled={!canAfford}
+                          style={[styles.actionBtn, canAfford ? styles.btnBuy : styles.btnDisabled]}
+                          onPress={() => handleBuy(activeTab, item.id)}
+                        >
+                          <Text style={styles.actionBtnText}>
+                            {canAfford ? `Buy for ${item.shardCost} 🪙` : 'Not Enough Shards'}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
             </View>
 
-            {/* Timbers List */}
-            {activeTab === 'TIMBER' && (
-              <View style={styles.itemList}>
-                {timbers.map((item) => {
-                  const isEquipped = equipped.timber.id === item.id;
-                  const isUnlocked = item.isUnlocked;
-                  const cost = item.shardCost || 0;
-                  const canAfford = userShards >= cost;
-
-                  return (
-                    <View key={item.id} style={[styles.itemCard, !isUnlocked && styles.cardLocked]}>
-                      <View style={styles.itemHeader}>
-                        <View style={[styles.colorSwatch, { backgroundColor: item.colorHex }]} />
-                        <View style={styles.itemMeta}>
-                          <Text style={styles.itemName}>{item.name}</Text>
-                          <Text style={styles.itemLore}>{item.lore}</Text>
-                          {!isUnlocked && (
-                            <Text style={styles.costText}>🪙 Cost: {cost} Shards</Text>
-                          )}
-                        </View>
-                      </View>
-                      <View style={styles.actionRow}>
-                        {isEquipped ? (
-                          <View style={styles.equippedBadge}>
-                            <Text style={styles.equippedText}>✓ Fitted to Harp</Text>
-                          </View>
-                        ) : isUnlocked ? (
-                          <TouchableOpacity
-                            style={styles.equipBtn}
-                            onPress={() => handleEquipTimber(item.id, item.colorHex)}
-                          >
-                            <Text style={styles.equipBtnText}>Fit to Harp</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            disabled={!canAfford}
-                            style={[styles.buyBtn, !canAfford && styles.buyBtnDisabled]}
-                            onPress={() => handleBuy('TIMBER', item.id)}
-                          >
-                            <Text style={styles.buyBtnText}>
-                              {canAfford ? `Unlock for ${cost} Shards` : `Need ${cost - userShards} more`}
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Strings List */}
-            {activeTab === 'STRINGS' && (
-              <View style={styles.itemList}>
-                {strings.map((item) => {
-                  const isEquipped = equipped.strings.id === item.id;
-                  const isUnlocked = item.isUnlocked;
-                  const cost = item.shardCost || 0;
-                  const canAfford = userShards >= cost;
-
-                  return (
-                    <View key={item.id} style={[styles.itemCard, !isUnlocked && styles.cardLocked]}>
-                      <View style={styles.itemHeader}>
-                        <View style={[styles.colorSwatch, { backgroundColor: item.colorHex, boxShadow: `0 0 10px ${item.colorHex}` } as any]} />
-                        <View style={styles.itemMeta}>
-                          <Text style={styles.itemName}>{item.name}</Text>
-                          <Text style={styles.itemLore}>{item.lore}</Text>
-                          {!isUnlocked && (
-                            <Text style={styles.costText}>🪙 Cost: {cost} Shards</Text>
-                          )}
-                        </View>
-                      </View>
-                      <View style={styles.actionRow}>
-                        {isEquipped ? (
-                          <View style={styles.equippedBadge}>
-                            <Text style={styles.equippedText}>✓ Fitted to Harp</Text>
-                          </View>
-                        ) : isUnlocked ? (
-                          <TouchableOpacity
-                            style={styles.equipBtn}
-                            onPress={() => handleEquipStrings(item.id, item.colorHex)}
-                          >
-                            <Text style={styles.equipBtnText}>Fit to Harp</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            disabled={!canAfford}
-                            style={[styles.buyBtn, !canAfford && styles.buyBtnDisabled]}
-                            onPress={() => handleBuy('STRINGS', item.id)}
-                          >
-                            <Text style={styles.buyBtnText}>
-                              {canAfford ? `Unlock for ${cost} Shards` : `Need ${cost - userShards} more`}
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Rosettes List */}
-            {activeTab === 'ROSETTE' && (
-              <View style={styles.itemList}>
-                {rosettes.map((item) => {
-                  const isEquipped = equipped.rosette.id === item.id;
-                  const isUnlocked = item.isUnlocked;
-                  const cost = item.shardCost || 0;
-                  const canAfford = userShards >= cost;
-
-                  return (
-                    <View key={item.id} style={[styles.itemCard, !isUnlocked && styles.cardLocked]}>
-                      <View style={styles.itemHeader}>
-                        <View style={[styles.colorSwatch, { backgroundColor: item.colorHex }]} />
-                        <View style={styles.itemMeta}>
-                          <Text style={styles.itemName}>{item.name}</Text>
-                          <Text style={styles.itemLore}>{item.lore}</Text>
-                          {!isUnlocked && (
-                            <Text style={styles.costText}>🪙 Cost: {cost} Shards</Text>
-                          )}
-                        </View>
-                      </View>
-                      <View style={styles.actionRow}>
-                        {isEquipped ? (
-                          <View style={styles.equippedBadge}>
-                            <Text style={styles.equippedText}>✓ Fitted to Harp</Text>
-                          </View>
-                        ) : isUnlocked ? (
-                          <TouchableOpacity
-                            style={styles.equipBtn}
-                            onPress={() => handleEquipRosette(item.id, item.colorHex)}
-                          >
-                            <Text style={styles.equipBtnText}>Fit to Harp</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            disabled={!canAfford}
-                            style={[styles.buyBtn, !canAfford && styles.buyBtnDisabled]}
-                            onPress={() => handleBuy('ROSETTE', item.id)}
-                          >
-                            <Text style={styles.buyBtnText}>
-                              {canAfford ? `Unlock for ${cost} Shards` : `Need ${cost - userShards} more`}
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-            {/* Return Button */}
-            <TouchableOpacity style={styles.closeBtn} activeOpacity={0.8} onPress={onClose}>
-              <Text style={styles.closeBtnText}>Return to Sanctuary</Text>
+            {/* Done / Close Button */}
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+              <Text style={styles.closeBtnText}>Done</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -307,7 +267,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(5, 12, 9, 0.88)',
+    backgroundColor: 'rgba(5, 10, 16, 0.82)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
@@ -323,15 +283,22 @@ const styles = StyleSheet.create({
     maxWidth: 440,
     maxHeight: '90%',
     borderRadius: 24,
-    backgroundColor: 'rgba(19, 35, 27, 0.96)',
+    backgroundColor: '#090d16',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.35)',
+    borderColor: 'rgba(212, 175, 55, 0.4)',
     overflow: 'hidden',
-    boxShadow: '0 24px 60px rgba(0, 0, 0, 0.75)',
+    position: 'relative',
+    boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
   } as any,
+  sunglassesTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(9, 13, 22, 0.86)',
+  },
   scrollContent: {
     padding: 20,
     gap: 16,
+    position: 'relative',
+    zIndex: 10,
   },
   header: {
     alignItems: 'center',
@@ -339,15 +306,16 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     color: '#d4af37',
-    fontSize: 11,
+    fontSize: 10.5,
     letterSpacing: 2,
-    fontFamily: 'Cinzel-Bold',
+    fontWeight: '800',
   },
   title: {
-    fontFamily: 'Cinzel-Bold',
-    fontSize: 24,
+    fontSize: 22,
     color: '#fef08a',
+    fontWeight: '900',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 12,
@@ -378,7 +346,7 @@ const styles = StyleSheet.create({
   toastBox: {
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(5, 150, 105, 0.25)',
+    backgroundColor: 'rgba(5, 150, 105, 0.35)',
     borderWidth: 1,
     borderColor: '#10b981',
     borderRadius: 10,
@@ -391,22 +359,22 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     borderRadius: 14,
-    padding: 3,
-    gap: 4,
+    padding: 4,
+    gap: 6,
   },
   tabItem: {
-    flex: 1,
     paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
     borderWidth: 1,
-    borderColor: 'rgba(254, 240, 138, 0.45)',
+    borderColor: 'rgba(254, 240, 138, 0.55)',
   },
   tabText: {
     fontSize: 11,
@@ -424,14 +392,18 @@ const styles = StyleSheet.create({
   itemCard: {
     padding: 14,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     gap: 10,
   },
   cardLocked: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
     borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cardEquipped: {
+    borderColor: 'rgba(251, 191, 36, 0.7)',
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
   },
   itemHeader: {
     flexDirection: 'row',
@@ -450,82 +422,86 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   itemName: {
-    fontFamily: 'Cinzel-Bold',
     fontSize: 14,
-    color: '#f8fafc',
+    color: '#ffffff',
+    fontWeight: '800',
+  },
+  equippedBadge: {
+    fontSize: 9.5,
+    color: '#fbbf24',
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
   },
   itemLore: {
     fontSize: 11,
     color: '#94a3b8',
     lineHeight: 15,
   },
-  costText: {
-    fontSize: 11,
-    color: '#fcd34d',
-    fontWeight: '700',
-    marginTop: 2,
-  },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
-  equippedBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: 'rgba(5, 150, 105, 0.25)',
-    borderWidth: 1,
-    borderColor: '#10b981',
-  },
-  equippedText: {
-    color: '#6ee7b7',
-    fontSize: 12,
+  requirementText: {
+    fontSize: 11.5,
+    color: '#d4af37',
     fontWeight: '700',
   },
-  equipBtn: {
-    paddingVertical: 7,
+  actionBtn: {
+    paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnEquip: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderWidth: 1,
-    borderColor: '#f59e0b',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  equipBtnText: {
-    color: '#fef08a',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  buyBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#b45309',
+  btnEquipped: {
+    backgroundColor: 'rgba(251, 191, 36, 0.25)',
     borderWidth: 1,
-    borderColor: '#fcd34d',
+    borderColor: 'rgba(251, 191, 36, 0.5)',
   },
-  buyBtnDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    opacity: 0.6,
+  btnBuy: {
+    backgroundColor: '#d97706',
+    boxShadow: '0 2px 8px rgba(217, 119, 6, 0.4)',
+  } as any,
+  btnDisabled: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
-  buyBtnText: {
+  actionBtnText: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 11.5,
+    fontWeight: '800',
+  },
+  btnTextEquipped: {
+    color: '#fbbf24',
   },
   closeBtn: {
-    paddingVertical: 13,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    alignItems: 'center',
     marginTop: 8,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeBtnText: {
-    color: '#e2e8f0',
+    color: '#ffffff',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });

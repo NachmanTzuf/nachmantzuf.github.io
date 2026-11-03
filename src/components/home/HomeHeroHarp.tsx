@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     zIndex: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: Platform.OS === 'web' ? 90 : 96, // Nudged a tiny bit lower, nestled directly above the navigation bar without touching
+    paddingBottom: Platform.OS === 'web' ? 74 : 80, // Lowered visibly so the button nests comfortably right above the navigation tab bar without touching
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {

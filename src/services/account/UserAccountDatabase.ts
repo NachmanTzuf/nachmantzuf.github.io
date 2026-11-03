@@ -133,6 +133,7 @@ const DEFAULT_PROFILE: UserProfile = {
   overallAccuracyPct: 0,
   highestStreak: 0,
   activeTuning: 'Eb_Major_Native',
+  onboardingComplete: true,
 };
 
 export class UserAccountDatabase {

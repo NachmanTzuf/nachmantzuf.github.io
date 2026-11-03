@@ -27,13 +27,14 @@ def main():
             content = f.read()
 
         # Add PWA head links, high-res DOM icons, and immediate Service Worker registration
-        pwa_head = """    <link rel="manifest" href="/manifest.json" />
+        pwa_head = """    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/earpa_icon_192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/images/icons/earpa_icon_512.png" />
     <link rel="icon" type="image/png" sizes="64x64" href="/images/icons/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple_touch_icon.png" />
     <link rel="apple-touch-icon-precomposed" href="/images/icons/apple_touch_icon.png" />
-    <link rel="shortcut icon" href="/images/icons/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="theme-color" content="#090d16" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

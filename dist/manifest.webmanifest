@@ -1,0 +1,82 @@
+{
+  "id": "/",
+  "name": "Earpa: 3D Celtic Harp Ear Trainer",
+  "short_name": "Earpa",
+  "description": "Functional Celtic Harp Ear Trainer with 3D Lutherie & Relative Pitch Mastery",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "categories": ["music", "education"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/images/icons/earpa_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/earpa_icon_maskable_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/earpa_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/earpa_icon_maskable_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/earpa_master_loading_bg.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Earpa Celtic Harp Sanctuary"
+    },
+    {
+      "src": "/images/earpa_journey_bg.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Earpa Relative Pitch Roadmap"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Single Note Path",
+      "short_name": "Single",
+      "description": "Anchor your tonic and master relative intervals",
+      "url": "/?track=single",
+      "icons": [{ "src": "/images/icons/earpa_icon_192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Melody Sequence Path",
+      "short_name": "Melody",
+      "description": "Follow contour and pitch steps",
+      "url": "/?track=melody",
+      "icons": [{ "src": "/images/icons/earpa_icon_192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lever Modal Path",
+      "short_name": "Levers",
+      "description": "Explore chromatic modal shifts",
+      "url": "/?track=levers",
+      "icons": [{ "src": "/images/icons/earpa_icon_192.png", "sizes": "192x192" }]
+    }
+  ]
+}

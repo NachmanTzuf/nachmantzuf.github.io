@@ -1,7 +1,7 @@
 /**
- * EARPA HARP GARAGE COSMETIC ENGINE
+ * EARPA HARP GARAGE COSMETIC & LUTHIER ENGINE
  * Dedicated cosmetic customization studio for timber finishes, carved soundboard rosettes,
- * and illuminated resonance string shaders with real-time Shard economy and persistent equipping.
+ * illuminated resonance string shaders, acoustic sound packs, and Camac levers metallurgy.
  */
 
 import {
@@ -9,6 +9,8 @@ import {
   TimberFinishId,
   SoundboardRosetteId,
   ResonanceStringShaderId,
+  SoundPackId,
+  LeverFinishId,
 } from './types';
 import { UserAccountDatabase } from '../account/UserAccountDatabase';
 
@@ -19,10 +21,14 @@ export class HarpGarageEngine {
   private timbers: Map<TimberFinishId, CosmeticItem<TimberFinishId>> = new Map();
   private rosettes: Map<SoundboardRosetteId, CosmeticItem<SoundboardRosetteId>> = new Map();
   private strings: Map<ResonanceStringShaderId, CosmeticItem<ResonanceStringShaderId>> = new Map();
+  private sounds: Map<SoundPackId, CosmeticItem<SoundPackId>> = new Map();
+  private levers: Map<LeverFinishId, CosmeticItem<LeverFinishId>> = new Map();
 
   private equippedTimber: TimberFinishId = 'curly_maple';
   private equippedRosette: SoundboardRosetteId = 'triskele_tara';
   private equippedStrings: ResonanceStringShaderId = 'solar_flare_brass';
+  private equippedSound: SoundPackId = 'standard_celtic';
+  private equippedLever: LeverFinishId = 'standard_brass';
 
   constructor() {
     this.initializeCosmeticCatalog();
@@ -30,7 +36,7 @@ export class HarpGarageEngine {
   }
 
   private initializeCosmeticCatalog(): void {
-    // 1. TIMBERS & FINISHES
+    // 1. TIMBERS & FINISHES (5 Natural, Beautiful Wood Finishes)
     const timberList: CosmeticItem<TimberFinishId>[] = [
       {
         id: 'curly_maple',
@@ -46,56 +52,56 @@ export class HarpGarageEngine {
       },
       {
         id: 'claddagh_walnut',
-        name: 'Dark Cherry Walnut',
+        name: 'Cherry Blossom Rosewood',
         category: 'TIMBER',
-        lore: 'Velvety dark cherry walnut with rich warm resonance and singing sustain.',
+        lore: 'Rich pinkish warm rosewood with velvety resonance and singing overtone sustain.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
         shardCost: 300,
-        colorHex: '#4a1e1b',
-        roughness: 0.32,
-        metalness: 0.04,
+        colorHex: '#8b3a3a',
+        roughness: 0.28,
+        metalness: 0.06,
       },
       {
         id: 'connemara_bogoak',
-        name: 'Connemara Peat Bog Oak',
+        name: 'Irish Bog Oak',
         category: 'TIMBER',
-        lore: 'Ancient 5000-year-old Irish bog oak fossilized into deep charcoal timber.',
+        lore: 'Ancient fossilized 5000-year-old Irish peat bog oak with natural deep jet grain.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
         shardCost: 550,
-        colorHex: '#222226',
-        roughness: 0.55,
+        colorHex: '#1e1e24',
+        roughness: 0.52,
         metalness: 0.02,
       },
       {
         id: 'emerald_ebony',
-        name: 'Emerald Moss Ebony',
+        name: 'Connemara Emerald Moss',
         category: 'TIMBER',
-        lore: 'Jet black African ebony aged in peat with luminescent green mineral veins.',
+        lore: 'Organic moss green stain on flamed alpine spruce with subtle mineral lustre.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
         shardCost: 800,
-        colorHex: '#14281e',
-        roughness: 0.20,
-        metalness: 0.10,
+        colorHex: '#1b3b2b',
+        roughness: 0.22,
+        metalness: 0.08,
       },
       {
         id: 'skye_yew',
-        name: 'Royal Isle of Skye Yew',
+        name: 'Royal Purple Heart',
         category: 'TIMBER',
-        lore: 'Sacred bardic timber of the Hebrides with glowing copper-amber heartwood.',
+        lore: 'Regal exotic purpleheart timber with natural violet iridescence and crisp attack.',
         unlockRequirement: 'Grand Master Luthier Tier',
         isUnlocked: false,
         shardCost: 1100,
-        colorHex: '#b45309',
-        roughness: 0.24,
-        metalness: 0.08,
+        colorHex: '#581c87',
+        roughness: 0.25,
+        metalness: 0.07,
       },
     ];
     timberList.forEach((t) => this.timbers.set(t.id, t));
 
-    // 2. ROSETTES (SOUNDBOARD CARVINGS)
+    // 2. ROSETTES (HAND-CARVED SOUNDBOARD DESIGNS)
     const rosetteList: CosmeticItem<SoundboardRosetteId>[] = [
       {
         id: 'triskele_tara',
@@ -135,7 +141,7 @@ export class HarpGarageEngine {
       },
       {
         id: 'ogham_whisper',
-        name: 'Ogham Tree Runes',
+        name: 'Ogham Druidic Runes',
         category: 'ROSETTE',
         lore: 'Silver inlaid Ogham alphabet runes whispering ancient bardic tree secrets.',
         unlockRequirement: 'Artisan Luthier Workshop',
@@ -224,6 +230,100 @@ export class HarpGarageEngine {
       },
     ];
     stringList.forEach((s) => this.strings.set(s.id, s));
+
+    // 4. ACOUSTIC TIMBRES & SOUND PACKS
+    const soundList: CosmeticItem<SoundPackId>[] = [
+      {
+        id: 'standard_celtic',
+        name: 'Standard Celtic Harp',
+        category: 'SOUND',
+        lore: 'Traditional bright, bell-like bronze string acoustic timbre.',
+        unlockRequirement: 'Starter sound · Default',
+        isUnlocked: true,
+        shardCost: 0,
+        colorHex: '#eab308',
+        roughness: 0.3,
+        metalness: 0.5,
+      },
+      {
+        id: 'gut_string_warmth',
+        name: 'Gut String Warmth',
+        category: 'SOUND',
+        lore: 'Organic hand-spun gut resonance with mellow woody body and singing fundamental.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 400,
+        colorHex: '#d97706',
+        roughness: 0.4,
+        metalness: 0.3,
+      },
+      {
+        id: 'subtle_cathedral_reverb',
+        name: 'Subtle Cathedral Reverb',
+        category: 'SOUND',
+        lore: 'Refined, small tight acoustic sanctuary space. Subtle 0.8s tail, clean and never muddy.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 600,
+        colorHex: '#60a5fa',
+        roughness: 0.2,
+        metalness: 0.6,
+      },
+    ];
+    soundList.forEach((s) => this.sounds.set(s.id, s));
+
+    // 5. CAMAC LEVERS METALLURGY
+    const leverList: CosmeticItem<LeverFinishId>[] = [
+      {
+        id: 'standard_brass',
+        name: 'Standard Brushed Brass',
+        category: 'LEVERS',
+        lore: 'Durable brushed brass Camac sharping levers with smooth mechanical engagement.',
+        unlockRequirement: 'Starter metallurgy · Default',
+        isUnlocked: true,
+        shardCost: 0,
+        colorHex: '#ca8a04',
+        roughness: 0.35,
+        metalness: 0.85,
+      },
+      {
+        id: 'polished_24k_gold',
+        name: 'Polished 24K Gold Camac',
+        category: 'LEVERS',
+        lore: 'Master jeweler mirror-polished pure 24K gold plating for frictionless lever action.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 350,
+        colorHex: '#fbbf24',
+        roughness: 0.15,
+        metalness: 0.98,
+      },
+      {
+        id: 'antique_celtic_bronze',
+        name: 'Antique Celtic Bronze',
+        category: 'LEVERS',
+        lore: 'Weathered historical Celtic bronze alloy with sculpted grip knurling.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 500,
+        colorHex: '#92400e',
+        roughness: 0.45,
+        metalness: 0.75,
+      },
+      {
+        id: 'silver_chrome',
+        name: 'Silver Chrome Metallurgy',
+        category: 'LEVERS',
+        lore: 'Brilliant mirror chrome with aerospace plating and razor-sharp semitone pitch shifts.',
+        unlockRequirement: 'Grand Master Luthier Tier',
+        isUnlocked: false,
+        shardCost: 700,
+        colorHex: '#f1f5f9',
+        roughness: 0.1,
+        metalness: 0.95,
+      },
+    ];
+    leverList.forEach((l) => this.levers.set(l.id, l));
   }
 
   private loadPersistence(): void {
@@ -236,6 +336,8 @@ export class HarpGarageEngine {
             if (this.timbers.has(id as TimberFinishId)) this.timbers.get(id as TimberFinishId)!.isUnlocked = true;
             if (this.rosettes.has(id as SoundboardRosetteId)) this.rosettes.get(id as SoundboardRosetteId)!.isUnlocked = true;
             if (this.strings.has(id as ResonanceStringShaderId)) this.strings.get(id as ResonanceStringShaderId)!.isUnlocked = true;
+            if (this.sounds.has(id as SoundPackId)) this.sounds.get(id as SoundPackId)!.isUnlocked = true;
+            if (this.levers.has(id as LeverFinishId)) this.levers.get(id as LeverFinishId)!.isUnlocked = true;
           });
         }
 
@@ -245,6 +347,8 @@ export class HarpGarageEngine {
           if (eq.timber && this.timbers.has(eq.timber)) this.equippedTimber = eq.timber;
           if (eq.rosette && this.rosettes.has(eq.rosette)) this.equippedRosette = eq.rosette;
           if (eq.strings && this.strings.has(eq.strings)) this.equippedStrings = eq.strings;
+          if (eq.sound && this.sounds.has(eq.sound)) this.equippedSound = eq.sound;
+          if (eq.lever && this.levers.has(eq.lever)) this.equippedLever = eq.lever;
         }
       }
     } catch {}
@@ -257,6 +361,8 @@ export class HarpGarageEngine {
         this.timbers.forEach((v, k) => { if (v.isUnlocked) unlockedIds.push(k); });
         this.rosettes.forEach((v, k) => { if (v.isUnlocked) unlockedIds.push(k); });
         this.strings.forEach((v, k) => { if (v.isUnlocked) unlockedIds.push(k); });
+        this.sounds.forEach((v, k) => { if (v.isUnlocked) unlockedIds.push(k); });
+        this.levers.forEach((v, k) => { if (v.isUnlocked) unlockedIds.push(k); });
         localStorage.setItem(STORAGE_KEY_UNLOCKED, JSON.stringify(unlockedIds));
 
         localStorage.setItem(
@@ -265,6 +371,8 @@ export class HarpGarageEngine {
             timber: this.equippedTimber,
             rosette: this.equippedRosette,
             strings: this.equippedStrings,
+            sound: this.equippedSound,
+            lever: this.equippedLever,
           })
         );
       }
@@ -283,15 +391,27 @@ export class HarpGarageEngine {
     return Array.from(this.strings.values());
   }
 
+  public getSounds(): CosmeticItem<SoundPackId>[] {
+    return Array.from(this.sounds.values());
+  }
+
+  public getLevers(): CosmeticItem<LeverFinishId>[] {
+    return Array.from(this.levers.values());
+  }
+
   public getEquipped(): {
     timber: CosmeticItem<TimberFinishId>;
     rosette: CosmeticItem<SoundboardRosetteId>;
     strings: CosmeticItem<ResonanceStringShaderId>;
+    sound: CosmeticItem<SoundPackId>;
+    lever: CosmeticItem<LeverFinishId>;
   } {
     return {
       timber: this.timbers.get(this.equippedTimber) || this.timbers.get('curly_maple')!,
       rosette: this.rosettes.get(this.equippedRosette) || this.rosettes.get('triskele_tara')!,
       strings: this.strings.get(this.equippedStrings) || this.strings.get('solar_flare_brass')!,
+      sound: this.sounds.get(this.equippedSound) || this.sounds.get('standard_celtic')!,
+      lever: this.levers.get(this.equippedLever) || this.levers.get('standard_brass')!,
     };
   }
 
@@ -325,8 +445,28 @@ export class HarpGarageEngine {
     return false;
   }
 
+  public equipSound(id: SoundPackId): boolean {
+    const item = this.sounds.get(id);
+    if (item && item.isUnlocked) {
+      this.equippedSound = id;
+      this.savePersistence();
+      return true;
+    }
+    return false;
+  }
+
+  public equipLever(id: LeverFinishId): boolean {
+    const item = this.levers.get(id);
+    if (item && item.isUnlocked) {
+      this.equippedLever = id;
+      this.savePersistence();
+      return true;
+    }
+    return false;
+  }
+
   public buyWithShards(
-    category: 'TIMBER' | 'ROSETTE' | 'STRINGS',
+    category: 'TIMBER' | 'ROSETTE' | 'STRINGS' | 'SOUND' | 'LEVERS',
     id: string
   ): { success: boolean; message: string; colorHex?: string } {
     const db = UserAccountDatabase.getInstance();
@@ -335,6 +475,8 @@ export class HarpGarageEngine {
     if (category === 'TIMBER') item = this.timbers.get(id as TimberFinishId);
     else if (category === 'ROSETTE') item = this.rosettes.get(id as SoundboardRosetteId);
     else if (category === 'STRINGS') item = this.strings.get(id as ResonanceStringShaderId);
+    else if (category === 'SOUND') item = this.sounds.get(id as SoundPackId);
+    else if (category === 'LEVERS') item = this.levers.get(id as LeverFinishId);
 
     if (!item) return { success: false, message: 'Item not found in catalog.' };
     if (item.isUnlocked) {
@@ -342,6 +484,8 @@ export class HarpGarageEngine {
       if (category === 'TIMBER') this.equipTimber(id as TimberFinishId);
       else if (category === 'ROSETTE') this.equipRosette(id as SoundboardRosetteId);
       else if (category === 'STRINGS') this.equipStrings(id as ResonanceStringShaderId);
+      else if (category === 'SOUND') this.equipSound(id as SoundPackId);
+      else if (category === 'LEVERS') this.equipLever(id as LeverFinishId);
       return { success: true, message: `${item.name} fitted to your harp!`, colorHex: item.colorHex };
     }
 
@@ -362,6 +506,8 @@ export class HarpGarageEngine {
     if (category === 'TIMBER') this.equipTimber(id as TimberFinishId);
     else if (category === 'ROSETTE') this.equipRosette(id as SoundboardRosetteId);
     else if (category === 'STRINGS') this.equipStrings(id as ResonanceStringShaderId);
+    else if (category === 'SOUND') this.equipSound(id as SoundPackId);
+    else if (category === 'LEVERS') this.equipLever(id as LeverFinishId);
 
     this.savePersistence();
     return {
@@ -371,11 +517,13 @@ export class HarpGarageEngine {
     };
   }
 
-  public unlockItem(category: 'TIMBER' | 'ROSETTE' | 'STRINGS', id: string): boolean {
+  public unlockItem(category: 'TIMBER' | 'ROSETTE' | 'STRINGS' | 'SOUND' | 'LEVERS', id: string): boolean {
     let item: CosmeticItem<any> | undefined;
     if (category === 'TIMBER') item = this.timbers.get(id as TimberFinishId);
     else if (category === 'ROSETTE') item = this.rosettes.get(id as SoundboardRosetteId);
     else if (category === 'STRINGS') item = this.strings.get(id as ResonanceStringShaderId);
+    else if (category === 'SOUND') item = this.sounds.get(id as SoundPackId);
+    else if (category === 'LEVERS') item = this.levers.get(id as LeverFinishId);
     if (!item) return false;
     item.isUnlocked = true;
     this.savePersistence();
