@@ -179,71 +179,38 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
         {/* 2b. Prominent Luthier Artisan Workshop & Shards Store */}
         {onOpenGarage && (
           <TouchableOpacity
+            nativeID="open-garage-card-btn"
             accessibilityRole="button"
+            accessibilityLabel="Open Harp Artisan Workshop and Luthier Store"
             onPress={onOpenGarage}
             style={[s.sleekActionCard, {
-              backgroundColor: 'rgba(212, 175, 55, 0.14)',
-              borderColor: 'rgba(251, 191, 36, 0.65)',
-              paddingVertical: 16,
-              ...(Platform.OS === 'web' ? ({ boxShadow: '0 4px 20px rgba(212, 175, 55, 0.25)' } as any) : {}),
+              backgroundColor: 'rgba(212, 175, 55, 0.16)',
+              borderColor: 'rgba(251, 191, 36, 0.75)',
+              paddingVertical: 18,
+              paddingHorizontal: 16,
+              borderRadius: 20,
+              ...(Platform.OS === 'web' ? ({ boxShadow: '0 6px 24px rgba(212, 175, 55, 0.32), inset 0 1px 1px rgba(255, 255, 255, 0.3)' } as any) : {}),
             }]}
             activeOpacity={0.82}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <View style={{ gap: 4, flex: 1, paddingRight: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={[s.sleekActionTitle, { color: '#fef08a' }]}>🎨 Harp Artisan Workshop</Text>
-                  <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.25)', borderWidth: 1, borderColor: '#f59e0b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
-                    <Text style={{ color: '#fef08a', fontSize: 11, fontWeight: '800' }}>{db.getShards()} 🪙</Text>
+              <View style={{ gap: 5, flex: 1, paddingRight: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={[s.sleekActionTitle, { color: '#fef08a', fontSize: 16 }]}>🎨 Harp Artisan Workshop</Text>
+                  <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.3)', borderWidth: 1, borderColor: '#f59e0b', paddingHorizontal: 9, paddingVertical: 3, borderRadius: 12 }}>
+                    <Text style={{ color: '#fef08a', fontSize: 12, fontWeight: '800' }}>{db.getShards()} 🪙</Text>
                   </View>
                 </View>
-                <Text style={[s.small, { color: '#cbd5e1' }]}>
-                  Spend Shards: 5 Natural Woods, Hand-Carved Inlays, Gut String Warmth & Levers
+                <Text style={[s.small, { color: '#e2e8f0', fontSize: 12, lineHeight: 17 }]}>
+                  Spend Shards: 5 Natural Woods, Hand-Carved Inlays, Gut String Warmth & Camac Levers
                 </Text>
               </View>
-              <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: '#d97706' }}>
-                <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '800' }}>Enter Store ›</Text>
+              <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, backgroundColor: '#d97706', boxShadow: '0 2px 8px rgba(217, 119, 6, 0.45)' } as any}>
+                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 }}>Enter Store ›</Text>
               </View>
             </View>
           </TouchableOpacity>
         )}
-
-        {/* 2c. Prominent Install Native App PWA Banner */}
-        <TouchableOpacity
-          accessibilityRole="button"
-          onPress={() => {
-            if (Platform.OS === 'web') {
-              const prompt = (window as any).__pwaInstallPrompt;
-              if (prompt) {
-                prompt.prompt();
-                prompt.userChoice.then((choice: any) => {
-                  console.log('[Earpa PWA] User install choice:', choice);
-                  (window as any).__pwaInstallPrompt = null;
-                });
-              } else {
-                alert('To install Earpa on your device:\n\n• On Android: Tap Chrome menu (⋮) → "Install app" or "Add to Home screen"\n• On iOS (Safari): Tap Share (⎋) → "Add to Home Screen"');
-              }
-            }
-          }}
-          style={[s.sleekActionCard, {
-            backgroundColor: 'rgba(30, 58, 138, 0.22)',
-            borderColor: 'rgba(96, 165, 250, 0.55)',
-            paddingVertical: 14,
-          }]}
-          activeOpacity={0.82}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <View style={{ gap: 3, flex: 1, paddingRight: 8 }}>
-              <Text style={[s.sleekActionTitle, { color: '#93c5fd' }]}>📲 Install Earpa App</Text>
-              <Text style={[s.small, { color: '#94a3b8' }]}>
-                Install to Home Screen for 120Hz fullscreen & instant offline ear training
-              </Text>
-            </View>
-            <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1, borderColor: '#60a5fa' }}>
-              <Text style={{ color: '#bfdbfe', fontSize: 11.5, fontWeight: '800' }}>Install ›</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
 
         {/* 3. UNDER PROFILE: Your Journey Section */}
         <View style={s.journeyCard}>
