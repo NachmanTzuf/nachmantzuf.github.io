@@ -12,36 +12,37 @@ import { Harp3DCanvas, PluckEvent } from '../earpa/Harp3DCanvas';
 import { PhoneFrame } from './PhoneFrame';
 
 const HOOK_PLUCKS: PluckEvent[] = [
-  // Live human-played Celtic harp solo run (0.0s to 2.4s)
-  { stringNum: 5, startFrame: 0, amplitude: 0.026 },  // G4 opening breath
-  { stringNum: 8, startFrame: 10, amplitude: 0.028 }, // C5 Red
-  { stringNum: 8, startFrame: 18, amplitude: 0.025 }, // D5
-  { stringNum: 8, startFrame: 26, amplitude: 0.027 }, // E5
-  { stringNum: 8, startFrame: 38, amplitude: 0.030 }, // G5 High shimmer peak
-  { stringNum: 8, startFrame: 48, amplitude: 0.024 }, // E5
-  { stringNum: 8, startFrame: 56, amplitude: 0.023 }, // D5
-  { stringNum: 8, startFrame: 64, amplitude: 0.026 }, // C5
-  // Grand Resonant Celtic Rolled Chord (frame 66-74)
-  { stringNum: 1, startFrame: 66, amplitude: 0.025 }, // C3 / C4 Red
-  { stringNum: 2, startFrame: 68, amplitude: 0.022 }, // G3 / D4
-  { stringNum: 3, startFrame: 69, amplitude: 0.024 }, // E4
-  { stringNum: 5, startFrame: 71, amplitude: 0.025 }, // G4
-  { stringNum: 8, startFrame: 73, amplitude: 0.028 }, // C5 Red
-  // Subtle countermelody continuing under voiceover
-  { stringNum: 3, startFrame: 82, amplitude: 0.018 },  // E4
-  { stringNum: 5, startFrame: 98, amplitude: 0.019 },  // G4
-  { stringNum: 6, startFrame: 114, amplitude: 0.018 }, // A4
-  { stringNum: 8, startFrame: 130, amplitude: 0.020 }, // C5
-  { stringNum: 8, startFrame: 146, amplitude: 0.020 }, // E5
-  { stringNum: 8, startFrame: 162, amplitude: 0.018 }, // D5
-  { stringNum: 8, startFrame: 178, amplitude: 0.019 }, // C5
-  { stringNum: 6, startFrame: 194, amplitude: 0.017 }, // A4
-  { stringNum: 5, startFrame: 210, amplitude: 0.018 }, // G4
-  { stringNum: 3, startFrame: 226, amplitude: 0.017 }, // E4
-  { stringNum: 4, startFrame: 242, amplitude: 0.018 }, // F4 Cyan
-  { stringNum: 5, startFrame: 258, amplitude: 0.019 }, // G4
-  { stringNum: 2, startFrame: 274, amplitude: 0.018 }, // D4
-  { stringNum: 1, startFrame: 286, amplitude: 0.022 }, // C4 Red
+  // Real live Celtic harp solo played by artist on stage (0.0s to 2.4s)
+  { stringNum: 3, startFrame: 1, amplitude: 0.026 },   // E4
+  { stringNum: 4, startFrame: 15, amplitude: 0.025 },  // F4 Cyan
+  { stringNum: 5, startFrame: 21, amplitude: 0.027 },  // G4
+  { stringNum: 8, startFrame: 49, amplitude: 0.030 },  // C5 Red
+  { stringNum: 6, startFrame: 54, amplitude: 0.024 },  // A4
+  { stringNum: 5, startFrame: 56, amplitude: 0.023 },  // G4
+  { stringNum: 4, startFrame: 59, amplitude: 0.026 },  // F4 Cyan
+  { stringNum: 3, startFrame: 64, amplitude: 0.025 },  // E4
+  { stringNum: 2, startFrame: 67, amplitude: 0.024 },  // D4
+  // Resonant Celtic Rolled Chord (frames 71-74)
+  { stringNum: 1, startFrame: 71, amplitude: 0.028 },  // C4 Red
+  { stringNum: 3, startFrame: 72, amplitude: 0.025 },  // E4
+  { stringNum: 5, startFrame: 73, amplitude: 0.026 },  // G4
+  { stringNum: 8, startFrame: 74, amplitude: 0.030 },  // C5 Red
+  // Natural acoustic resonance continuing under voiceover
+  { stringNum: 6, startFrame: 81, amplitude: 0.020 },
+  { stringNum: 8, startFrame: 94, amplitude: 0.022 },
+  { stringNum: 5, startFrame: 112, amplitude: 0.019 },
+  { stringNum: 4, startFrame: 119, amplitude: 0.020 },
+  { stringNum: 3, startFrame: 126, amplitude: 0.019 },
+  { stringNum: 2, startFrame: 133, amplitude: 0.018 },
+  { stringNum: 1, startFrame: 140, amplitude: 0.022 },
+  { stringNum: 5, startFrame: 149, amplitude: 0.019 },
+  { stringNum: 6, startFrame: 157, amplitude: 0.020 },
+  { stringNum: 8, startFrame: 163, amplitude: 0.022 },
+  { stringNum: 7, startFrame: 172, amplitude: 0.019 },
+  { stringNum: 5, startFrame: 178, amplitude: 0.019 },
+  { stringNum: 4, startFrame: 185, amplitude: 0.020 },
+  { stringNum: 3, startFrame: 194, amplitude: 0.019 },
+  { stringNum: 1, startFrame: 202, amplitude: 0.024 },
 ];
 
 const LINE_1 = "You've always wanted to play by ear, and improvise solos that just feel right and flow naturally out of your instrument.";
@@ -443,88 +444,133 @@ export const SceneHookShort: React.FC = () => {
         </div>
       )}
 
-      {/* 6. ACOUSTIC SOUND SPECTRUM (Frames 0-210 Solo Visualizer, then gracefully hides) */}
+      {/* 6. ELEGANT FLANKING ACOUSTIC TELEMETRY CHIPS (Frames 0-212: Flank the 3D Harp cleanly on left and right, zero center obstruction) */}
       {frame < 212 && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 120,
-            right: 120,
-            top: 1410,
-            padding: '12px 20px',
-            borderRadius: 20,
-            background: 'rgba(8, 14, 24, 0.82)',
-            border: '1px solid rgba(212, 175, 55, 0.35)',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.7)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            zIndex: 25,
-            opacity: interpolate(frame, [195, 210], [1, 0], {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
-            pointerEvents: 'none',
-          }}
-        >
+        <>
+          {/* Left Side: Sitka Spruce Acoustic Body Telemetry */}
           <div
             style={{
+              position: 'absolute',
+              left: 48,
+              top: 760,
+              width: 170,
+              padding: '12px 14px',
+              borderRadius: 16,
+              background: 'rgba(8, 14, 24, 0.88)',
+              border: '1px solid rgba(212, 175, 55, 0.45)',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.75)',
               display: 'flex',
-              justifyContent: 'space-between',
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 11,
-              fontWeight: 800,
-              color: '#94a3b8',
-              letterSpacing: 1.2,
+              flexDirection: 'column',
+              gap: 8,
+              zIndex: 25,
+              opacity: interpolate(frame, [0, 20, 195, 210], [0, 1, 1, 0], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              }),
+              pointerEvents: 'none',
             }}
           >
-            <span>CELTIC HARP ACOUSTIC SPECTRUM</span>
-            <span style={{ color: '#fbbf24' }}>44.1 kHz REAL-TIME</span>
+            <div
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 10,
+                fontWeight: 800,
+                color: '#fbbf24',
+                letterSpacing: 1.2,
+              }}
+            >
+              ACOUSTIC BODY
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#e2e8f0',
+                lineHeight: 1.2,
+              }}
+            >
+              Sitka Spruce Dual Cavity
+            </div>
+            {/* 8-bar micro harmonic resonance */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28 }}>
+              {Array.from({ length: 8 }).map((_, bIdx) => {
+                const bH = 6 + (Math.sin(frame * 0.18 + bIdx * 0.5) * 0.5 + 0.5) * 22;
+                return (
+                  <div
+                    key={bIdx}
+                    style={{
+                      flex: 1,
+                      height: bH,
+                      borderRadius: 2,
+                      background: bIdx % 2 === 0 ? '#fbbf24' : '#34d399',
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
+
+          {/* Right Side: Natural String Telemetry */}
           <div
             style={{
+              position: 'absolute',
+              right: 48,
+              top: 760,
+              width: 170,
+              padding: '12px 14px',
+              borderRadius: 16,
+              background: 'rgba(8, 14, 24, 0.88)',
+              border: '1px solid rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.75)',
               display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: 4,
-              height: 48,
+              flexDirection: 'column',
+              gap: 8,
+              zIndex: 25,
+              opacity: interpolate(frame, [0, 20, 195, 210], [0, 1, 1, 0], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              }),
+              pointerEvents: 'none',
             }}
           >
-            {Array.from({ length: 32 }).map((_, barIdx) => {
-              const barFreq = 0.09 * (barIdx + 1);
-              const isPluckActive = HOOK_PLUCKS.some((p) => {
-                const dt = frame - p.startFrame;
-                return dt >= 0 && dt <= 28;
-              });
-              const baseAmp = isPluckActive ? 1.0 : 0.28;
-              const barHeight = Math.min(
-                44,
-                Math.max(
-                  6,
-                  (Math.sin(frame * barFreq + barIdx * 0.36) * 0.5 + 0.5) * 40 * baseAmp + 6
-                )
-              );
-              const isHighBar = barIdx === 7 || barIdx === 21;
-              const isMidBar = barIdx % 3 === 0;
-              return (
-                <div
-                  key={barIdx}
-                  style={{
-                    flex: 1,
-                    height: barHeight,
-                    borderRadius: 3,
-                    background: isHighBar
-                      ? '#fbbf24'
-                      : isMidBar
-                      ? '#38bdf8'
-                      : 'rgba(212, 175, 55, 0.75)',
-                    boxShadow: isHighBar ? '0 0 10px rgba(251, 191, 36, 0.8)' : 'none',
-                  }}
-                />
-              );
-            })}
+            <div
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 10,
+                fontWeight: 800,
+                color: '#38bdf8',
+                letterSpacing: 1.2,
+              }}
+            >
+              LIVE ARTIST SOLO
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#e2e8f0',
+                lineHeight: 1.2,
+              }}
+            >
+              Real Celtic Strings
+            </div>
+            <div
+              style={{
+                padding: '4px 8px',
+                borderRadius: 6,
+                background: 'rgba(56, 189, 248, 0.14)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 9,
+                fontWeight: 800,
+                color: '#7dd3fc',
+                textAlign: 'center',
+              }}
+            >
+              44.1 kHz REAL-TIME
+            </div>
           </div>
-        </div>
+        </>
       )}
     </AbsoluteFill>
   );
