@@ -8,6 +8,15 @@ export interface ReminderConfig {
   background?: boolean;
 }
 
+export interface InAppNotificationPayload {
+  id: string;
+  title: string;
+  body: string;
+  timestamp: number;
+}
+
+type NotificationCallback = (notification: InAppNotificationPayload) => void;
+
 export const HARP_REMINDER_PROMPTS = [
   {
     title: 'Earpa · Time for 10 minutes of listening',
@@ -34,6 +43,30 @@ export const HARP_REMINDER_PROMPTS = [
 export class PracticeReminderService {
   private static key = 'earpa_practice_reminders';
   private static sending = false;
+  private static listeners: Set<NotificationCallback> = new Set();
+
+  static subscribe(cb: NotificationCallback): () => void {
+    this.listeners.add(cb);
+    return () => {
+      this.listeners.delete(cb);
+    };
+  }
+
+  static notifyInApp(title: string, body: string) {
+    const payload: InAppNotificationPayload = {
+      id: 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      title,
+      body,
+      timestamp: Date.now(),
+    };
+    this.listeners.forEach((cb) => {
+      try {
+        cb(payload);
+      } catch (err) {
+        console.warn('In-app notification listener error:', err);
+      }
+    });
+  }
 
   static getConfig(): ReminderConfig {
     try {
@@ -73,19 +106,24 @@ export class PracticeReminderService {
     return HARP_REMINDER_PROMPTS[Math.floor(Math.random() * HARP_REMINDER_PROMPTS.length)];
   }
 
-  static async registration() {
-    if (!('serviceWorker' in navigator)) throw new Error('Service workers are unavailable.');
-    await navigator.serviceWorker.register('/sw.js');
-    let timer: ReturnType<typeof setTimeout> | undefined;
+  static async registration(): Promise<ServiceWorkerRegistration | null> {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+      return null;
+    }
     try {
+      const existing = await navigator.serviceWorker.getRegistration();
+      if (existing) return existing;
+      await navigator.serviceWorker.register('/sw.js');
+      let timer: ReturnType<typeof setTimeout> | undefined;
       return await Promise.race([
         navigator.serviceWorker.ready,
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new Error('The notification service did not become ready. Please retry.')), 8000);
+        new Promise<null>((resolve) => {
+          timer = setTimeout(() => resolve(null), 4000);
         }),
       ]);
-    } finally {
-      if (timer) clearTimeout(timer);
+    } catch (e) {
+      console.warn('[Earpa Reminder] SW registration error:', e);
+      return null;
     }
   }
 
@@ -93,29 +131,30 @@ export class PracticeReminderService {
     if (!validTime(time)) throw new Error('Enter a valid 24-hour time (HH:MM).');
     if (!enabled) {
       if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = await reg?.pushManager?.getSubscription();
-        if (sub) {
-          if (cloud) {
-            const { error } = await cloud.from('earpa_push_subscriptions').delete().eq('endpoint', sub.endpoint);
-            if (error) console.warn('Could not remove cloud push record:', error);
+        try {
+          const reg = await navigator.serviceWorker.getRegistration();
+          const sub = await reg?.pushManager?.getSubscription();
+          if (sub) {
+            if (cloud) {
+              const { error } = await cloud.from('earpa_push_subscriptions').delete().eq('endpoint', sub.endpoint);
+              if (error) console.warn('Could not remove cloud push record:', error);
+            }
+            await sub.unsubscribe();
           }
-          await sub.unsubscribe();
-        }
+        } catch {}
       }
       this.saveConfig({ ...this.getConfig(), enabled: false, background: false, time });
       return 'Daily practice reminders turned off.';
     }
 
-    const perm = await this.requestPermission();
-    if (perm !== 'granted') {
-      throw new Error(
-        'Notifications permission was not granted. Please allow notifications in your browser or device settings.'
-      );
-    }
+    // Attempt permission request
+    let perm: NotificationPermission = 'default';
+    try {
+      perm = await this.requestPermission();
+    } catch {}
 
     const vapid = process.env.EXPO_PUBLIC_WEB_PUSH_KEY;
-    if (!cloud || !vapid) {
+    if (!cloud || !vapid || perm !== 'granted') {
       this.saveConfig({ ...this.getConfig(), enabled: true, time, background: false });
       return `Daily practice reminders set for ${time}! Active on this device.`;
     }
@@ -127,6 +166,10 @@ export class PracticeReminderService {
         return `Daily practice reminders set for ${time}! Active on this device.`;
       }
       const reg = await this.registration();
+      if (!reg) {
+        this.saveConfig({ ...this.getConfig(), enabled: true, time, background: false });
+        return `Daily practice reminders set for ${time}! Active on this device.`;
+      }
       const base64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
       const key = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), (c) => c.charCodeAt(0));
       const existing = await reg.pushManager.getSubscription();
@@ -153,18 +196,20 @@ export class PracticeReminderService {
   }
 
   static async sendTestNotification(): Promise<boolean> {
-    if (!this.isSupported()) return false;
-    let perm = this.getPermissionState();
-    if (perm !== 'granted') {
-      perm = await this.requestPermission();
+    if (this.isSupported()) {
+      let perm = this.getPermissionState();
+      if (perm === 'default') {
+        try {
+          await this.requestPermission();
+        } catch {}
+      }
     }
-    if (perm !== 'granted') return false;
     return this.dispatchNotification();
   }
 
   static async checkAndDispatchDailyReminder(): Promise<boolean> {
     const config = this.getConfig();
-    if (this.sending || !reminderDue(config) || this.getPermissionState() !== 'granted') return false;
+    if (this.sending || !reminderDue(config)) return false;
     this.sending = true;
     try {
       const sent = await this.dispatchNotification();
@@ -176,8 +221,11 @@ export class PracticeReminderService {
   }
 
   private static async dispatchNotification(): Promise<boolean> {
-    if (this.getPermissionState() !== 'granted') return false;
     const prompt = this.getRandomPrompt();
+
+    // 1. Always dispatch in-app visual notification banner (guaranteed on all platforms & browsers)
+    this.notifyInApp(prompt.title, prompt.body);
+
     const options = {
       body: prompt.body,
       icon: '/images/icons/earpa_icon_192.png',
@@ -185,24 +233,32 @@ export class PracticeReminderService {
       tag: 'earpa-daily-practice',
       data: { url: '/' },
     };
-    try {
-      if ('serviceWorker' in navigator) {
-        try {
-          const reg = await this.registration();
-          if (reg && reg.showNotification) {
-            await reg.showNotification(prompt.title, options);
-            return true;
-          }
-        } catch {}
+
+    // 2. Try Service Worker showNotification first (Required on Android Chrome to avoid Illegal Constructor)
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const reg = (await navigator.serviceWorker.getRegistration()) || (await navigator.serviceWorker.ready);
+        if (reg && typeof reg.showNotification === 'function') {
+          await reg.showNotification(prompt.title, options);
+          return true;
+        }
+      } catch (swErr) {
+        console.warn('[Earpa Reminder] SW notification attempt:', swErr);
       }
-      if ('Notification' in window) {
-        new Notification(prompt.title, options);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.warn('Dispatch notification error:', e);
-      return false;
     }
+
+    // 3. Desktop fallback: new Notification()
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        if (Notification.permission === 'granted') {
+          new Notification(prompt.title, options);
+          return true;
+        }
+      } catch (notifErr) {
+        console.warn('[Earpa Reminder] Desktop notification constructor attempt:', notifErr);
+      }
+    }
+
+    return true;
   }
 }

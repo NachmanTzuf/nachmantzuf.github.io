@@ -150,6 +150,7 @@ export function PracticeReminderModal({ visible, onClose }: PracticeReminderModa
           {/* Test Notification Button */}
           <TouchableOpacity
             disabled={busy}
+            nativeID="send-test-notification-btn"
             onPress={handleTestNotification}
             style={styles.testBtn}
           >

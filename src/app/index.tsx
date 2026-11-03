@@ -67,6 +67,7 @@ import { ProfileTabScreen } from '../components/tabs/ProfileTabScreen';
 import { DeviceFramePreview } from '../components/preview/DeviceFramePreview';
 import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
 import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
+import { InAppNotificationBanner } from '../components/notifications/InAppNotificationBanner';
 import { PracticeReminderService } from '../services/notifications/PracticeReminderService';
 import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
 import {
@@ -635,6 +636,9 @@ export default function EarpaMasterScreen() {
             onClose={() => setShowReminderModal(false)}
           />
 
+          {/* In-App Guaranteed Practice Reminder Toast Banner */}
+          <InAppNotificationBanner />
+
           {/* Smooth Zero-Black-Screen Cold Boot Loading Overlay */}
           {isAppLoading && (
             <AppLoadingScreen
@@ -676,6 +680,7 @@ export default function EarpaMasterScreen() {
               setActiveTab('profile');
             }}
           />}
+          <InAppNotificationBanner />
         </SafeAreaView>
       </DeviceFramePreview>
     );

@@ -130,6 +130,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
           {onOpenReminders && (
             <TouchableOpacity
               activeOpacity={0.85}
+              nativeID="top-bell-reminders-btn"
               onPress={onOpenReminders}
               style={styles.bellBadge}
               accessibilityLabel="Daily Practice Reminders"

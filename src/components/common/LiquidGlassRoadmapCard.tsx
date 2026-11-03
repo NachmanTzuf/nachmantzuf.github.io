@@ -160,26 +160,23 @@ export const LiquidGlassRoadmapCard: React.FC<LiquidGlassRoadmapCardProps> = ({
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <LessonLibrary track={theme as any} />
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={onOpenRoadmap}
-            nativeID={buttonNativeId}
-            style={[
-              styles.trailMapBtn,
-              {
-                backgroundColor: cfg.btnBg,
-                borderColor: cfg.btnBorder,
-                boxShadow: `0 2px 10px ${cfg.roadGlow}`,
-              },
-            ]}
-          >
-            <Text style={[styles.trailMapBtnText, { color: cfg.btnText }]}>
-              TRAIL MAP ›
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.82}
+          onPress={onOpenRoadmap}
+          nativeID={buttonNativeId}
+          style={[
+            styles.trailMapBtn,
+            {
+              backgroundColor: cfg.btnBg,
+              borderColor: cfg.btnBorder,
+              boxShadow: `0 2px 10px ${cfg.roadGlow}`,
+            },
+          ]}
+        >
+          <Text style={[styles.trailMapBtnText, { color: cfg.btnText }]}>
+            TRAIL MAP ›
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Middle of Card: Sinuous SVG Road Mini-Map Preview */}
@@ -268,6 +265,9 @@ export const LiquidGlassRoadmapCard: React.FC<LiquidGlassRoadmapCardProps> = ({
           />
         </View>
       </View>
+
+      {/* Sleek Long & Thin Quick Lesson Bar under Stage Progress Bar */}
+      <LessonLibrary track={theme as any} />
     </View>
   );
 };
@@ -275,7 +275,7 @@ export const LiquidGlassRoadmapCard: React.FC<LiquidGlassRoadmapCardProps> = ({
 const styles = StyleSheet.create({
   roadmapCard: {
     width: '100%',
-    height: 106,
+    minHeight: 106,
     borderRadius: 18,
     paddingHorizontal: 13,
     paddingVertical: 10,

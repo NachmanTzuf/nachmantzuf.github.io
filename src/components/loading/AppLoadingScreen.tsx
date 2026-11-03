@@ -27,7 +27,9 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
       if (completed) return;
       const elapsed = now - startTime;
       const timeProgress = Math.min(1.0, elapsed / minDurationMs);
-      const ready = isAppReadyRef.current;
+      const ready =
+        isAppReadyRef.current ||
+        (typeof window !== 'undefined' && (window as any).__earpa_harpReady === true);
 
       let targetPct = 0;
       if (!ready) {

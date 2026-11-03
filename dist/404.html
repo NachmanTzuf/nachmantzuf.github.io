@@ -68,36 +68,55 @@
     </noscript>
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/_expo/static/js/web/entry-337afce971c4f6df92f703d886900f8e.js" defer></script>
+  <script src="/_expo/static/js/web/entry-867b7ffe65b91cc5bc6097d985854f9e.js" defer></script>
   <!-- Instant Cold-Boot Loading Screen: Tri-Realm Background + Smooth Indicator Bar -->
-  <div id="earpa-instant-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#090d16 url('/images/earpa_master_loading_bg.jpg') center center / cover no-repeat;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:auto;transition:opacity 0.4s ease-out;">
+  <div id="earpa-instant-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#090d16 url('/images/earpa_master_loading_bg.jpg') center center / cover no-repeat;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:auto;transition:opacity 0.45s ease-out;">
     <div style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to top, rgba(5,10,16,0.85) 0%, rgba(5,10,16,0) 100%);pointer-events:none;"></div>
     <div style="position:relative;margin-bottom:64px;width:240px;max-width:75%;height:4.5px;background:rgba(15,23,42,0.65);border:1px solid rgba(255,255,255,0.18);border-radius:999px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,0.55);">
-      <div id="earpa-instant-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg, #d97706 0%, #fbbf24 50%, #38bdf8 100%);box-shadow:0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(56,189,248,0.6);animation:earpaProgressFill 2.0s cubic-bezier(0.16,1,0.3,1) forwards;"></div>
+      <div id="earpa-instant-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg, #d97706 0%, #fbbf24 50%, #38bdf8 100%);box-shadow:0 0 12px rgba(251,191,36,0.9), 0 0 24px rgba(56,189,248,0.6);transition:width 0.18s ease-out;"></div>
     </div>
   </div>
-  <style>
-    @keyframes earpaProgressFill {
-      0% { width: 0%; }
-      35% { width: 48%; }
-      75% { width: 85%; }
-      100% { width: 100%; }
-    }
-  </style>
   <script>
     window.addEventListener('DOMContentLoaded', function() {
-      // Once React mounts its DOM inside #root, fade out the instant HTML loader
-      var check = setInterval(function() {
+      var start = performance.now();
+      var bar = document.getElementById('earpa-instant-bar');
+      var loader = document.getElementById('earpa-instant-loader');
+      var completed = false;
+
+      // Preload primary sanctuary background photo in the background immediately
+      var bgImg = new Image();
+      bgImg.src = '/images/earpa_sanctuary_bg.jpg';
+
+      function updateProgress() {
+        if (completed) return;
+        var elapsed = performance.now() - start;
         var root = document.getElementById('root');
-        if (root && root.children.length > 0) {
-          clearInterval(check);
-          var loader = document.getElementById('earpa-instant-loader');
-          if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(function() { if (loader.parentNode) loader.parentNode.removeChild(loader); }, 420);
-          }
+        var hasReact = root && root.children.length > 0;
+        var harpReady = window.__earpa_harpReady === true;
+        var is100Loaded = hasReact && (harpReady || elapsed > 4500);
+
+        if (!is100Loaded) {
+          var ratio = Math.min(1.0, elapsed / 2800);
+          var pct = Math.min(88, Math.round(88 * (1 - Math.pow(1 - ratio, 2.0))));
+          if (bar) bar.style.width = pct + '%';
+        } else {
+          completed = true;
+          if (bar) bar.style.width = '100%';
+          setTimeout(function() {
+            if (loader) {
+              loader.style.opacity = '0';
+              setTimeout(function() {
+                if (loader.parentNode) loader.parentNode.removeChild(loader);
+              }, 450);
+            }
+          }, 180);
+          return;
         }
-      }, 80);
+
+        requestAnimationFrame(updateProgress);
+      }
+
+      requestAnimationFrame(updateProgress);
     });
   </script>
 </body>
