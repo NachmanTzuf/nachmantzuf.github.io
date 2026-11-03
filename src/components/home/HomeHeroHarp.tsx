@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     zIndex: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: Platform.OS === 'web' ? 95 : 100, // Positioned slightly lower, comfortably above the navigation bar
+    paddingBottom: Platform.OS === 'web' ? 90 : 96, // Nudged a tiny bit lower, nestled directly above the navigation bar without touching
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {
