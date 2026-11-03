@@ -1,6 +1,7 @@
-const CACHE_NAME = 'earpa-pwa-v16';
+const CACHE_NAME = 'earpa-pwa-v17';
 const ASSETS_TO_CACHE = [
   '/',
+  '/?source=pwa',
   '/index.html',
   '/manifest.json',
   '/images/icons/earpa_icon_192.png',
@@ -67,7 +68,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static Assets (Hashed JS, CSS, images, 3D models): Stale-while-revalidate / cache-first
+  // Static Assets (Hashed JS, CSS, images, 3D models, manifest): Cache-first or Stale-while-revalidate
   event.respondWith(
     caches.match(req).then((cachedResponse) => {
       if (cachedResponse) {

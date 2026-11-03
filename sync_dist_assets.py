@@ -26,10 +26,14 @@ def main():
         with open(index_html, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Add PWA head links and Service Worker registration if missing
+        # Add PWA head links, high-res DOM icons, and immediate Service Worker registration
         pwa_head = """    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" href="/images/icons/favicon.png" />
-    <link rel="apple-touch-icon" href="/images/icons/apple_touch_icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/earpa_icon_192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/images/icons/earpa_icon_512.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/images/icons/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple_touch_icon.png" />
+    <link rel="apple-touch-icon-precomposed" href="/images/icons/apple_touch_icon.png" />
+    <link rel="shortcut icon" href="/images/icons/favicon.png" />
     <meta name="theme-color" content="#090d16" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -38,20 +42,30 @@ def main():
     <meta name="application-name" content="Earpa" />
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(function(reg) {
-              console.log('[Earpa SW] Registered with scope:', reg.scope);
-            })
-            .catch(function(err) {
-              console.warn('[Earpa SW] Registration failed:', err);
-            });
-        });
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function(reg) {
+            console.log('[Earpa SW] Registered with scope:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('[Earpa SW] Registration failed:', err);
+          });
       }
+      window.__pwaInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaInstallPrompt = e;
+        console.log('[Earpa PWA] Native install prompt captured');
+        window.dispatchEvent(new CustomEvent('earpa:can-install'));
+      });
+      window.addEventListener('appinstalled', function() {
+        console.log('[Earpa PWA] Earpa app installed');
+        window.__pwaInstallPrompt = null;
+      });
     </script>
   </head>"""
-        if '<link rel="manifest"' not in content:
-            content = content.replace('</head>', pwa_head)
+        # Remove any existing manifest block or SW script in head to ensure clean overwrite
+        content = re.sub(r'\s*<link rel="manifest".*?</head>', '\n  </head>', content, flags=re.DOTALL)
+        content = content.replace('</head>', pwa_head)
 
         # Inject initial instant loader before </body>
         instant_loader = """  <!-- Instant Cold-Boot Loading Screen: Tri-Realm Background + Smooth Indicator Bar -->

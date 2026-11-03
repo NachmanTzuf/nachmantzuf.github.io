@@ -29,6 +29,7 @@ interface ProfileTabScreenProps {
   totalTrials: number;
   onOpenRoadmap: (realm?: 'single' | 'melody' | 'levers') => void;
   onOpenSocial: () => void;
+  onOpenGarage?: () => void;
 }
 
 const PRACTICE_VIDEOS = [
@@ -75,7 +76,7 @@ const Bar = ({ label, value, detail }: { label: string; value: number; detail: s
   </View>
 );
 
-export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
+export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScreenProps) {
   const db = UserAccountDatabase.getInstance();
   const [, refresh] = useState(0);
   useEffect(() => db.subscribe(() => refresh((n) => n + 1)), []);
@@ -160,17 +161,17 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
         {/* 2. TOP: 3 Stat Counters Row (Sessions, Minutes, Accuracy %) */}
         <View style={s.statsCard}>
           <View style={{ alignItems: 'center', gap: 4 }}>
-            <Text style={s.number}>{profile.totalSessionsPlayed}</Text>
+            <Text style={s.number}>{profile.totalSessionsPlayed || 0}</Text>
             <Text style={s.small}>sessions</Text>
           </View>
           <View style={s.statDivider} />
           <View style={{ alignItems: 'center', gap: 4 }}>
-            <Text style={s.number}>{Math.round(profile.totalPracticeTimeSeconds / 60)}</Text>
+            <Text style={s.number}>{Math.round((profile.totalPracticeTimeSeconds || 0) / 60)}</Text>
             <Text style={s.small}>minutes</Text>
           </View>
           <View style={s.statDivider} />
           <View style={{ alignItems: 'center', gap: 4 }}>
-            <Text style={s.number}>{profile.overallAccuracyPct}%</Text>
+            <Text style={s.number}>{profile.overallAccuracyPct || 0}%</Text>
             <Text style={s.small}>accuracy</Text>
           </View>
         </View>
@@ -247,6 +248,53 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
           </View>
         </TouchableOpacity>
 
+        {/* 4b. Artisan Workshop & Shards Luthier Vault */}
+        {onOpenGarage && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={onOpenGarage}
+            style={s.sleekActionCard}
+            activeOpacity={0.8}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <View style={{ gap: 4 }}>
+                <Text style={s.sleekActionTitle}>🎨 Harp Artisan Workshop</Text>
+                <Text style={s.small}>Customize wood finishes, LED string glows & spend Shards ({db.getShards()} available)</Text>
+              </View>
+              <Text style={{ color: '#d5ba85', fontSize: 16 }}>›</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* 4c. Install Native App PWA Shortcut */}
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => {
+            if (Platform.OS === 'web') {
+              const prompt = (window as any).__pwaInstallPrompt;
+              if (prompt) {
+                prompt.prompt();
+                prompt.userChoice.then((choice: any) => {
+                  console.log('[Earpa PWA] User install choice:', choice);
+                  (window as any).__pwaInstallPrompt = null;
+                });
+              } else {
+                alert('To install Earpa on your device:\n\n• On Android: Tap Chrome menu (⋮) → "Install app" or "Add to Home screen"\n• On iOS (Safari): Tap Share (⎋) → "Add to Home Screen"');
+              }
+            }
+          }}
+          style={s.sleekActionCard}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <View style={{ gap: 4 }}>
+              <Text style={s.sleekActionTitle}>📲 Install Earpa App</Text>
+              <Text style={s.small}>Install to your Home Screen for full screen 120Hz & offline practice</Text>
+            </View>
+            <Text style={{ color: '#d5ba85', fontSize: 16 }}>›</Text>
+          </View>
+        </TouchableOpacity>
+
         {/* 5. Sleek Preferences Panel with Haptic Vibrations Toggle */}
         <TouchableOpacity
           accessibilityRole="button"
@@ -280,20 +328,44 @@ export function ProfileTabScreen({ onOpenRoadmap }: ProfileTabScreenProps) {
               style={s.input}
             />
 
-            {/* Haptic Vibrations Toggle */}
-            <View style={s.toggleRow}>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={s.text}>Haptic vibrations</Text>
-                <Text style={s.small}>Vibrate phone on string pluck and lever flips</Text>
+            {/* Haptic Vibration Preferences */}
+            <View style={{ gap: 8, marginTop: 4 }}>
+              <View style={{ gap: 2 }}>
+                <Text style={s.text}>Vibration feedback</Text>
+                <Text style={s.small}>
+                  {db.getHapticMode() === 'minimal'
+                    ? 'Minimal: Vibrates only when you tap a note or string. Zero vibration during cadence.'
+                    : db.getHapticMode() === 'off'
+                    ? 'Off: All vibrations completely disabled.'
+                    : 'Full: Vibrates on both player touches and background cadences.'}
+                </Text>
               </View>
-              <Switch
-                value={profile.hapticsEnabled !== false}
-                onValueChange={(val) => {
-                  db.updateActiveProfile({ hapticsEnabled: val });
-                }}
-                trackColor={{ false: 'rgba(255,255,255,0.15)', true: '#059669' }}
-                thumbColor={profile.hapticsEnabled !== false ? '#34d399' : '#94a3b8'}
-              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {(['minimal', 'off', 'full'] as const).map((mode) => {
+                  const isSelected = db.getHapticMode() === mode;
+                  const label = mode === 'minimal' ? 'Minimal' : mode === 'off' ? 'Off' : 'Full';
+                  return (
+                    <TouchableOpacity
+                      key={mode}
+                      onPress={() => db.setHapticMode(mode)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        paddingHorizontal: 8,
+                        borderRadius: 12,
+                        backgroundColor: isSelected ? 'rgba(52, 211, 153, 0.20)' : 'rgba(255, 255, 255, 0.05)',
+                        borderWidth: 1,
+                        borderColor: isSelected ? '#34d399' : 'rgba(255, 255, 255, 0.12)',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={[s.text, { fontSize: 13, fontWeight: isSelected ? '700' : '400', color: isSelected ? '#a7f3d0' : '#c0b59d' }]}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
             <Text style={s.title}>Note names</Text>

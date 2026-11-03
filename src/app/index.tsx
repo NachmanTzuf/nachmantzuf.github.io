@@ -470,12 +470,13 @@ export default function EarpaMasterScreen() {
             activeTab={activeTab}
             levelNumber={userProgressionLevel}
             streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
-            currentXp={profile.totalTrialsAttempted * 10}
+            currentXp={accountDb.getShards()}
             nextMilestoneXp={500}
             onOpenRoadmap={(theme) => handleOpenRoadmapWithTheme(theme || 'single')}
             onOpenProfile={() => setActiveTab('profile')}
             onOpenSocial={() => setShowSocialModal(true)}
             onOpenReminders={() => setShowReminderModal(true)}
+            onOpenGarage={() => setShowGarageModal(true)}
           />
 
           {/* Active Tab View Body: Identical Hero 3D Harp & Pedestal across Single, Melody, and Levers */}
@@ -552,6 +553,7 @@ export default function EarpaMasterScreen() {
                 totalTrials={totalTrials}
                 onOpenRoadmap={(realm = 'single') => handleOpenRoadmapWithTheme(realm)}
                 onOpenSocial={() => setShowSocialModal(true)}
+                onOpenGarage={() => setShowGarageModal(true)}
               />
             )}
           </View>
@@ -613,7 +615,13 @@ export default function EarpaMasterScreen() {
             visible={showGarageModal}
             onClose={() => setShowGarageModal(false)}
             garageEngine={garageEngineRef.current}
-            onApplyCosmetic={() => {}}
+            onApplyCosmetic={(type, colorHex) => {
+              if (type === 'timber') {
+                canvasRef.current?.applyTimberColor(colorHex);
+              } else if (type === 'strings') {
+                canvasRef.current?.applyStringGlowColor(colorHex);
+              }
+            }}
           />
           <SocialCirclesModal
             visible={showSocialModal}

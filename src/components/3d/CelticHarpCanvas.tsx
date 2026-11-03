@@ -40,6 +40,8 @@ export interface CelticHarpCanvasRef {
   setLeverState: (stringNumber: number, isUp: boolean) => void;
   setAllLevers: (states: boolean[]) => void;
   transitionCamera: (preset: CameraPreset) => void;
+  applyTimberColor: (colorHex: string, roughness?: number, metalness?: number) => void;
+  applyStringGlowColor: (colorHex: string) => void;
 }
 
 interface CelticHarpCanvasProps {
@@ -58,10 +60,10 @@ interface CelticHarpCanvasProps {
 }
 
 // Physical Smartphone Haptic Feedback
-const triggerHaptic = (type: 'pluck' | 'lever' = 'pluck') => {
+const triggerHaptic = (type: 'pluck' | 'lever' = 'pluck', isUserInput: boolean = true) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
     try {
-      if (!UserAccountDatabase.getInstance().isHapticsEnabled()) return;
+      if (!UserAccountDatabase.getInstance().isHapticsEnabled(isUserInput)) return;
       if (type === 'pluck') {
         navigator.vibrate(22); // 22ms crisp physical acoustic string pluck impulse
       } else if (type === 'lever') {
@@ -215,7 +217,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       }
     };
 
-    const pluckString = (degreeNum: number, velocity: number = 1.0) => {
+    const pluckString = (degreeNum: number, velocity: number = 1.0, isUserInput: boolean = false) => {
       // Clamp to 1..8
       const deg = ((Math.max(1, degreeNum) - 1) % 8) + 1;
       const st = stringsRef.current.get(deg);
@@ -227,21 +229,21 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           meshMat.emissive.copy(st.glowColor);
           meshMat.emissiveIntensity = 0.85; // Very thin, delicate, subtle stripe of light strictly on the string itself
         }
-        triggerHaptic('pluck'); // Physical 22ms mobile vibration feedback
+        triggerHaptic('pluck', isUserInput); // Respects haptic preference: never vibrates on cadence in minimal mode
       }
     };
 
     useImperativeHandle(ref, () => ({
       triggerLightStrike: (stringIndex: number) => {
-        // Map either 1..8 or 0..33 to 1..8
+        // Map either 1..8 or 0..33 to 1..8 (Automated sound: isUserInput = false)
         const deg = stringIndex >= 1 && stringIndex <= 8 ? stringIndex : (stringIndex % 8) + 1;
-        pluckString(deg, 1.0);
+        pluckString(deg, 1.0, false);
       },
       triggerCadencePulse: () => {
         pulseIntensityRef.current = 1.0;
-        // Gently pluck tonic, mediant, dominant, octave strings (1, 3, 5, 8)
+        // Gently pluck tonic, mediant, dominant, octave strings (1, 3, 5, 8) (Automated cadence: isUserInput = false)
         [1, 3, 5, 8].forEach((deg, idx) => {
-          setTimeout(() => pluckString(deg, 0.75), idx * 45);
+          setTimeout(() => pluckString(deg, 0.75, false), idx * 45);
         });
       },
       applyMode: (rootPc: PitchClass, mode: DiatonicMode) => {
@@ -298,6 +300,31 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       },
       transitionCamera: (preset: CameraPreset) => {
         setCameraPresetInternal(preset);
+      },
+      applyTimberColor: (colorHex: string, roughness: number = 0.30, metalness: number = 0.05) => {
+        if (!harpRootRef.current) return;
+        const color = new THREE.Color(colorHex);
+        harpRootRef.current.traverse((child: any) => {
+          if (child.isMesh && child.material) {
+            if (
+              child.name.startsWith('Harp_Harmonic_Frame') ||
+              child.name.startsWith('Harp_Forepillar') ||
+              child.name.startsWith('Harp_Leg') ||
+              child.name.startsWith('Harp_Soundbox')
+            ) {
+              child.material.color.copy(color);
+              child.material.roughness = roughness;
+              child.material.metalness = metalness;
+              child.material.needsUpdate = true;
+            }
+          }
+        });
+      },
+      applyStringGlowColor: (colorHex: string) => {
+        const color = new THREE.Color(colorHex);
+        stringsRef.current.forEach((st) => {
+          st.glowColor.copy(color);
+        });
       },
     }));
 
@@ -780,7 +807,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
 
         if (hitDeg !== -1) {
           if (hitDeg !== lastPluckedDeg) {
-            pluckString(hitDeg, 1.0);
+            pluckString(hitDeg, 1.0, true);
             onStringPluckedRef.current?.(hitDeg);
             lastPluckedDeg = hitDeg;
           }

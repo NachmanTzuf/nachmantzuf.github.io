@@ -22,6 +22,7 @@ interface TopHeaderBarProps {
   onOpenRoadmap?: (theme?: 'single' | 'melody' | 'levers') => void;
   onOpenSocial?: () => void;
   onOpenReminders?: () => void;
+  onOpenGarage?: () => void;
 }
 
 export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
@@ -33,6 +34,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   onOpenProfile,
   onOpenRoadmap,
   onOpenReminders,
+  onOpenGarage,
 }) => {
   const userLvl = Math.max(1, levelNumber);
   const stageNum = Math.floor((userLvl - 1) / 10) + 1;
@@ -105,11 +107,12 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
           </View>
         </TouchableOpacity>
 
-        {/* Center Symmetrical Metric Pill */}
+        {/* Center Symmetrical Metric Pill: Tapping opens the Harp Artisan Workshop */}
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={() => onOpenRoadmap && onOpenRoadmap(activeTab === 'profile' ? 'single' : sectionConfig.theme as 'single' | 'melody' | 'levers')}
+          onPress={() => onOpenGarage ? onOpenGarage() : (onOpenRoadmap && onOpenRoadmap(activeTab === 'profile' ? 'single' : sectionConfig.theme as 'single' | 'melody' | 'levers'))}
           style={styles.centerMetricBadge}
+          accessibilityLabel={`You have ${currentXp} Shards. Tap to open the Harp Artisan Workshop.`}
         >
           <GoldTorcIcon size={15} />
           <Text style={styles.centerMetricText}>{currentXp} Shards</Text>

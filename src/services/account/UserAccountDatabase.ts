@@ -29,7 +29,11 @@ export interface UserProfile {
   progress?: {single: number; melody: number};
   notationPreference?: 'numbers' | 'solfege' | 'notes';
   hapticsEnabled?: boolean;
+  hapticMode?: 'off' | 'minimal' | 'full';
+  shardsBalance?: number;
 }
+
+export type HapticMode = 'off' | 'minimal' | 'full';
 
 export interface TrialLogEntry {
   id: string;
@@ -288,12 +292,49 @@ export class UserAccountDatabase {
     return updated;
   }
 
-  public isHapticsEnabled(): boolean {
-    return this.getActiveProfile().hapticsEnabled !== false;
+  public getHapticMode(): HapticMode {
+    const profile = this.getActiveProfile();
+    if (profile.hapticMode) return profile.hapticMode;
+    if (profile.hapticsEnabled === false) return 'off';
+    return 'minimal'; // Default to minimal: tactile feedback on user input only, no cadence vibration
+  }
+
+  public setHapticMode(mode: HapticMode): void {
+    this.updateActiveProfile({
+      hapticMode: mode,
+      hapticsEnabled: mode !== 'off',
+    });
+  }
+
+  public isHapticsEnabled(isUserInteraction: boolean = true): boolean {
+    const mode = this.getHapticMode();
+    if (mode === 'off') return false;
+    if (mode === 'minimal') return isUserInteraction;
+    return true; // 'full'
   }
 
   public setHapticsEnabled(enabled: boolean): void {
-    this.updateActiveProfile({ hapticsEnabled: enabled });
+    this.setHapticMode(enabled ? 'minimal' : 'off');
+  }
+
+  public getShards(): number {
+    const profile = this.getActiveProfile();
+    if (typeof profile.shardsBalance === 'number') return profile.shardsBalance;
+    // Derive from practice trials (minimum 1300 for active harpers with earned shards)
+    const base = Math.max((profile.totalTrialsAttempted || 0) * 10, 1300);
+    return base;
+  }
+
+  public spendShards(amount: number): boolean {
+    const current = this.getShards();
+    if (current < amount) return false;
+    this.updateActiveProfile({ shardsBalance: current - amount });
+    return true;
+  }
+
+  public addShards(amount: number): void {
+    const current = this.getShards();
+    this.updateActiveProfile({ shardsBalance: current + amount });
   }
 
   public deleteAccount(userId: string): boolean {

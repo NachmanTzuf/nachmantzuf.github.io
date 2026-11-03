@@ -58,6 +58,7 @@ export interface CosmeticItem<T> {
   colorHex: string;
   roughness: number;
   metalness: number;
+  shardCost?: number;
 }
 
 export interface UserProgressionState {

@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     zIndex: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 104, // Play occupies the former short-practice-lesson slot.
+    paddingBottom: Platform.OS === 'web' ? 95 : 100, // Positioned slightly lower, comfortably above the navigation bar
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {
