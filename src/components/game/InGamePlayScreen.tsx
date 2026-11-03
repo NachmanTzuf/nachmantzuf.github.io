@@ -34,6 +34,7 @@ import {
 } from '../../services/account/UserAccountDatabase';
 import { MusicalResponsesCatalog } from '../../services/intelligence/MusicalResponsesCatalog';
 import { SessionInsightsModal } from './SessionInsightsModal';
+import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
 
 export interface InGamePlayScreenProps {
   realm: 'single' | 'melody' | 'levers';
@@ -320,6 +321,21 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
       }
     };
   }, []);
+
+  const handleInGameModelLoaded = () => {
+    try {
+      const garage = new HarpGarageEngine();
+      const eq = garage.getEquipped();
+      if (eq) {
+        canvasRef.current?.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
+        canvasRef.current?.applyStringGlowColor(eq.strings.colorHex);
+        canvasRef.current?.applyLeverColor(eq.lever.colorHex);
+        canvasRef.current?.applyRosetteInlay?.(eq.rosette.colorHex, eq.rosette.id);
+        const timbre = eq.sound.id === 'gut_string_warmth' ? 'gut_string_warmth' : eq.sound.id === 'subtle_cathedral_reverb' ? 'subtle_cathedral_reverb' : 'celtic_nylon';
+        synthRef.current.setTimbre(timbre);
+      }
+    } catch {}
+  };
 
   const totalRounds = 15;
   const melodyLength = activeLevel.isHarmonicDyad ? 2 : activeLevel.melodyLength || 1;
@@ -851,6 +867,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
             customScale={0.938}
             targetY={0.590}
             minimalHeroMode={true}
+            onModelLoaded={handleInGameModelLoaded}
           />
         </ErrorBoundary>
       </View>

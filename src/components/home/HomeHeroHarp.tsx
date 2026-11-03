@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     zIndex: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: Platform.OS === 'web' ? 95 : 105, // Sits exactly 7px above the tab bar (top at 88px on web, 98px on native), comfortably lowered without touching
+    paddingBottom: Platform.OS === 'web' ? 92 : 102, // Sits exactly 4px above the tab bar (top at 88px on web, 98px on native), comfortably lowered without touching
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {

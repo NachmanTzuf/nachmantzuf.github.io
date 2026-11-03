@@ -40,11 +40,11 @@ export function TesterFeedback() {
         accessibilityLabel="Send tester feedback directly to founder"
         onPress={() => open(false)}
         activeOpacity={0.82}
-        style={styles.pill}
+        style={styles.symmetricalCard}
       >
         <Text style={styles.icon}>💬</Text>
         <Text style={styles.text}>
-          Tester Feedback: Share ideas or bug reports directly ›
+          Share Feedback Directly with Nachman ›
         </Text>
       </TouchableOpacity>
       {!!error && (
@@ -60,39 +60,42 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 4,
   },
-  pill: {
+  symmetricalCard: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
+    justifyContent: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.42)',
-    backgroundColor: 'rgba(15, 25, 20, 0.72)',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25)',
+    borderColor: 'rgba(220, 198, 154, 0.28)',
+    backgroundColor: 'rgba(15, 25, 20, 0.65)',
     ...(Platform.OS === 'web'
       ? ({
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
         } as any)
       : {}),
-  } as any,
+  },
   icon: {
-    fontSize: 13,
+    fontSize: 14,
   },
   text: {
-    color: '#fef08a',
-    fontSize: 11.5,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    fontFamily: 'Cinzel-Bold',
+    color: '#fae8c2',
+    fontSize: 13,
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
   errorText: {
     color: '#fca5a5',
-    fontSize: 10,
-    marginTop: 4,
+    fontSize: 11,
+    marginTop: 6,
     textAlign: 'center',
   },
 });

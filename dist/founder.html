@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Earpa · Founder & Luthier Telemetry Console</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #090d16 url('/images/earpa_master_loading_bg.jpg') center top / cover fixed no-repeat;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 60px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .console-header {
+      width: 100%;
+      max-width: 1040px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(220, 198, 154, 0.28);
+      border-radius: 20px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      margin-bottom: 24px;
+    }
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      color: #fef08a;
+      text-shadow: 0 0 12px rgba(254, 240, 138, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      border-color: rgba(254, 240, 138, 0.5);
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.35);
+    }
+    .btn-gold:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fae8c2;
+      border-color: rgba(220, 198, 154, 0.3);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .layout-grid {
+      width: 100%;
+      max-width: 1040px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 860px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(220, 198, 154, 0.25);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fae8c2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: 0.8px;
+    }
+    .stat-summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat-pill {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(220, 198, 154, 0.18);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fef08a;
+      font-feature-settings: 'tnum';
+    }
+    .stat-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-top: 3px;
+    }
+    .telemetry-table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.25);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    th {
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fae8c2;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-feature-settings: 'tnum';
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .badge-active {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(52, 211, 153, 0.2);
+      border: 1px solid #34d399;
+      color: #6ee7b7;
+    }
+    .canvas-3d-box {
+      width: 100%;
+      height: 290px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 50% 40%, rgba(20, 30, 45, 0.8) 0%, rgba(9, 13, 22, 0.95) 100%);
+      border: 1px solid rgba(220, 198, 154, 0.2);
+      overflow: hidden;
+      position: relative;
+    }
+    #three-canvas-container {
+      width: 100%;
+      height: 100%;
+    }
+    .cosmetic-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 0.8px;
+      margin-top: 4px;
+    }
+    .swatch-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .swatch-card {
+      flex: 0 0 auto;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
+    }
+    .swatch-card:hover, .swatch-card.active {
+      border-color: #fef08a;
+      background: rgba(212, 175, 55, 0.2);
+      box-shadow: 0 0 12px rgba(254, 240, 138, 0.3);
+    }
+    .swatch-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .swatch-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+    }
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(9, 13, 22, 0.88);
+      backdrop-filter: blur(28px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .login-modal {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(220, 198, 154, 0.4);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(220, 198, 154, 0.3);
+      background: rgba(0, 0, 0, 0.4);
+      color: #ffffff;
+      font-size: 15px;
+      margin: 18px 0;
+      outline: none;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .login-input:focus {
+      border-color: #fef08a;
+      box-shadow: 0 0 12px rgba(254, 240, 138, 0.4);
+    }
+  </style>
+  <script src="/vendor/three.min.js"></script>
+  <script src="/vendor/GLTFLoader.js"></script>
+</head>
+<body>
+
+  <!-- Secret Authentication Overlay -->
+  <div id="auth-gate" class="login-overlay">
+    <div class="login-modal">
+      <div style="font-size: 36px; margin-bottom: 8px;">👑</div>
+      <h2 style="font-family:'Cinzel',serif; color:#fef08a; margin-bottom:6px;">Earpa Founder Portal</h2>
+      <p style="font-size:12.5px; color:#94a3b8;">Enter secret passkey to access live telemetry & the unlimited luthier workshop.</p>
+      <input type="password" id="passkey-input" class="login-input" placeholder="Passkey" autocomplete="off" />
+      <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="handleUnlock()">Unlock Founder Console ›</button>
+      <div id="auth-error" style="color:#ef4444; font-size:12px; margin-top:10px; display:none;">Invalid passkey.</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="console-header">
+    <div>
+      <div class="brand-title"><span>👑</span> Earpa Founder Console</div>
+      <div class="brand-subtitle">Executive Telemetry & Unlimited Luthier Workshop</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="exportTelemetryJson()">Export JSON 📥</button>
+      <a class="btn btn-gold" href="/?founder=nachman" target="_blank">Launch App (Unlimited) 🚀</a>
+    </div>
+  </header>
+
+  <!-- Content Grid -->
+  <div class="layout-grid">
+    <!-- User Telemetry Analytics Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Tester Telemetry</span>
+        <span id="registered-badge" style="font-size:11px; font-weight:700; color:#38bdf8;">0 Harpers</span>
+      </div>
+
+      <div class="stat-summary-row">
+        <div class="stat-pill">
+          <div id="stat-total-time" class="stat-val">0h 0m</div>
+          <div class="stat-lbl">Practice Time</div>
+        </div>
+        <div class="stat-pill">
+          <div id="stat-total-sessions" class="stat-val">0</div>
+          <div class="stat-lbl">Sessions</div>
+        </div>
+        <div class="stat-pill">
+          <div id="stat-avg-accuracy" class="stat-val">0%</div>
+          <div class="stat-lbl">Mean Accuracy</div>
+        </div>
+      </div>
+
+      <div class="telemetry-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Harper</th>
+              <th>Time</th>
+              <th>Sessions</th>
+              <th>Trials</th>
+              <th>Accuracy</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="telemetry-rows">
+            <tr>
+              <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">No registered user telemetry found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Unlimited Luthier Workshop Sandbox -->
+    <div class="card">
+      <div class="card-title">
+        <span>3D Celtic Luthier Sandbox</span>
+        <span style="font-size:11px; color:#fef08a; font-weight:700;">Unlimited Founder Mode</span>
+      </div>
+
+      <div class="canvas-3d-box">
+        <div id="three-canvas-container"></div>
+      </div>
+
+      <div>
+        <div class="cosmetic-group-title">Timber Finish</div>
+        <div class="swatch-row" id="timber-swatches">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div>
+        <div class="cosmetic-group-title">Rosette Inlay</div>
+        <div class="swatch-row" id="rosette-swatches">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+        <span id="equipped-indicator" style="font-size:12px; color:#6ee7b7; font-weight:700;">✓ Natural Maple Fitted</span>
+        <button class="btn btn-gold" onclick="equipToMainApp()">Save & Fit to Earpa App ›</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Authentication Logic
+    const PASSKEY = 'nachman';
+    function checkAuth() {
+      const urlHasFounder = window.location.search.includes('founder=nachman') || window.location.search.includes('admin=nachman');
+      const stored = localStorage.getItem('earpa_founder_mode') === 'true';
+      if (urlHasFounder || stored) {
+        document.getElementById('auth-gate').style.display = 'none';
+        localStorage.setItem('earpa_founder_mode', 'true');
+        initConsole();
+      }
+    }
+    function handleUnlock() {
+      const val = document.getElementById('passkey-input').value.trim();
+      if (val === PASSKEY) {
+        document.getElementById('auth-gate').style.display = 'none';
+        localStorage.setItem('earpa_founder_mode', 'true');
+        initConsole();
+      } else {
+        document.getElementById('auth-error').style.display = 'block';
+      }
+    }
+    document.getElementById('passkey-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleUnlock();
+    });
+
+    // Telemetry Engine
+    function initConsole() {
+      loadTelemetry();
+      init3DViewer();
+    }
+
+    function formatTime(totalSeconds) {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m ${totalSeconds % 60}s`;
+    }
+
+    function loadTelemetry() {
+      let accounts = [];
+      try {
+        const raw = localStorage.getItem('earpa_user_accounts_v1');
+        if (raw) accounts = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Error reading accounts', e);
+      }
+
+      if (!accounts || accounts.length === 0) {
+        accounts = [{
+          id: 'default_harper',
+          name: 'Nachman',
+          bardicLevel: 12,
+          shardsBalance: 1320,
+          totalPracticeSeconds: 3840,
+          totalSessions: 14,
+          totalTrialsAttempted: 168,
+          successfulTrials: 146,
+          streakDays: 2,
+          isActive: true
+        }];
+      }
+
+      document.getElementById('registered-badge').textContent = `${accounts.length} Harpers`;
+
+      let totalSec = 0;
+      let totalSess = 0;
+      let totalAttempts = 0;
+      let totalSuccess = 0;
+
+      const tbody = document.getElementById('telemetry-rows');
+      tbody.innerHTML = '';
+
+      accounts.forEach((u) => {
+        const sec = u.totalPracticeSeconds || 0;
+        const sess = u.totalSessions || 0;
+        const trials = u.totalTrialsAttempted || 0;
+        const succ = u.successfulTrials || 0;
+        const acc = trials > 0 ? Math.round((succ / trials) * 100) : 0;
+
+        totalSec += sec;
+        totalSess += sess;
+        totalAttempts += trials;
+        totalSuccess += succ;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${u.name || 'Harper'}</strong></td>
+          <td>${formatTime(sec)}</td>
+          <td>${sess}</td>
+          <td>${trials}</td>
+          <td style="color:${acc >= 80 ? '#6ee7b7' : '#fef08a'}; font-weight:700;">${acc}%</td>
+          <td><span class="badge-active">${u.isActive ? 'Active' : 'Offline'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('stat-total-time').textContent = formatTime(totalSec);
+      document.getElementById('stat-total-sessions').textContent = totalSess;
+      const meanAcc = totalAttempts > 0 ? Math.round((totalSuccess / totalAttempts) * 100) : 0;
+      document.getElementById('stat-avg-accuracy').textContent = `${meanAcc}%`;
+    }
+
+    function exportTelemetryJson() {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        accounts: JSON.parse(localStorage.getItem('earpa_user_accounts_v1') || '[]'),
+        equippedCosmetics: JSON.parse(localStorage.getItem('earpa_equipped_cosmetics_v1') || '{}'),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `earpa_telemetry_${Date.now()}.json`;
+      a.click();
+    }
+
+    // 3D Celtic Harp Sandbox Engine
+    const TIMBERS = [
+      { id: 'natural_maple', name: 'Natural Maple', hex: '#d4a872', color: 0xd4a872, rough: 0.3 },
+      { id: 'bog_oak', name: 'Irish Bog Oak', hex: '#1c1917', color: 0x1c1917, rough: 0.4 },
+      { id: 'connemara_walnut', name: 'Connemara Walnut', hex: '#451a03', color: 0x451a03, rough: 0.35 },
+      { id: 'royal_rosewood', name: 'Royal Rosewood', hex: '#581c1c', color: 0x581c1c, rough: 0.28 },
+      { id: 'nordic_ash', name: 'Nordic Ash', hex: '#cbd5e1', color: 0xcbd5e1, rough: 0.25 }
+    ];
+
+    const ROSETTES = [
+      { id: 'none', name: 'Clean Wood', hex: '#d4a872' },
+      { id: 'spiral_triskele', name: 'Spiral Triskele', hex: '#d4af37' },
+      { id: 'dara_knot', name: 'Dara Knot', hex: '#f59e0b' },
+      { id: 'sacred_shamrock', name: 'Sacred Shamrock', hex: '#10b981' },
+      { id: 'brigid_cross', name: 'Brigid Cross', hex: '#eab308' }
+    ];
+
+    let selectedTimber = TIMBERS[0];
+    let selectedRosette = ROSETTES[0];
+    let harpScene = null;
+    let harpMeshGroup = null;
+    let rosetteMesh = null;
+
+    function renderSwatches() {
+      const tContainer = document.getElementById('timber-swatches');
+      tContainer.innerHTML = '';
+      TIMBERS.forEach((t) => {
+        const div = document.createElement('div');
+        div.className = `swatch-card ${t.id === selectedTimber.id ? 'active' : ''}`;
+        div.innerHTML = `<div class="swatch-circle" style="background:${t.hex}"></div><div class="swatch-name">${t.name}</div>`;
+        div.onclick = () => {
+          selectedTimber = t;
+          renderSwatches();
+          applyTimberColor(t.color, t.rough);
+          updateIndicator();
+        };
+        tContainer.appendChild(div);
+      });
+
+      const rContainer = document.getElementById('rosette-swatches');
+      rContainer.innerHTML = '';
+      ROSETTES.forEach((r) => {
+        const div = document.createElement('div');
+        div.className = `swatch-card ${r.id === selectedRosette.id ? 'active' : ''}`;
+        div.innerHTML = `<div class="swatch-circle" style="background:${r.hex}"></div><div class="swatch-name">${r.name}</div>`;
+        div.onclick = () => {
+          selectedRosette = r;
+          renderSwatches();
+          applyRosette(r.hex);
+          updateIndicator();
+        };
+        rContainer.appendChild(div);
+      });
+    }
+
+    function updateIndicator() {
+      document.getElementById('equipped-indicator').textContent = `✓ ${selectedTimber.name} + ${selectedRosette.name} Previewed`;
+    }
+
+    function applyTimberColor(hexColor, roughness) {
+      if (!harpMeshGroup) return;
+      harpMeshGroup.traverse((child) => {
+        if (child.isMesh && child.name && !child.name.toLowerCase().includes('string') && !child.name.toLowerCase().includes('lever')) {
+          if (child.material) {
+            child.material.color.setHex(hexColor);
+            child.material.roughness = roughness;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+    }
+
+    function applyRosette(hex) {
+      if (!rosetteMesh) return;
+      rosetteMesh.material.color.setStyle(hex);
+      rosetteMesh.material.needsUpdate = true;
+    }
+
+    function equipToMainApp() {
+      const equipped = {
+        timber: selectedTimber.id,
+        rosette: selectedRosette.id,
+        strings: 'classic_nylon',
+        lever: 'camac_gold',
+        sound: 'warm_celtic_wood'
+      };
+      localStorage.setItem('earpa_equipped_cosmetics_v1', JSON.stringify(equipped));
+      localStorage.setItem('earpa_founder_mode', 'true');
+      alert(`Fitted ${selectedTimber.name} & ${selectedRosette.name} to your live Earpa Harp! Opening app...`);
+      window.location.href = '/?founder=nachman';
+    }
+
+    function init3DViewer() {
+      renderSwatches();
+      const container = document.getElementById('three-canvas-container');
+      const width = container.clientWidth || 460;
+      const height = container.clientHeight || 290;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+      camera.position.set(0.65, 0.5, 1.4);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      const ambLight = new THREE.AmbientLight(0xfff8e7, 1.6);
+      scene.add(ambLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+      dirLight.position.set(2, 3, 2);
+      scene.add(dirLight);
+
+      const blueBackLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
+      blueBackLight.position.set(-2, 1, -2);
+      scene.add(blueBackLight);
+
+      // Load Celtic Harp GLTF
+      const loader = new THREE.GLTFLoader();
+      loader.load('/models/celtic_harp_8string.glb', (gltf) => {
+        harpMeshGroup = gltf.scene;
+        harpMeshGroup.scale.set(0.72, 0.72, 0.72);
+        harpMeshGroup.position.set(-0.06, -0.38, 0);
+
+        // Attach dynamic Rosette mesh
+        const rosetteGeom = new THREE.CylinderGeometry(0.045, 0.045, 0.005, 32);
+        const rosetteMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(0xd4af37),
+          metalness: 0.9,
+          roughness: 0.22,
+        });
+        rosetteMesh = new THREE.Mesh(rosetteGeom, rosetteMat);
+        rosetteMesh.rotation.x = Math.PI / 2;
+        rosetteMesh.position.set(0.065, 0.38, 0.095);
+        harpMeshGroup.add(rosetteMesh);
+
+        scene.add(harpMeshGroup);
+        applyTimberColor(selectedTimber.color, selectedTimber.rough);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (harpMeshGroup) {
+          harpMeshGroup.rotation.y += 0.008;
+        }
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+    }
+
+    // Startup Check
+    checkAuth();
+  </script>
+</body>
+</html>

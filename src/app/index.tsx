@@ -186,7 +186,10 @@ export default function EarpaMasterScreen() {
   const ladderEngineRef = useRef<LeverLadderEngine>(new LeverLadderEngine());
   const sanctuaryEngineRef = useRef<PracticeSanctuaryEngine>(new PracticeSanctuaryEngine(3));
   const journeyEngineRef = useRef<BardicJourneyEngine>(new BardicJourneyEngine());
-  const garageEngineRef = useRef<HarpGarageEngine>(new HarpGarageEngine());
+  const garageEngineRef = useRef<HarpGarageEngine | null>(null);
+  if (!garageEngineRef.current) {
+    garageEngineRef.current = new HarpGarageEngine();
+  }
   const socialEngineRef = useRef<SocialCirclesEngine>(new SocialCirclesEngine());
 
   useEffect(() => {

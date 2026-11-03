@@ -43,6 +43,7 @@ export interface CelticHarpCanvasRef {
   applyTimberColor: (colorHex: string, roughness?: number, metalness?: number) => void;
   applyStringGlowColor: (colorHex: string) => void;
   applyLeverColor: (colorHex: string) => void;
+  applyRosetteInlay?: (colorHex: string, rosetteId?: string) => void;
 }
 
 interface CelticHarpCanvasProps {
@@ -171,6 +172,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
     const leverHitObjectsRef = useRef<THREE.Object3D[]>([]);
     const keyLightRef = useRef<THREE.DirectionalLight | null>(null);
     const pulseIntensityRef = useRef<number>(0);
+    const rosetteMeshRef = useRef<THREE.Mesh | null>(null);
 
     const setCameraPresetInternal = (preset: CameraPreset) => {
       setActivePreset(preset);
@@ -336,6 +338,12 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
             child.material.needsUpdate = true;
           }
         });
+      },
+      applyRosetteInlay: (colorHex: string, rosetteId?: string) => {
+        if (rosetteMeshRef.current) {
+          (rosetteMeshRef.current.material as any).color.set(colorHex);
+          (rosetteMeshRef.current.material as any).needsUpdate = true;
+        }
       },
     }));
 
@@ -555,6 +563,21 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                   child.material = child.material.clone();
                   child.material.color = new THREE.Color(0xd4a872);
                   child.material.roughness = 0.30;
+                  if (child.name.startsWith('Harp_Soundbox') && !rosetteMeshRef.current) {
+                    try {
+                      const rosetteGeom = new THREE.CylinderGeometry(0.045, 0.045, 0.005, 32);
+                      const rosetteMat = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color(0xd4af37),
+                        metalness: 0.9,
+                        roughness: 0.22,
+                      });
+                      const rMesh = new THREE.Mesh(rosetteGeom, rosetteMat);
+                      rMesh.rotation.x = Math.PI / 2;
+                      rMesh.position.set(0.065, 0.38, 0.095);
+                      child.add(rMesh);
+                      rosetteMeshRef.current = rMesh;
+                    } catch {}
+                  }
                 }
               }
             }

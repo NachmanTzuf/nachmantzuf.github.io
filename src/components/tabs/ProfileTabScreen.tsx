@@ -10,7 +10,7 @@ import {
   Linking,
   Modal,
 } from 'react-native';
-import { UserAccountDatabase, UserProfile } from '../../services/account/UserAccountDatabase';
+import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 import { ProfilePhoto } from '../account/ProfilePhoto';
 import { WelcomeProfile } from '../account/WelcomeProfile';
 import { TesterFeedback } from '../common/TesterFeedback';
@@ -59,15 +59,6 @@ const PRACTICE_VIDEOS = [
 
 type PracticeVideo = (typeof PRACTICE_VIDEOS)[number];
 
-const formatPracticeTime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '0m';
-  const mins = Math.round(seconds / 60);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const rem = mins % 60;
-  return rem > 0 ? `${hrs}h ${rem}m` : `${hrs}h`;
-};
-
 const Bar = ({ label, value, detail }: { label: string; value: number; detail: string }) => (
   <View style={{ gap: 7, marginVertical: 7 }}>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -86,7 +77,6 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
   useEffect(() => db.subscribe(() => refresh((n) => n + 1)), []);
 
   const profile = db.getActiveProfile();
-  const allProfiles = db.getAllProfiles();
   const trials = db.getUserTrials(profile.id);
   const days = db.getDailyPracticeHistory(7);
   const degrees = db.getDegreeRelationshipStatsList().filter((d) => /^[b#]?[1-8]$/.test(d.degree));
@@ -152,18 +142,16 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 20, paddingBottom: 110, gap: 24 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 110, gap: 20 }}
       >
-        {/* 1. TOP: Sleek Feedback Pill, Avatar, Name & Level */}
-        <TesterFeedback />
-
-        <View style={{ alignItems: 'center', gap: 10, marginTop: 4 }}>
-          <ProfilePhoto uri={profile.avatarPhoto} name={profile.displayName} size={80} />
+        {/* 1. TOP: User Avatar, Name & Level (Minimalist, feedback removed from top) */}
+        <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <ProfilePhoto uri={profile.avatarPhoto} name={profile.displayName} size={82} />
           <Text style={s.title}>{profile.displayName}</Text>
           <Text style={s.small}>{profile.experienceLevel}</Text>
         </View>
 
-        {/* 2. STRATEGY & CORE METRICS: 3 Stat Counters Row */}
+        {/* 2. STAT COUNTERS: Symmetrical 3-Stat Counters Row */}
         <View style={s.statsCard}>
           <View style={{ alignItems: 'center', gap: 4 }}>
             <Text style={s.number}>{profile.totalSessionsPlayed || 0}</Text>
@@ -181,11 +169,13 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           </View>
         </View>
 
-        {/* 3. STRATEGY ROADMAP: 3-Realm Segmented Maps */}
+        {/* 3. SYMMETRICAL MINIMALIST FEEDBACK BUTTON (Between Stats & Roadmap) */}
+        <TesterFeedback />
+
+        {/* 4. STRATEGY ROADMAP: 3-Realm Segmented Selector & Trail Map */}
         <View style={s.journeyCard}>
           <Text style={s.sectionHeader}>Strategy Roadmap</Text>
 
-          {/* 3-Map Segmented Selector */}
           <View style={s.realmSelectorBar}>
             {(['single', 'melody', 'levers'] as const).map((rKey) => {
               const isActive = selectedRealm === rKey;
@@ -222,7 +212,6 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
             })}
           </View>
 
-          {/* Active Map Preview Card */}
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel={`Open ${realmMetadata.name} trail map`}
@@ -250,8 +239,28 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           </TouchableOpacity>
         </View>
 
-        {/* 4. COMPREHENSIVE PERFORMANCE STATISTICS */}
-        {/* 4a. Three Paths Accuracy */}
+        {/* 5. MINIMALIST SYMMETRICAL SHOP CARD (Positioned right under the map) */}
+        {onOpenGarage && (
+          <View style={s.minimalShopCard}>
+            <Text style={s.minimalShopTitle}>Artisan Workshop</Text>
+            <View style={s.minimalShardsPill}>
+              <Text style={s.minimalShardsText}>{db.getShards()} Shards 🪙</Text>
+            </View>
+            <TouchableOpacity
+              nativeID="journey-enter-workshop-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Enter Artisan Workshop"
+              onPress={onOpenGarage}
+              style={s.minimalShopEnterBtn}
+              activeOpacity={0.84}
+            >
+              <Text style={s.minimalShopEnterBtnText}>Enter Workshop ›</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 6. COMPREHENSIVE PERFORMANCE STATISTICS */}
+        {/* 6a. Three Paths Accuracy */}
         <View style={s.section}>
           <Text style={s.title}>Three paths</Text>
           {(['single', 'melody', 'levers'] as const).map((track, i) => {
@@ -267,7 +276,7 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           })}
         </View>
 
-        {/* 4b. Your Listening Performance */}
+        {/* 6b. Your Listening Performance */}
         <View style={s.section}>
           <Text style={s.title}>Your listening</Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 12 }}>
@@ -290,7 +299,7 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           ))}
         </View>
 
-        {/* 4c. Practice Rhythm & History */}
+        {/* 6c. Practice Rhythm & History */}
         <View style={s.section}>
           <Text style={s.title}>Your rhythm</Text>
           <Text style={s.small}>Practice this week · minutes</Text>
@@ -314,7 +323,7 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           </View>
         </View>
 
-        {/* 4d. Keys Explored */}
+        {/* 6d. Keys Explored */}
         <View style={s.section}>
           <Text style={s.title}>Keys explored</Text>
           {keys.length ? (
@@ -334,135 +343,24 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           )}
         </View>
 
-        {/* 5. THE SHOP BUTTON: Highly Prominent, Beautiful Artisan Workshop Card */}
-        {onOpenGarage && (
-          <TouchableOpacity
-            nativeID="open-garage-card-btn"
-            accessibilityRole="button"
-            accessibilityLabel="Open Harp Artisan Workshop and Luthier Store"
-            onPress={onOpenGarage}
-            style={s.prominentShopCard}
-            activeOpacity={0.84}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <View style={{ gap: 6, flex: 1, paddingRight: 14 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={s.prominentShopTitle}>🎨 Harp Artisan Workshop</Text>
-                  <View style={s.shopShardsBadge}>
-                    <Text style={s.shopShardsText}>{db.getShards()} 🪙</Text>
-                  </View>
-                </View>
-                <Text style={s.prominentShopSubtitle}>
-                  Spend earned Shards: 5 Natural Wood Finishes, Hand-Carved Rosettes, Gut String Warmth & Camac Levers
-                </Text>
-              </View>
-              <View style={s.shopEnterBtn}>
-                <Text style={s.shopEnterBtnText}>Enter Workshop ›</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* 6. PREFERENCES: Single Button Tucking All Preferences Neatly into a Menu Modal */}
+        {/* 7. SYMMETRICAL PREFERENCES AND SETTINGS CARD */}
         <TouchableOpacity
           nativeID="open-preferences-menu-btn"
           accessibilityRole="button"
           accessibilityLabel="Open Preferences and Audio Settings"
           onPress={() => setPreferencesModalOpen(true)}
-          style={s.sleekActionCard}
+          style={s.symmetricalPreferencesCard}
           activeOpacity={0.8}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <View style={{ gap: 4, flex: 1, paddingRight: 10 }}>
-              <Text style={s.sleekActionTitle}>⚙️ Preferences & Audio Settings</Text>
-              <Text style={s.small}>
-                Haptic vibration feedback, note notation, 432Hz tuning, daily reminders & PWA install
-              </Text>
-            </View>
-            <Text style={{ color: '#d5ba85', fontSize: 18, fontWeight: '700' }}>›</Text>
+          <View style={{ alignItems: 'center', gap: 6 }}>
+            <Text style={s.symmetricalPrefTitle}>⚙️ Preferences & Audio Settings</Text>
+            <Text style={s.symmetricalPrefSubtitle}>
+              Haptic vibrations, note notation, 432Hz tuning, reminders & PWA install
+            </Text>
           </View>
         </TouchableOpacity>
 
-        {/* 7. USER PAGE / HARPER PROFILES: Complete Metrics for Each Registered User */}
-        <View style={s.userProfilesSection}>
-          <View style={{ gap: 4, marginBottom: 4 }}>
-            <Text style={s.sectionHeader}>Harper Profiles</Text>
-            <Text style={s.small}>
-              Practice telemetry and metrics for each learner on this device. Tap to switch account.
-            </Text>
-          </View>
-
-          <View style={{ gap: 12 }}>
-            {allProfiles.map((p: UserProfile) => {
-              const isActive = p.id === profile.id;
-              return (
-                <TouchableOpacity
-                  key={p.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Switch to ${p.displayName}`}
-                  onPress={() => {
-                    if (!isActive) db.switchAccount(p.id);
-                  }}
-                  style={[
-                    s.userCard,
-                    isActive && s.userCardActive,
-                  ]}
-                  activeOpacity={0.82}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                    <ProfilePhoto name={p.displayName} uri={p.avatarPhoto} size={44} />
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Text style={s.userNameText}>{p.displayName}</Text>
-                        {isActive && (
-                          <View style={s.activePlayerBadge}>
-                            <Text style={s.activePlayerBadgeText}>ACTIVE PLAYER</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={s.userLevelText}>{p.experienceLevel}</Text>
-                    </View>
-                  </View>
-
-                  {/* 4-Metric Diagnostic Grid for each user */}
-                  <View style={s.userMetricsGrid}>
-                    <View style={s.userMetricPill}>
-                      <Text style={s.userMetricLabel}>Practice</Text>
-                      <Text style={s.userMetricValue}>{formatPracticeTime(p.totalPracticeTimeSeconds)}</Text>
-                    </View>
-
-                    <View style={s.userMetricPill}>
-                      <Text style={s.userMetricLabel}>Sessions</Text>
-                      <Text style={s.userMetricValue}>{p.totalSessionsPlayed || 0}</Text>
-                    </View>
-
-                    <View style={s.userMetricPill}>
-                      <Text style={s.userMetricLabel}>Trials</Text>
-                      <Text style={s.userMetricValue}>{p.totalTrialsAttempted || 0}</Text>
-                    </View>
-
-                    <View style={s.userMetricPill}>
-                      <Text style={s.userMetricLabel}>Accuracy</Text>
-                      <Text style={s.userMetricValue}>{p.overallAccuracyPct || 0}%</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <TouchableOpacity
-            onPress={() => setCreate(true)}
-            style={[s.sleekActionCard, { marginTop: 8 }]}
-            activeOpacity={0.8}
-          >
-            <Text style={[s.sleekActionTitle, { textAlign: 'center', width: '100%', color: '#fef08a' }]}>
-              + Create New Harper Profile
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 8. PRACTICE FILMS (GUIDED VIDEOS): Symmetrical 3-Film Shelf */}
+        {/* 8. PRACTICE FILMS: Symmetrical 3-Film Guided Walkthrough Shelf */}
         <View style={s.journeyCard} nativeID="journey-video-library">
           <Text style={s.sectionHeader}>Practice films</Text>
           <Text style={s.small}>Guided walkthroughs for your ear training journey.</Text>
@@ -706,67 +604,70 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
   },
-  prominentShopCard: {
-    paddingVertical: 18,
+  minimalShopCard: {
+    paddingVertical: 16,
     paddingHorizontal: 18,
-    borderRadius: 22,
-    backgroundColor: 'rgba(212, 175, 55, 0.18)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(251, 191, 36, 0.85)',
+    borderRadius: 18,
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.6)',
+    alignItems: 'center',
+    gap: 10,
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 8px 32px rgba(245, 158, 11, 0.32), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
         } as any)
       : {}),
   },
-  prominentShopTitle: {
+  minimalShopTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 16.5,
-    color: '#fef08a',
+    fontSize: 16,
+    color: '#fae8c2',
+    textAlign: 'center',
   },
-  prominentShopSubtitle: {
-    fontSize: 12,
-    color: '#f1f5f9',
-    lineHeight: 17,
-  },
-  shopShardsBadge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.3)',
+  minimalShardsPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: 'rgba(245, 158, 11, 0.22)',
     borderWidth: 1,
     borderColor: '#f59e0b',
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 12,
   },
-  shopShardsText: {
+  minimalShardsText: {
     color: '#fef08a',
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800',
   },
-  shopEnterBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+  minimalShopEnterBtn: {
+    width: '100%',
+    paddingVertical: 12,
     borderRadius: 14,
     backgroundColor: '#d97706',
+    alignItems: 'center',
+    justifyContent: 'center',
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 2px 10px rgba(217, 119, 6, 0.5)',
+          boxShadow: '0 2px 10px rgba(217, 119, 6, 0.45)',
         } as any)
       : {}),
   },
-  shopEnterBtnText: {
+  minimalShopEnterBtnText: {
     color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 0.3,
+    fontSize: 13.5,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
-  sleekActionCard: {
-    padding: 16,
+  symmetricalPreferencesCard: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: 'rgba(18, 32, 23, 0.58)',
     borderWidth: 1,
-    borderColor: 'rgba(220, 198, 154, 0.35)',
+    borderColor: 'rgba(220, 198, 154, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
     ...(Platform.OS === 'web'
       ? ({
           backdropFilter: 'blur(16px)',
@@ -774,86 +675,16 @@ const s = StyleSheet.create({
         } as any)
       : {}),
   },
-  sleekActionTitle: {
+  symmetricalPrefTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 15,
+    fontSize: 14.5,
     color: '#fae8c2',
+    textAlign: 'center',
   },
-  userProfilesSection: {
-    borderRadius: 18,
-    backgroundColor: 'rgba(14, 26, 18, 0.55)',
-    borderWidth: 1,
-    borderColor: 'rgba(220, 198, 154, 0.3)',
-    padding: 16,
-    gap: 14,
-    ...(Platform.OS === 'web'
-      ? ({
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-        } as any)
-      : {}),
-  },
-  userCard: {
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(15, 25, 20, 0.65)',
-    borderWidth: 1,
-    borderColor: 'rgba(220, 198, 154, 0.25)',
-    gap: 12,
-  },
-  userCardActive: {
-    borderColor: 'rgba(52, 211, 153, 0.8)',
-    backgroundColor: 'rgba(6, 78, 59, 0.3)',
-  },
-  userNameText: {
-    color: '#fae8c2',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  userLevelText: {
-    color: '#bfb39a',
+  symmetricalPrefSubtitle: {
     fontSize: 11.5,
-  },
-  activePlayerBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: 'rgba(52, 211, 153, 0.25)',
-    borderWidth: 1,
-    borderColor: '#34d399',
-  },
-  activePlayerBadgeText: {
-    color: '#a7f3d0',
-    fontSize: 9.5,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-  },
-  userMetricsGrid: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(220, 198, 154, 0.15)',
-  },
-  userMetricPill: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
-  },
-  userMetricLabel: {
-    fontSize: 9.5,
-    color: '#94a3b8',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  userMetricValue: {
-    fontSize: 12.5,
-    color: '#fef08a',
-    fontWeight: '800',
+    color: '#cbd5e1',
+    textAlign: 'center',
   },
   practiceFilmsRow: {
     flexDirection: 'row',

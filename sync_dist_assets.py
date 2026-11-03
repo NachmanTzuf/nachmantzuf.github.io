@@ -27,7 +27,7 @@ def main():
             content = f.read()
 
         # Add PWA head links, high-res DOM icons, and immediate Service Worker registration
-        pwa_head = """    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+        pwa_head = """    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/earpa_icon_192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/images/icons/earpa_icon_512.png" />

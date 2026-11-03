@@ -350,8 +350,38 @@ export class HarpGarageEngine {
           if (eq.sound && this.sounds.has(eq.sound)) this.equippedSound = eq.sound;
           if (eq.lever && this.levers.has(eq.lever)) this.equippedLever = eq.lever;
         }
+
+        const isFounder =
+          window.location.search.includes('founder=nachman') ||
+          window.location.search.includes('admin=nachman') ||
+          localStorage.getItem('earpa_founder_mode') === 'true';
+
+        if (isFounder) {
+          localStorage.setItem('earpa_founder_mode', 'true');
+          this.enableFounderUnlimitedMode();
+        }
       }
     } catch {}
+  }
+
+  public enableFounderUnlimitedMode(): void {
+    this.timbers.forEach((t) => { t.isUnlocked = true; });
+    this.rosettes.forEach((r) => { r.isUnlocked = true; });
+    this.strings.forEach((s) => { s.isUnlocked = true; });
+    this.sounds.forEach((s) => { s.isUnlocked = true; });
+    const profile = UserAccountDatabase.getInstance().getActiveProfile();
+    if (profile && profile.shardsBalance !== 999999) {
+      UserAccountDatabase.getInstance().updateActiveProfile({ shardsBalance: 999999 });
+    }
+  }
+
+  public isFounderMode(): boolean {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.location.search.includes('founder=nachman') ||
+      window.location.search.includes('admin=nachman') ||
+      localStorage.getItem('earpa_founder_mode') === 'true'
+    );
   }
 
   private savePersistence(): void {
