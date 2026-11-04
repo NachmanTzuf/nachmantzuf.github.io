@@ -73,7 +73,7 @@ export class PracticeReminderService {
       const c = JSON.parse(localStorage.getItem(this.key) || 'null');
       if (c && validTime(c.time)) return c;
     } catch {}
-    return { enabled: false, time: '18:30' };
+    return { enabled: true, time: '18:30' };
   }
 
   static saveConfig(config: ReminderConfig) {

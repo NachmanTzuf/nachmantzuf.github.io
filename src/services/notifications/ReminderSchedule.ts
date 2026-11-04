@@ -3,5 +3,5 @@ export function localDay(now:Date){return `${now.getFullYear()}-${String(now.get
 export function reminderDue(config:{enabled:boolean;time:string;lastNotifiedDate?:string},now=new Date()){
  if(!config.enabled||!validTime(config.time)||config.lastNotifiedDate===localDay(now))return false;
  const [h,m]=config.time.split(':').map(Number);const elapsed=now.getHours()*60+now.getMinutes()-h*60-m;
- return elapsed>=0&&elapsed<60;
+ return elapsed >= 0;
 }

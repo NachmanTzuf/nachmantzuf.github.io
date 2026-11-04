@@ -187,6 +187,25 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   const isSelectedEquipped = selectedItem?.id === currentEquippedId;
   const canAffordSelected = userShards >= (selectedItem?.shardCost || 0);
 
+  const switchCategory = (cat: CategoryKey) => {
+    setActiveCategory(cat);
+    let item: CosmeticItem<any>;
+    switch (cat) {
+      case 'TIMBER': item = equipped.timber; break;
+      case 'ROSETTE': item = equipped.rosette; break;
+      case 'STRINGS': item = equipped.strings; break;
+      case 'LEVERS': item = equipped.lever; break;
+      case 'SOUND': item = equipped.sound; break;
+    }
+    setSelectedItem(item);
+    applyCurrentEquippedToCanvas();
+    if (cat === 'LEVERS') {
+      shopCanvasRef.current?.rotateToAngle?.(2.65);
+    } else {
+      shopCanvasRef.current?.rotateToAngle?.(0.0);
+    }
+  };
+
   return (
     <Modal
       visible={visible}
@@ -196,15 +215,15 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.fullScreenContainer}>
-        {/* Background Atmosphere */}
+        {/* Authentic Celtic Sanctuary Background (No 2D baked-in harp, clean plinth for 3D harp) */}
         <Image
-          source={{ uri: '/images/earpa_journey_bg.jpg' }}
+          source={{ uri: '/images/irish_celtic_sanctuary.jpg' }}
           style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
         />
         <View style={styles.darkAtmosphereOverlay} />
 
-        {/* 1. TOP BAR: Close Button, Title, and Shards Balance */}
+        {/* 1. TOP BAR: ONLY 3 ELEMENTS (Close, Artisan Shop, Shards Balance) */}
         <View style={styles.topBar}>
           <TouchableOpacity
             accessibilityRole="button"
@@ -216,53 +235,29 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             <Text style={styles.exitBtnText}>✕ Close</Text>
           </TouchableOpacity>
 
-          <View style={styles.titleCenterBox}>
-            <Text style={styles.vaultEyebrow}>CELTIC LUTHIER STUDIO</Text>
-            <Text style={styles.vaultTitle}>Artisan Workshop</Text>
-          </View>
+          <Text style={styles.vaultTitle}>Artisan Shop</Text>
 
           <View style={styles.shardsBadgePill}>
             <Text style={styles.shardsBadgeText}>{userShards} 🪙</Text>
           </View>
         </View>
 
-        {/* 2. MIDDLE VIEWPORT: REAL 3D CELTIC HARP MODEL CANVAS */}
+        {/* 2. MIDDLE VIEWPORT: SEAMLESS 3D CELTIC HARP (360° Interactive Spin) */}
         <View style={styles.middleHarpCanvasContainer}>
           <CelticHarpCanvas
             ref={shopCanvasRef}
             style={styles.harpCanvas3d}
             interactiveControls={true}
+            minimalHeroMode={true}
             autoSpin={false}
-            customScale={0.88}
-            targetY={0.40}
+            customScale={1.0}
+            targetY={0.35}
             onModelLoaded={() => applyCurrentEquippedToCanvas()}
             onStringPlucked={(deg) => {
               const timbre = getTimbreForSoundId(garageEngine.getEquipped().sound.id);
               HarpSoundSynthesizer.playWarmHarpChime(timbre, 261.63 * Math.pow(2, (deg - 1) / 7));
             }}
           />
-
-          {/* Floating Status Pill over 3D Canvas */}
-          <View style={styles.canvasFloatingHeader}>
-            <View style={styles.previewStatusPill}>
-              <Text style={styles.previewStatusDot}>✨</Text>
-              <Text style={styles.previewStatusText}>
-                {isSelectedEquipped ? `Fitted: ${selectedItem.name}` : `Previewing: ${selectedItem.name}`}
-              </Text>
-            </View>
-
-            <Text style={styles.interactive3dHint}>
-              Drag to rotate 360° • Tap strings to pluck
-            </Text>
-          </View>
-
-          {/* Inlay Motif Crest (when in Rosette category) */}
-          {activeCategory === 'ROSETTE' && (
-            <View style={styles.rosetteBadgeCrest}>
-              <Text style={{ fontSize: 13 }}>⚜️</Text>
-              <Text style={styles.rosetteBadgeText}>{selectedItem.name}</Text>
-            </View>
-          )}
 
           {!!toastMessage && (
             <View style={styles.toastOverlay}>
@@ -358,11 +353,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
         {/* 5. BOTTOM CATEGORY NAVIGATION BAR */}
         <View style={styles.bottomCategoryNavBar}>
           <TouchableOpacity
-            onPress={() => {
-              setActiveCategory('TIMBER');
-              setSelectedItem(equipped.timber);
-              applyCurrentEquippedToCanvas();
-            }}
+            onPress={() => switchCategory('TIMBER')}
             style={[styles.categoryNavTab, activeCategory === 'TIMBER' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
@@ -373,11 +364,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              setActiveCategory('ROSETTE');
-              setSelectedItem(equipped.rosette);
-              applyCurrentEquippedToCanvas();
-            }}
+            onPress={() => switchCategory('ROSETTE')}
             style={[styles.categoryNavTab, activeCategory === 'ROSETTE' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
@@ -388,11 +375,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              setActiveCategory('STRINGS');
-              setSelectedItem(equipped.strings);
-              applyCurrentEquippedToCanvas();
-            }}
+            onPress={() => switchCategory('STRINGS')}
             style={[styles.categoryNavTab, activeCategory === 'STRINGS' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
@@ -403,11 +386,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              setActiveCategory('LEVERS');
-              setSelectedItem(equipped.lever);
-              applyCurrentEquippedToCanvas();
-            }}
+            onPress={() => switchCategory('LEVERS')}
             style={[styles.categoryNavTab, activeCategory === 'LEVERS' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
@@ -418,11 +397,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              setActiveCategory('SOUND');
-              setSelectedItem(equipped.sound);
-              applyCurrentEquippedToCanvas();
-            }}
+            onPress={() => switchCategory('SOUND')}
             style={[styles.categoryNavTab, activeCategory === 'SOUND' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
@@ -446,7 +421,7 @@ const styles = StyleSheet.create({
   },
   darkAtmosphereOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(6, 12, 18, 0.88)',
+    backgroundColor: 'rgba(6, 12, 18, 0.35)',
   },
   topBar: {
     flexDirection: 'row',
@@ -483,7 +458,9 @@ const styles = StyleSheet.create({
   },
   vaultTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 18,
+    fontSize: 21,
+    fontWeight: '800',
+    letterSpacing: 0.8,
     color: '#fef08a',
   },
   shardsBadgePill: {
@@ -700,30 +677,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingBottom: Platform.OS === 'web' ? 12 : 24,
-    backgroundColor: '#04080d',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.25)',
+    marginHorizontal: 14,
+    marginBottom: Platform.OS === 'web' ? 14 : 26,
+    height: 58,
+    backgroundColor: 'rgba(25, 39, 30, 0.92)',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 6,
+    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        } as any)
+      : {}),
     zIndex: 20,
   },
   categoryNavTab: {
     flex: 1,
     alignItems: 'center',
-    gap: 3,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   categoryNavTabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#fef08a',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(254, 240, 138, 0.45)',
   },
   categoryNavIcon: {
-    fontSize: 17,
+    fontSize: 16,
+    marginBottom: 2,
   },
   categoryNavLabel: {
     color: '#94a3b8',
     fontSize: 10.5,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   categoryNavLabelActive: {
     color: '#fef08a',

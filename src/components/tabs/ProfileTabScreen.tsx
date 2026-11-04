@@ -239,24 +239,32 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
           </TouchableOpacity>
         </View>
 
-        {/* 5. MINIMALIST SYMMETRICAL SHOP CARD (Positioned right under the map) */}
+        {/* 5. ARTISAN SHOP EXTERIOR CARD (Tall showcase with dual harp banner) */}
         {onOpenGarage && (
-          <View style={s.minimalShopCard}>
-            <Text style={s.minimalShopTitle}>Artisan Workshop</Text>
-            <View style={s.minimalShardsPill}>
-              <Text style={s.minimalShardsText}>{db.getShards()} Shards 🪙</Text>
+          <TouchableOpacity
+            nativeID="journey-enter-workshop-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Customize Your Harp in Artisan Workshop"
+            onPress={onOpenGarage}
+            style={s.exteriorShopCard}
+            activeOpacity={0.88}
+          >
+            <Image
+              source={{ uri: '/images/artisan_workshop_dual_harp.jpg' }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+            />
+            <View style={s.exteriorShopScrim}>
+              <Text style={s.exteriorShopEyebrow}>✦ CELTIC LUTHIER FINISHES ✦</Text>
+              <Text style={s.exteriorShopTitle}>Customize Your Harp</Text>
+              <Text style={s.exteriorShopSub}>
+                Handcrafted Timbers, Carved Rosettes & Custom Metallurgy
+              </Text>
+              <View style={s.exteriorShopCtaPill}>
+                <Text style={s.exteriorShopCtaText}>Enter Shop ›</Text>
+              </View>
             </View>
-            <TouchableOpacity
-              nativeID="journey-enter-workshop-btn"
-              accessibilityRole="button"
-              accessibilityLabel="Enter Artisan Workshop"
-              onPress={onOpenGarage}
-              style={s.minimalShopEnterBtn}
-              activeOpacity={0.84}
-            >
-              <Text style={s.minimalShopEnterBtnText}>Enter Workshop ›</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* 6. COMPREHENSIVE PERFORMANCE STATISTICS */}
@@ -621,43 +629,72 @@ const s = StyleSheet.create({
         } as any)
       : {}),
   },
-  minimalShopTitle: {
-    fontFamily: 'Cinzel-Bold',
-    fontSize: 16,
-    color: '#fae8c2',
-    textAlign: 'center',
-  },
-  minimalShardsPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 14,
-    backgroundColor: 'rgba(245, 158, 11, 0.22)',
-    borderWidth: 1,
-    borderColor: '#f59e0b',
-  },
-  minimalShardsText: {
-    color: '#fef08a',
-    fontSize: 12.5,
-    fontWeight: '800',
-  },
-  minimalShopEnterBtn: {
+  exteriorShopCard: {
     width: '100%',
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#d97706',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 2px 10px rgba(217, 119, 6, 0.45)',
-        } as any)
-      : {}),
+    height: 210,
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+    marginVertical: 10,
+    borderWidth: 1.2,
+    borderColor: 'rgba(212, 175, 55, 0.45)',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.25)',
   },
-  minimalShopEnterBtnText: {
-    color: '#ffffff',
-    fontSize: 13.5,
+  exteriorShopScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(9, 13, 22, 0.52)',
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    background: 'linear-gradient(180deg, rgba(9, 13, 22, 0.15) 0%, rgba(9, 13, 22, 0.82) 100%)',
+  } as any,
+  exteriorShopEyebrow: {
+    color: '#d4af37',
+    fontSize: 10.5,
     fontWeight: '800',
-    letterSpacing: 0.4,
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  exteriorShopTitle: {
+    fontFamily: 'Cinzel-Bold',
+    color: '#fffbeb',
+    fontSize: 19,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textAlign: 'center',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  exteriorShopSub: {
+    color: '#e2e8f0',
+    fontSize: 11.5,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 14,
+    maxWidth: 290,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  exteriorShopCtaPill: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 22,
+    backgroundColor: 'rgba(212, 175, 55, 0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.55)',
+    boxShadow: '0 4px 16px rgba(212, 175, 55, 0.45)',
+  } as any,
+  exteriorShopCtaText: {
+    color: '#090d16',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   symmetricalPreferencesCard: {
     paddingVertical: 16,

@@ -33,10 +33,10 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
 
       let targetPct = 0;
       if (!ready) {
-        // While app is still loading in background, progress smoothly up to 90%
-        targetPct = Math.min(90, Math.round(90 * (1 - Math.pow(1 - timeProgress, 2.2))));
+        // While 3D harp and sound engine are still loading in background, progress smoothly up to 85%
+        targetPct = Math.min(85, Math.round(85 * (1 - Math.pow(1 - timeProgress, 2.2))));
       } else {
-        // App is confirmed ready in background!
+        // App and 3D harp are confirmed 100% ready in background!
         if (timeProgress < 1.0) {
           // If min display time hasn't finished yet, progress towards 95%
           targetPct = Math.min(95, Math.round(95 * (1 - Math.pow(1 - timeProgress, 2.2))));
@@ -57,7 +57,7 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
             setIsDone(true);
             if (onLoaded) onLoaded();
           }, 450);
-        }, 120);
+        }, 150);
       } else {
         animId = requestAnimationFrame(tick);
       }
@@ -65,7 +65,7 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
 
     animId = requestAnimationFrame(tick);
 
-    // Safety fallback: ensure loading screen never hangs beyond 4.5 seconds
+    // Safety fallback: allow ample time on mobile 4G networks (12s) before forced dismissal
     const safetyTimer = setTimeout(() => {
       if (!completed) {
         completed = true;
@@ -76,7 +76,7 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
           if (onLoaded) onLoaded();
         }, 450);
       }
-    }, 4500);
+    }, 12000);
 
     return () => {
       cancelAnimationFrame(animId);
@@ -88,6 +88,7 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
 
   return (
     <View
+      nativeID="earpa-loading-screen"
       style={[
         styles.container,
         isFadingOut && styles.fadeOut,

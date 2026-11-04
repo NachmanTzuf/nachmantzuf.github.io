@@ -44,6 +44,7 @@ export interface CelticHarpCanvasRef {
   applyStringGlowColor: (colorHex: string) => void;
   applyLeverColor: (colorHex: string) => void;
   applyRosetteInlay?: (colorHex: string, rosetteId?: string) => void;
+  rotateToAngle?: (angleRad: number) => void;
 }
 
 interface CelticHarpCanvasProps {
@@ -84,6 +85,158 @@ function disposeScene(root: THREE.Object3D) {
   });
   textures.forEach(t => t.dispose());
 }
+
+function createCelticRosetteTexture(motifId: string = 'royal_harp', colorHex: string = '#d4af37'): THREE.CanvasTexture {
+  if (typeof document === 'undefined') {
+    return new THREE.Texture() as THREE.CanvasTexture;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return new THREE.CanvasTexture(canvas);
+
+  const cx = 256;
+  const cy = 256;
+  const r = 232;
+
+  ctx.clearRect(0, 0, 512, 512);
+
+  // Outer dark soundboard bezel
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(15, 12, 8, 0.88)';
+  ctx.fill();
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = colorHex;
+  ctx.stroke();
+
+  // Concentric decorative gold ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 22, 0, Math.PI * 2);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.stroke();
+
+  // Beaded pearls around circumference
+  const numBeads = 32;
+  for (let i = 0; i < numBeads; i++) {
+    const angle = (i / numBeads) * Math.PI * 2;
+    const bx = cx + Math.cos(angle) * (r - 11);
+    const by = cy + Math.sin(angle) * (r - 11);
+    ctx.beginPath();
+    ctx.arc(bx, by, 5, 0, Math.PI * 2);
+    ctx.fillStyle = colorHex;
+    ctx.fill();
+  }
+
+  // Draw Specific Celtic Motifs
+  ctx.strokeStyle = colorHex;
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+  ctx.shadowBlur = 10;
+
+  if (motifId === 'spiral_triskele') {
+    // Triple spiral Triskele
+    for (let arm = 0; arm < 3; arm++) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((arm * 2 * Math.PI) / 3);
+      ctx.beginPath();
+      for (let t = 0; t < 3.8 * Math.PI; t += 0.1) {
+        const spiralR = 6 + t * 9;
+        const x = spiralR * Math.cos(t);
+        const y = spiralR * Math.sin(t);
+        if (t === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  } else if (motifId === 'dara_knot') {
+    // Interlocking Dara Celtic Knotwork
+    const s = 68;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    ctx.rect(-s, -s, s * 2, s * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, -s, s, 0, Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, s, s, Math.PI, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(-s, 0, s, Math.PI * 1.5, Math.PI * 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(s, 0, s, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.restore();
+  } else if (motifId === 'sacred_shamrock') {
+    // Three-leaf Celtic clover triquetra
+    for (let i = 0; i < 3; i++) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((i * 2 * Math.PI) / 3);
+      ctx.beginPath();
+      ctx.arc(0, -78, 48, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+    ctx.fillStyle = colorHex;
+    ctx.fill();
+  } else if (motifId === 'brigid_cross') {
+    // Solar Brigid Cross
+    ctx.save();
+    ctx.translate(cx, cy);
+    for (let i = 0; i < 4; i++) {
+      ctx.rotate(Math.PI / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(125, -16);
+      ctx.lineTo(125, 16);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.rect(-30, -30, 60, 60);
+    ctx.fillStyle = colorHex;
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // Royal Irish Harp Emblem (Default)
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    ctx.arc(-42, 0, 75, -Math.PI * 0.4, Math.PI * 0.4);
+    ctx.lineTo(55, 65);
+    ctx.lineTo(32, -75);
+    ctx.closePath();
+    ctx.stroke();
+    for (let s = -35; s <= 35; s += 14) {
+      ctx.beginPath();
+      ctx.moveTo(-15 + s * 0.4, -45);
+      ctx.lineTo(10 + s * 0.5, 55);
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+}
+
 interface StringPhysicsState {
   mesh: THREE.Mesh;
   basePositions: Float32Array;
@@ -327,22 +480,44 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         const color = new THREE.Color(colorHex);
         stringsRef.current.forEach((st) => {
           st.glowColor.copy(color);
+          if (st.mesh && st.mesh.material) {
+            (st.mesh.material as any).color.copy(color);
+            (st.mesh.material as any).emissive.copy(color);
+            (st.mesh.material as any).emissiveIntensity = 0.42;
+            (st.mesh.material as any).needsUpdate = true;
+          }
         });
       },
       applyLeverColor: (colorHex: string) => {
         if (!harpRootRef.current) return;
         const color = new THREE.Color(colorHex);
         harpRootRef.current.traverse((child: any) => {
-          if (child.isMesh && child.material && child.name.startsWith('Lever_')) {
+          if (
+            child.isMesh &&
+            child.material &&
+            (child.name.startsWith('Lever_') || child.name.startsWith('Hardware_') || child.name.includes('Lever'))
+          ) {
             child.material.color.copy(color);
+            child.material.metalness = 0.85;
+            child.material.roughness = 0.20;
             child.material.needsUpdate = true;
           }
         });
       },
       applyRosetteInlay: (colorHex: string, rosetteId?: string) => {
         if (rosetteMeshRef.current) {
-          (rosetteMeshRef.current.material as any).color.set(colorHex);
-          (rosetteMeshRef.current.material as any).needsUpdate = true;
+          const mat = rosetteMeshRef.current.material as THREE.MeshStandardMaterial;
+          mat.color.set(colorHex);
+          const newTex = createCelticRosetteTexture(rosetteId || 'royal_harp', colorHex);
+          mat.map = newTex;
+          mat.bumpMap = newTex;
+          mat.bumpScale = 0.02;
+          mat.needsUpdate = true;
+        }
+      },
+      rotateToAngle: (angleRad: number) => {
+        if (harpRootRef.current) {
+          harpRootRef.current.rotation.y = angleRad;
         }
       },
     }));
@@ -565,15 +740,19 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                   child.material.roughness = 0.30;
                   if (child.name.startsWith('Harp_Soundbox') && !rosetteMeshRef.current) {
                     try {
-                      const rosetteGeom = new THREE.CylinderGeometry(0.045, 0.045, 0.005, 32);
+                      const rosetteTex = createCelticRosetteTexture('royal_harp', '#d4af37');
+                      const rosetteGeom = new THREE.CylinderGeometry(0.075, 0.075, 0.005, 32);
                       const rosetteMat = new THREE.MeshStandardMaterial({
                         color: new THREE.Color(0xd4af37),
-                        metalness: 0.9,
+                        map: rosetteTex,
+                        bumpMap: rosetteTex,
+                        bumpScale: 0.02,
+                        metalness: 0.85,
                         roughness: 0.22,
                       });
                       const rMesh = new THREE.Mesh(rosetteGeom, rosetteMat);
                       rMesh.rotation.x = Math.PI / 2;
-                      rMesh.position.set(0.065, 0.38, 0.095);
+                      rMesh.position.set(0.065, 0.38, 0.098);
                       child.add(rMesh);
                       rosetteMeshRef.current = rMesh;
                     } catch {}

@@ -129,13 +129,38 @@ export default function EarpaMasterScreen() {
     return false;
   });
 
-  // Periodic check for Daily Practice Reminder (18:00 to 19:00 evening window in local timezone)
+  // Periodic check for Daily Practice Reminder (guaranteed on mount, interval, visibilitychange, and focus)
   useEffect(() => {
     PracticeReminderService.checkAndDispatchDailyReminder();
     const reminderInterval = setInterval(() => {
       PracticeReminderService.checkAndDispatchDailyReminder();
-    }, 60000);
-    return () => clearInterval(reminderInterval);
+    }, 30000);
+
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        PracticeReminderService.checkAndDispatchDailyReminder();
+      }
+    };
+    const onWindowFocus = () => {
+      PracticeReminderService.checkAndDispatchDailyReminder();
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', onWindowFocus);
+    }
+
+    return () => {
+      clearInterval(reminderInterval);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', onWindowFocus);
+      }
+    };
   }, []);
 
   // Active Trial State
@@ -563,16 +588,18 @@ export default function EarpaMasterScreen() {
             )}
 
             {activeTab === 'profile' && (
-              <ProfileTabScreen
-                levelNumber={progression.bardicLevel}
-                currentXp={profile.totalTrialsAttempted*10}
-                streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
-                accuracyPct={accuracyPct}
-                totalTrials={totalTrials}
-                onOpenRoadmap={(realm = 'single') => handleOpenRoadmapWithTheme(realm)}
-                onOpenSocial={() => setShowSocialModal(true)}
-                onOpenGarage={() => setShowGarageModal(true)}
-              />
+              <View style={{ flex: 1, width: '100%', height: '100%', paddingTop: Platform.OS === 'web' ? 56 : 50 }}>
+                <ProfileTabScreen
+                  levelNumber={progression.bardicLevel}
+                  currentXp={profile.totalTrialsAttempted*10}
+                  streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
+                  accuracyPct={accuracyPct}
+                  totalTrials={totalTrials}
+                  onOpenRoadmap={(realm = 'single') => handleOpenRoadmapWithTheme(realm)}
+                  onOpenSocial={() => setShowSocialModal(true)}
+                  onOpenGarage={() => setShowGarageModal(true)}
+                />
+              </View>
             )}
           </View>
 

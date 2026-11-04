@@ -164,12 +164,16 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 12,
     paddingTop: Platform.OS === 'web' ? 8 : 4,
     paddingBottom: 4,
-    zIndex: 20,
+    zIndex: 30,
     backgroundColor: 'transparent',
+    pointerEvents: 'box-none',
   },
   topStatusRow: {
     width: '100%',

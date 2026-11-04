@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v22';
+const CACHE_NAME = 'earpa-pwa-v24';
 const ASSETS_TO_CACHE = [
   '/',
   '/?source=pwa',
@@ -13,7 +13,8 @@ const ASSETS_TO_CACHE = [
   '/images/icons/apple_touch_icon.png',
   '/images/icons/favicon.png',
   '/images/earpa_master_loading_bg.jpg',
-  '/images/earpa_journey_bg.jpg'
+  '/images/earpa_journey_bg.jpg',
+  '/images/artisan_workshop_dual_harp.jpg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -96,6 +97,20 @@ self.addEventListener('push', (event) => {
     tag: 'earpa-daily-practice',
     data: { url: '/' },
   }));
+});
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'earpa-daily-reminder') {
+    event.waitUntil(
+      self.registration.showNotification('Earpa · Daily Practice Reminder', {
+        body: 'Your Celtic harp misses your fingers! Take 10 relaxing minutes to find your tonic.',
+        icon: '/images/icons/earpa_icon_192.png',
+        badge: '/images/icons/earpa_icon_192.png',
+        tag: 'earpa-daily-practice',
+        data: { url: '/' },
+      })
+    );
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {
