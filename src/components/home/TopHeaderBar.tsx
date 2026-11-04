@@ -165,6 +165,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+    height: Platform.OS === 'web' ? 194 : 202,
     paddingHorizontal: 12,
     paddingTop: Platform.OS === 'web' ? 8 : 4,
     paddingBottom: 4,

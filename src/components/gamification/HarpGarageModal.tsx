@@ -212,9 +212,9 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.fullScreenContainer}>
-        {/* Authentic Celtic Sanctuary Background */}
+        {/* Authentic Celtic Master Portal Background showing all 3 realm elements */}
         <Image
-          source={{ uri: '/images/irish_celtic_sanctuary.jpg' }}
+          source={{ uri: '/images/tri_realm_sanctuary.jpg' }}
           style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
         />
@@ -239,7 +239,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </View>
         </View>
 
-        {/* 2. MIDDLE VIEWPORT: 3D CELTIC HARP (Exact 0.88 scale & 0.40 targetY, 360° Spin) */}
+        {/* 2. 3D CELTIC HARP: Exact 0.78 scale, 0.385 targetY, matching Single Note tab pixel-for-pixel */}
         <View style={styles.middleHarpCanvasContainer}>
           <CelticHarpCanvas
             ref={shopCanvasRef}
@@ -247,8 +247,8 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             interactiveControls={true}
             minimalHeroMode={true}
             autoSpin={false}
-            customScale={0.88}
-            targetY={0.40}
+            customScale={0.78}
+            targetY={0.385}
             onModelLoaded={() => applyCurrentEquippedToCanvas()}
             onStringPlucked={(deg) => {
               const timbre = getTimbreForSoundId(garageEngine.getEquipped().sound.id);
@@ -380,6 +380,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(6, 12, 18, 0.35)',
   },
   topBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -388,7 +392,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.25)',
-    zIndex: 20,
+    zIndex: 30,
   },
   exitBtn: {
     paddingHorizontal: 12,
@@ -424,10 +428,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   middleHarpCanvasContainer: {
-    flex: 1,
-    position: 'relative',
-    width: '100%',
-    minHeight: 280,
+    position: 'absolute',
+    top: Platform.OS === 'web' ? 194 : 202,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
   },
   harpCanvas3d: {
     width: '100%',
@@ -435,13 +441,14 @@ const styles = StyleSheet.create({
   },
   toastOverlay: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 150,
     alignSelf: 'center',
     paddingHorizontal: 16,
     paddingVertical: 7,
     borderRadius: 14,
     backgroundColor: 'rgba(5, 150, 105, 0.90)',
     boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45)',
+    zIndex: 40,
   } as any,
   toastOverlayText: {
     color: '#ffffff',
@@ -449,8 +456,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   itemSelectionBar: {
-    marginHorizontal: 14,
-    marginBottom: 8,
+    position: 'absolute',
+    bottom: Platform.OS === 'web' ? 82 : 94,
+    left: 14,
+    right: 14,
     height: 58,
     backgroundColor: 'rgba(25, 39, 30, 0.92)',
     borderRadius: 22,
@@ -466,7 +475,7 @@ const styles = StyleSheet.create({
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         } as any)
       : {}),
-    zIndex: 20,
+    zIndex: 30,
   },
   itemSelectionScroll: {
     alignItems: 'center',
@@ -532,11 +541,13 @@ const styles = StyleSheet.create({
     color: '#bae6fd',
   },
   bottomCategoryNavBar: {
+    position: 'absolute',
+    bottom: Platform.OS === 'web' ? 14 : 26,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginHorizontal: 14,
-    marginBottom: Platform.OS === 'web' ? 14 : 26,
     height: 58,
     backgroundColor: 'rgba(25, 39, 30, 0.92)',
     borderRadius: 22,
@@ -550,7 +561,7 @@ const styles = StyleSheet.create({
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         } as any)
       : {}),
-    zIndex: 20,
+    zIndex: 30,
   },
   categoryNavTab: {
     flex: 1,

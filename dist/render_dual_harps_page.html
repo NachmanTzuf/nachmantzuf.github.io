@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Render Dual 3D Harps</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 1200px;
+      height: 600px;
+      background: #080c14;
+      overflow: hidden;
+      display: flex;
+      justifyContent: center;
+      align-items: center;
+    }
+    #three-canvas {
+      width: 1200px !important;
+      height: 600px !important;
+      display: block;
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="three-canvas" width="1200" height="600"></canvas>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    const canvas = document.getElementById('three-canvas');
+    const width = 1200;
+    const height = 600;
+
+    const scene = new THREE.Scene();
+
+    // Camera: slight low angle looking at both harps
+    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 50);
+    camera.position.set(0.0, 0.42, 2.75);
+    camera.lookAt(0.0, 0.38, 0.0);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.20;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+    // Lighting
+    const ambientLight = new THREE.HemisphereLight(0xffeed8, 0x423326, 1.20);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xfff7ed, 3.2);
+    keyLight.position.set(1.5, 4.5, 2.5);
+    scene.add(keyLight);
+
+    const rimLightLeft = new THREE.DirectionalLight(0x7dd3fc, 2.2);
+    rimLightLeft.position.set(-3.5, 2.2, -1.8);
+    scene.add(rimLightLeft);
+
+    const rimLightRight = new THREE.DirectionalLight(0xfde047, 2.2);
+    rimLightRight.position.set(3.5, 2.2, -1.8);
+    scene.add(rimLightRight);
+
+    // Dark Celtic sanctuary backdrop
+    const texLoader = new THREE.TextureLoader();
+    texLoader.load('/images/earpa_journey_bg.jpg', (bgTex) => {
+      const bgGeom = new THREE.PlaneGeometry(6.6, 3.3);
+      const bgMat = new THREE.MeshBasicMaterial({ map: bgTex, depthWrite: false });
+      const bgMesh = new THREE.Mesh(bgGeom, bgMat);
+      bgMesh.position.set(0, 0.38, -2.2);
+      scene.add(bgMesh);
+
+      // Dark vignette scrim
+      const scrimGeom = new THREE.PlaneGeometry(6.6, 3.3);
+      const scrimMat = new THREE.MeshBasicMaterial({ color: 0x060a12, transparent: true, opacity: 0.58, depthWrite: false });
+      const scrimMesh = new THREE.Mesh(scrimGeom, scrimMat);
+      scrimMesh.position.set(0, 0.38, -2.1);
+      scene.add(scrimMesh);
+
+      loadModels();
+    }, undefined, () => loadModels());
+
+    function styleHarp(root, woodColorHex, leverColorHex) {
+      const woodColor = new THREE.Color(woodColorHex);
+      const leverColor = new THREE.Color(leverColorHex);
+
+      root.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+
+          // Timber parts
+          if (
+            child.name.startsWith('Harp_Harmonic_Frame') ||
+            child.name.startsWith('Harp_Forepillar') ||
+            child.name.startsWith('Harp_Leg') ||
+            child.name.startsWith('Harp_Soundbox') ||
+            child.name.startsWith('Harp_Bottom_Plate') ||
+            child.name.startsWith('Harp_Central_String_Rib')
+          ) {
+            child.material = child.material.clone();
+            child.material.color = woodColor;
+            child.material.roughness = 0.28;
+            child.material.metalness = 0.04;
+          }
+
+          if (child.name.startsWith('Harp_Soundboard_Face')) {
+            child.material = child.material.clone();
+            child.material.color = woodColor.clone().offsetHSL(0, 0.05, 0.08);
+            child.material.roughness = 0.32;
+            child.material.metalness = 0.02;
+          }
+
+          // Hardware & Levers
+          if (child.name.startsWith('Lever_') || child.name.startsWith('Hardware_')) {
+            child.material = child.material.clone();
+            child.material.color = leverColor;
+            child.material.metalness = 0.92;
+            child.material.roughness = 0.15;
+          }
+
+          // Strings: Diatonic Standard
+          if (child.name.startsWith('String_')) {
+            const deg = parseInt(child.name.replace('String_', ''), 10);
+            child.material = child.material.clone();
+            if (deg === 1 || deg === 8) {
+              child.material.color = new THREE.Color(0xd92d20); // Red C
+              child.material.emissive = new THREE.Color(0x500c0c);
+            } else if (deg === 4) {
+              child.material.color = new THREE.Color(0x2563eb); // Blue F
+              child.material.emissive = new THREE.Color(0x0c2050);
+            } else {
+              child.material.color = new THREE.Color(0xffffff); // Ivory nylon
+              child.material.emissive = new THREE.Color(0x182030);
+            }
+            child.material.emissiveIntensity = 0.30;
+            child.material.roughness = 0.15;
+            child.material.metalness = 0.05;
+          }
+        }
+      });
+    }
+
+    function loadModels() {
+      const loader = new GLTFLoader();
+      loader.load('/models/celtic_harp_8string.glb', (gltf) => {
+        const leftHarp = gltf.scene;
+        const rightHarp = gltf.scene.clone(true);
+
+        const harpScale = 0.82;
+
+        // LEFT HARP: Warm Honey Maple (#d4a872)
+        // User mandate: "facing bodies towards each other and necks towards the viewer"
+        styleHarp(leftHarp, 0xd4a872, 0xd4af37);
+        leftHarp.scale.set(harpScale, harpScale, harpScale);
+        leftHarp.position.set(-0.52, -0.22, 0.06);
+        // Rotation: body points right towards center, neck faces viewer
+        leftHarp.rotation.set(0.04, -1.95, 0.02);
+        scene.add(leftHarp);
+
+        // RIGHT HARP: Rich Cherry Rosewood (#8b3a3a)
+        styleHarp(rightHarp, 0x8b3a3a, 0xf1f5f9);
+        rightHarp.scale.set(harpScale, harpScale, harpScale);
+        rightHarp.position.set(0.52, -0.22, 0.06);
+        // Rotation: body points left towards center, neck faces viewer
+        rightHarp.rotation.set(0.04, 1.95, -0.02);
+        scene.add(rightHarp);
+
+        // Pedestal plinth
+        const plinthGeom = new THREE.CylinderGeometry(1.65, 1.85, 0.12, 48);
+        const plinthMat = new THREE.MeshStandardMaterial({ color: 0x141a24, roughness: 0.85, metalness: 0.1 });
+        const plinth = new THREE.Mesh(plinthGeom, plinthMat);
+        plinth.position.set(0, -0.28, 0);
+        scene.add(plinth);
+
+        renderer.render(scene, camera);
+        window.__DUAL_HARPS_READY = true;
+      }, undefined, (err) => {
+        console.error('Failed to load GLTF:', err);
+        window.__DUAL_HARPS_ERROR = err.message;
+      });
+    }
+  </script>
+</body>
+</html>

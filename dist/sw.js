@@ -1,11 +1,11 @@
-const CACHE_NAME = 'earpa-pwa-v25';
+const CACHE_NAME = 'earpa-pwa-v26';
 const ASSETS_TO_CACHE = [
   '/',
   '/?source=pwa',
-  '/index.html',
-  '/manifest.json',
-  '/manifest.webmanifest',
-  '/favicon.ico',
+  'index.html',
+  'manifest.json',
+  'manifest.webmanifest',
+  'favicon.ico',
   '/images/icons/earpa_icon_192.png',
   '/images/icons/earpa_icon_512.png',
   '/images/icons/earpa_icon_maskable_192.png',
@@ -14,6 +14,7 @@ const ASSETS_TO_CACHE = [
   '/images/icons/favicon.png',
   '/images/earpa_master_loading_bg.jpg',
   '/images/earpa_journey_bg.jpg',
+  '/images/tri_realm_sanctuary.jpg',
   '/images/artisan_workshop_dual_harp.jpg'
 ];
 
