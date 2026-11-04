@@ -1,11 +1,10 @@
 /**
  * EARPA HARP ARTISAN WORKSHOP (FULL SCREEN 3D LUTHIER VAULT)
  * Dedicated full-screen cosmetic customization studio featuring:
- * - Real 3D Celtic Harp Canvas in the center that dynamically changes colors and finishes in real time
- * - Bottom category navigation bar (Woods, Carves, Strings, Levers, Sound)
- * - Swipable horizontal item carousel
- * - Direct real-time 3D model previewing before equipping or buying
- * - Velvety soft, warm acoustic harp sound plucking
+ * - Real 3D Celtic Harp Canvas in the center that dynamically changes finishes in real time
+ * - Dual liquid-glass navigation-sized bars taking minimal vertical space
+ * - Authentic Diatonic Strings Standard: C=Red, F=Blue, natural nylon ivory
+ * - Direct 360° interactive spin and velvet acoustic string plucking
  * - Synchronizes across Hub, Home, and In-Game experiences
  */
 
@@ -24,7 +23,6 @@ import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
 import {
   TimberFinishId,
   SoundboardRosetteId,
-  ResonanceStringShaderId,
   SoundPackId,
   LeverFinishId,
   CosmeticItem,
@@ -38,10 +36,10 @@ interface HarpGarageModalProps {
   visible: boolean;
   onClose: () => void;
   garageEngine: HarpGarageEngine;
-  onApplyCosmetic: (type: 'timber' | 'rosette' | 'strings' | 'sound' | 'lever', colorHex: string) => void;
+  onApplyCosmetic: (type: 'timber' | 'rosette' | 'sound' | 'lever', colorHex: string) => void;
 }
 
-type StoreCategory = 'TIMBER' | 'ROSETTE' | 'STRINGS' | 'LEVERS' | 'SOUND';
+type StoreCategory = 'TIMBER' | 'ROSETTE' | 'LEVERS' | 'SOUND';
 
 export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   visible,
@@ -79,7 +77,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     if (!shopCanvasRef.current) return;
     try {
       shopCanvasRef.current.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
-      shopCanvasRef.current.applyStringGlowColor(eq.strings.colorHex);
       shopCanvasRef.current.applyLeverColor(eq.lever.colorHex);
       shopCanvasRef.current.applyRosetteInlay?.(eq.rosette.colorHex, eq.rosette.id);
     } catch {}
@@ -93,7 +90,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 
   const handleSelectItem = (item: CosmeticItem<any>) => {
     setSelectedItem(item);
-    setToastMessage('');
 
     let noteFreq = 329.63; // E4 warm note
     let soundTimbre = getTimbreForSoundId(garageEngine.getEquipped().sound.id);
@@ -104,9 +100,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     } else if (activeCategory === 'ROSETTE') {
       shopCanvasRef.current?.applyRosetteInlay?.(item.colorHex, item.id);
       noteFreq = 392.00; // Resonant G4
-    } else if (activeCategory === 'STRINGS') {
-      shopCanvasRef.current?.applyStringGlowColor(item.colorHex);
-      noteFreq = 523.25; // Shimmering C5
     } else if (activeCategory === 'LEVERS') {
       shopCanvasRef.current?.applyLeverColor(item.colorHex);
       noteFreq = 369.99; // F#4 semitone lever shift
@@ -123,13 +116,12 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     let success = false;
     if (activeCategory === 'TIMBER') success = garageEngine.equipTimber(item.id as TimberFinishId);
     else if (activeCategory === 'ROSETTE') success = garageEngine.equipRosette(item.id as SoundboardRosetteId);
-    else if (activeCategory === 'STRINGS') success = garageEngine.equipStrings(item.id as ResonanceStringShaderId);
     else if (activeCategory === 'LEVERS') success = garageEngine.equipLever(item.id as LeverFinishId);
     else if (activeCategory === 'SOUND') success = garageEngine.equipSound(item.id as SoundPackId);
 
     if (success) {
       onApplyCosmetic(activeCategory.toLowerCase() as any, activeCategory === 'SOUND' ? item.id : item.colorHex);
-      setToastMessage(`Fitted ${item.name} to your Celtic harp.`);
+      setToastMessage(`Fitted ${item.name} ✓`);
 
       const eq = garageEngine.getEquipped();
       applyCurrentEquippedToCanvas(eq);
@@ -146,19 +138,29 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     const res = garageEngine.buyWithShards(activeCategory, item.id);
     if (res.success) {
       setUserShards(db.getShards());
-      setToastMessage(res.message);
       item.isUnlocked = true;
-
-      // Automatically equip newly purchased item
       handleEquip(item);
     } else {
       setToastMessage(res.message);
     }
   };
 
+  const handleTapItem = (item: CosmeticItem<any>) => {
+    handleSelectItem(item);
+    const eqId = getEquippedIdForActiveCategory();
+    if (item.id === eqId) {
+      setToastMessage(`${item.name} is fitted to your harp.`);
+    } else if (item.isUnlocked) {
+      handleEquip(item);
+    } else if (userShards >= (item.shardCost || 0)) {
+      handleBuy(item);
+    } else {
+      setToastMessage(`Need ${item.shardCost} shards (you have ${userShards}).`);
+    }
+  };
+
   const timbers = garageEngine.getTimbers();
   const rosettes = garageEngine.getRosettes();
-  const strings = garageEngine.getStrings();
   const levers = garageEngine.getLevers();
   const sounds = garageEngine.getSounds();
 
@@ -166,7 +168,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     switch (activeCategory) {
       case 'TIMBER': return timbers;
       case 'ROSETTE': return rosettes;
-      case 'STRINGS': return strings;
       case 'LEVERS': return levers;
       case 'SOUND': return sounds;
     }
@@ -176,7 +177,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     switch (activeCategory) {
       case 'TIMBER': return equipped.timber.id;
       case 'ROSETTE': return equipped.rosette.id;
-      case 'STRINGS': return equipped.strings.id;
       case 'LEVERS': return equipped.lever.id;
       case 'SOUND': return equipped.sound.id;
     }
@@ -184,16 +184,13 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 
   const currentCategoryItems = getItemsForActiveCategory();
   const currentEquippedId = getEquippedIdForActiveCategory();
-  const isSelectedEquipped = selectedItem?.id === currentEquippedId;
-  const canAffordSelected = userShards >= (selectedItem?.shardCost || 0);
 
-  const switchCategory = (cat: CategoryKey) => {
+  const switchCategory = (cat: StoreCategory) => {
     setActiveCategory(cat);
     let item: CosmeticItem<any>;
     switch (cat) {
       case 'TIMBER': item = equipped.timber; break;
       case 'ROSETTE': item = equipped.rosette; break;
-      case 'STRINGS': item = equipped.strings; break;
       case 'LEVERS': item = equipped.lever; break;
       case 'SOUND': item = equipped.sound; break;
     }
@@ -215,7 +212,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.fullScreenContainer}>
-        {/* Authentic Celtic Sanctuary Background (No 2D baked-in harp, clean plinth for 3D harp) */}
+        {/* Authentic Celtic Sanctuary Background */}
         <Image
           source={{ uri: '/images/irish_celtic_sanctuary.jpg' }}
           style={StyleSheet.absoluteFillObject}
@@ -223,11 +220,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
         />
         <View style={styles.darkAtmosphereOverlay} />
 
-        {/* 1. TOP BAR: ONLY 3 ELEMENTS (Close, Artisan Shop, Shards Balance) */}
+        {/* 1. TOP BAR: Close, Artisan Shop, Shards Balance */}
         <View style={styles.topBar}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Exit Artisan Workshop"
+            accessibilityLabel="Exit Artisan Shop"
             onPress={onClose}
             style={styles.exitBtn}
             activeOpacity={0.8}
@@ -242,7 +239,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           </View>
         </View>
 
-        {/* 2. MIDDLE VIEWPORT: SEAMLESS 3D CELTIC HARP (360° Interactive Spin) */}
+        {/* 2. MIDDLE VIEWPORT: 3D CELTIC HARP (Exact 0.88 scale & 0.40 targetY, 360° Spin) */}
         <View style={styles.middleHarpCanvasContainer}>
           <CelticHarpCanvas
             ref={shopCanvasRef}
@@ -250,8 +247,8 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             interactiveControls={true}
             minimalHeroMode={true}
             autoSpin={false}
-            customScale={1.0}
-            targetY={0.35}
+            customScale={0.88}
+            targetY={0.40}
             onModelLoaded={() => applyCurrentEquippedToCanvas()}
             onStringPlucked={(deg) => {
               const timbre = getTimbreForSoundId(garageEngine.getEquipped().sound.id);
@@ -266,61 +263,12 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           )}
         </View>
 
-        {/* 3. SELECTED ITEM DETAILS & ACTION BUTTON */}
-        <View style={styles.selectedActionShelf}>
-          <View style={styles.selectedMetaBox}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={[styles.miniSwatch, { backgroundColor: selectedItem.colorHex || '#f59e0b' }]} />
-              <Text style={styles.selectedItemTitle}>{selectedItem.name}</Text>
-              {isSelectedEquipped && (
-                <View style={styles.fittedMiniTag}>
-                  <Text style={styles.fittedMiniTagText}>FITTED</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.selectedItemLore} numberOfLines={1}>
-              {selectedItem.lore}
-            </Text>
-          </View>
-
-          {/* Equip / Buy Button */}
-          {selectedItem.isUnlocked ? (
-            <TouchableOpacity
-              disabled={isSelectedEquipped}
-              onPress={() => handleEquip(selectedItem)}
-              style={[
-                styles.primaryActionBtn,
-                isSelectedEquipped ? styles.btnAlreadyFitted : styles.btnEquipActive,
-              ]}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.primaryActionBtnText, isSelectedEquipped && styles.btnTextAlreadyFitted]}>
-                {isSelectedEquipped ? '✓ Fitted to Harp' : 'Equip Finish ›'}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              disabled={!canAffordSelected}
-              onPress={() => handleBuy(selectedItem)}
-              style={[
-                styles.primaryActionBtn,
-                canAffordSelected ? styles.btnBuyAmber : styles.btnBuyDisabled,
-              ]}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.primaryActionBtnText}>
-                {canAffordSelected ? `Unlock for ${selectedItem.shardCost} 🪙` : 'Not Enough Shards'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* 4. HORIZONTAL ITEM CAROUSEL */}
-        <View style={styles.carouselContainer}>
+        {/* 3. ITEM OPTIONS SELECTOR BAR (Exact same shape & space as navigation bar) */}
+        <View style={styles.itemSelectionBar}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carouselScrollContent}
+            contentContainerStyle={styles.itemSelectionScroll}
           >
             {currentCategoryItems.map((item) => {
               const isSelected = selectedItem?.id === item.id;
@@ -329,28 +277,47 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
               return (
                 <TouchableOpacity
                   key={item.id}
-                  onPress={() => handleSelectItem(item)}
+                  onPress={() => handleTapItem(item)}
                   style={[
-                    styles.carouselCard,
-                    isSelected && styles.carouselCardSelected,
-                    isEquipped && styles.carouselCardEquipped,
+                    styles.itemPill,
+                    isSelected && styles.itemPillSelected,
+                    isEquipped && styles.itemPillEquipped,
                   ]}
                   activeOpacity={0.8}
                 >
-                  <View style={[styles.itemCardColorSwatch, { backgroundColor: item.colorHex || '#d4af37' }]} />
-                  <Text style={styles.itemCardName} numberOfLines={1}>
-                    {item.name}
+                  <View
+                    style={[
+                      styles.itemColorSwatch,
+                      { backgroundColor: item.colorHex || '#d4af37' },
+                    ]}
+                  />
+                  <Text style={styles.itemPillName} numberOfLines={1}>
+                    {item.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac', '')}
                   </Text>
-                  <Text style={styles.itemCardCost}>
-                    {isEquipped ? 'Fitted' : item.isUnlocked ? 'Unlocked' : `${item.shardCost} 🪙`}
-                  </Text>
+                  <View
+                    style={[
+                      styles.itemStatusBadge,
+                      isEquipped && styles.itemStatusBadgeEquipped,
+                      item.isUnlocked && !isEquipped && styles.itemStatusBadgeUnlocked,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.itemStatusText,
+                        isEquipped && styles.itemStatusTextEquipped,
+                        item.isUnlocked && !isEquipped && styles.itemStatusTextUnlocked,
+                      ]}
+                    >
+                      {isEquipped ? '✓' : item.isUnlocked ? 'Equip' : `${item.shardCost} 🪙`}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
         </View>
 
-        {/* 5. BOTTOM CATEGORY NAVIGATION BAR */}
+        {/* 4. BOTTOM CATEGORY NAVIGATION BAR (Woods, Carves, Levers, Sound) */}
         <View style={styles.bottomCategoryNavBar}>
           <TouchableOpacity
             onPress={() => switchCategory('TIMBER')}
@@ -371,17 +338,6 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             <Text style={styles.categoryNavIcon}>⚜️</Text>
             <Text style={[styles.categoryNavLabel, activeCategory === 'ROSETTE' && styles.categoryNavLabelActive]}>
               Carves
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => switchCategory('STRINGS')}
-            style={[styles.categoryNavTab, activeCategory === 'STRINGS' && styles.categoryNavTabActive]}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.categoryNavIcon}>✨</Text>
-            <Text style={[styles.categoryNavLabel, activeCategory === 'STRINGS' && styles.categoryNavLabelActive]}>
-              Strings
             </Text>
           </TouchableOpacity>
 
@@ -447,15 +403,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  titleCenterBox: {
-    alignItems: 'center',
-  },
-  vaultEyebrow: {
-    fontSize: 9.5,
-    letterSpacing: 1.8,
-    color: '#d4af37',
-    fontWeight: '800',
-  },
   vaultTitle: {
     fontFamily: 'Cinzel-Bold',
     fontSize: 21,
@@ -486,192 +433,103 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  canvasFloatingHeader: {
-    position: 'absolute',
-    top: 10,
-    left: 14,
-    right: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    pointerEvents: 'none',
-  },
-  previewStatusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderWidth: 1,
-    borderColor: 'rgba(251, 191, 36, 0.55)',
-  },
-  previewStatusDot: {
-    fontSize: 11,
-  },
-  previewStatusText: {
-    color: '#fef08a',
-    fontSize: 11.5,
-    fontWeight: '800',
-  },
-  interactive3dHint: {
-    color: '#cbd5e1',
-    fontSize: 10.5,
-    fontStyle: 'italic',
-  },
-  rosetteBadgeCrest: {
-    position: 'absolute',
-    bottom: 12,
-    left: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.45)',
-  },
-  rosetteBadgeText: {
-    color: '#fae8c2',
-    fontSize: 11.5,
-    fontWeight: '700',
-  },
   toastOverlay: {
     position: 'absolute',
     bottom: 12,
     alignSelf: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     borderRadius: 14,
-    backgroundColor: 'rgba(5, 150, 105, 0.85)',
-  },
+    backgroundColor: 'rgba(5, 150, 105, 0.90)',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45)',
+  } as any,
   toastOverlayText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  selectedActionShelf: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(11, 20, 27, 0.8)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(220, 198, 154, 0.18)',
-    zIndex: 10,
-  },
-  selectedMetaBox: {
-    flex: 1,
-    paddingRight: 12,
-    gap: 2,
-  },
-  miniSwatch: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#ffffff',
-  },
-  selectedItemTitle: {
-    color: '#fae8c2',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  fittedMiniTag: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
-    backgroundColor: 'rgba(52, 211, 153, 0.25)',
-    borderWidth: 1,
-    borderColor: '#34d399',
-  },
-  fittedMiniTagText: {
-    color: '#a7f3d0',
-    fontSize: 8.5,
-    fontWeight: '900',
-  },
-  selectedItemLore: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  primaryActionBtn: {
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnEquipActive: {
-    backgroundColor: '#0284c7',
-  },
-  btnAlreadyFitted: {
-    backgroundColor: 'rgba(52, 211, 153, 0.18)',
-    borderWidth: 1,
-    borderColor: '#34d399',
-  },
-  btnBuyAmber: {
-    backgroundColor: '#d97706',
-  },
-  btnBuyDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  primaryActionBtnText: {
     color: '#ffffff',
     fontSize: 12.5,
     fontWeight: '800',
   },
-  btnTextAlreadyFitted: {
-    color: '#34d399',
+  itemSelectionBar: {
+    marginHorizontal: 14,
+    marginBottom: 8,
+    height: 58,
+    backgroundColor: 'rgba(25, 39, 30, 0.92)',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        } as any)
+      : {}),
+    zIndex: 20,
   },
-  carouselContainer: {
+  itemSelectionScroll: {
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  itemPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: 'rgba(7, 14, 20, 0.9)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(220, 198, 154, 0.12)',
-    zIndex: 10,
-  },
-  carouselScrollContent: {
-    paddingHorizontal: 14,
-    gap: 10,
-  },
-  carouselCard: {
-    width: 106,
-    padding: 10,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
-    alignItems: 'center',
-    gap: 6,
   },
-  carouselCardSelected: {
+  itemPillSelected: {
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
     borderColor: '#fbbf24',
-    backgroundColor: 'rgba(212, 175, 55, 0.18)',
-  },
-  carouselCardEquipped: {
+    boxShadow: '0 0 10px rgba(251, 191, 36, 0.35)',
+  } as any,
+  itemPillEquipped: {
     borderColor: '#34d399',
   },
-  itemCardColorSwatch: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+  itemColorSwatch: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.2,
+    borderColor: 'rgba(255, 255, 255, 0.55)',
   },
-  itemCardName: {
+  itemPillName: {
     color: '#f8fafc',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    textAlign: 'center',
   },
-  itemCardCost: {
+  itemStatusBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    borderWidth: 0.8,
+    borderColor: 'rgba(245, 158, 11, 0.55)',
+  },
+  itemStatusBadgeEquipped: {
+    backgroundColor: 'rgba(52, 211, 153, 0.22)',
+    borderColor: '#34d399',
+  },
+  itemStatusBadgeUnlocked: {
+    backgroundColor: 'rgba(56, 189, 248, 0.22)',
+    borderColor: '#38bdf8',
+  },
+  itemStatusText: {
     color: '#fef08a',
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  itemStatusTextEquipped: {
+    color: '#a7f3d0',
+  },
+  itemStatusTextUnlocked: {
+    color: '#bae6fd',
   },
   bottomCategoryNavBar: {
     flexDirection: 'row',

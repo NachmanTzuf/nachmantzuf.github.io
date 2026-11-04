@@ -274,7 +274,7 @@ export default function EarpaMasterScreen() {
   const handleHarpModelLoaded = () => {
     setIsHarpLoaded(true);
     try {
-      const eq = garageEngineRef.current.getEquipped();
+      const eq = garageEngineRef.current?.getEquipped();
       if (eq) {
         canvasRef.current?.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
         canvasRef.current?.applyStringGlowColor(eq.strings.colorHex);
@@ -588,18 +588,16 @@ export default function EarpaMasterScreen() {
             )}
 
             {activeTab === 'profile' && (
-              <View style={{ flex: 1, width: '100%', height: '100%', paddingTop: Platform.OS === 'web' ? 56 : 50 }}>
-                <ProfileTabScreen
-                  levelNumber={progression.bardicLevel}
-                  currentXp={profile.totalTrialsAttempted*10}
-                  streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
-                  accuracyPct={accuracyPct}
-                  totalTrials={totalTrials}
-                  onOpenRoadmap={(realm = 'single') => handleOpenRoadmapWithTheme(realm)}
-                  onOpenSocial={() => setShowSocialModal(true)}
-                  onOpenGarage={() => setShowGarageModal(true)}
-                />
-              </View>
+              <ProfileTabScreen
+                levelNumber={progression.bardicLevel}
+                currentXp={profile.totalTrialsAttempted*10}
+                streakCount={accountDb.getPedagogicalInsights().currentStreakDays}
+                accuracyPct={accuracyPct}
+                totalTrials={totalTrials}
+                onOpenRoadmap={(realm = 'single') => handleOpenRoadmapWithTheme(realm)}
+                onOpenSocial={() => setShowSocialModal(true)}
+                onOpenGarage={() => setShowGarageModal(true)}
+              />
             )}
           </View>
 
@@ -663,8 +661,8 @@ export default function EarpaMasterScreen() {
             onApplyCosmetic={(type, colorHex) => {
               if (type === 'timber') {
                 canvasRef.current?.applyTimberColor(colorHex);
-              } else if (type === 'strings') {
-                canvasRef.current?.applyStringGlowColor(colorHex);
+              } else if (type === 'rosette') {
+                canvasRef.current?.applyRosetteInlay?.(colorHex);
               } else if (type === 'lever') {
                 canvasRef.current?.applyLeverColor(colorHex);
               } else if (type === 'sound') {

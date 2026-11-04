@@ -25,29 +25,29 @@ const TRACK_THEMES: Record<
 > = {
   single: {
     primary: '#10b981',
-    badgeBg: 'rgba(6, 78, 59, 0.65)',
-    badgeBorder: 'rgba(52, 211, 153, 0.85)',
-    text: '#f0fdf4',
-    glow: '0 2px 14px rgba(16, 185, 129, 0.55)',
-    label: '▶ QUICK LESSON · TONIC ANCHOR (60s)',
+    badgeBg: 'rgba(6, 78, 59, 0.50)',
+    badgeBorder: 'rgba(52, 211, 153, 0.70)',
+    text: '#ecfdf5',
+    glow: '0 2px 10px rgba(16, 185, 129, 0.40)',
+    label: '▷ QUICK LESSON · TONIC ANCHOR (60s)',
     persistentLabel: 'Single note',
   },
   melody: {
     primary: '#38bdf8',
-    badgeBg: 'rgba(12, 74, 110, 0.70)',
-    badgeBorder: 'rgba(56, 189, 248, 0.90)',
-    text: '#f0f9ff',
-    glow: '0 2px 16px rgba(56, 189, 248, 0.55)',
-    label: '▶ QUICK LESSON · MELODIC SEQUENCE (60s)',
+    badgeBg: 'rgba(12, 74, 110, 0.55)',
+    badgeBorder: 'rgba(56, 189, 248, 0.75)',
+    text: '#e0f2fe',
+    glow: '0 2px 12px rgba(56, 189, 248, 0.45)',
+    label: '▷ QUICK LESSON · MELODIC SEQUENCE (60s)',
     persistentLabel: 'Melody',
   },
   levers: {
     primary: '#fbbf24',
-    badgeBg: 'rgba(120, 53, 15, 0.65)',
-    badgeBorder: 'rgba(251, 191, 36, 0.85)',
-    text: '#fffbeb',
-    glow: '0 2px 14px rgba(245, 158, 11, 0.55)',
-    label: '▶ QUICK LESSON · LEVER MASTERY (90s)',
+    badgeBg: 'rgba(120, 53, 15, 0.50)',
+    badgeBorder: 'rgba(245, 158, 11, 0.70)',
+    text: '#fef08a',
+    glow: '0 2px 10px rgba(245, 158, 11, 0.40)',
+    label: '▷ QUICK LESSON · LEVER MASTERY (90s)',
     persistentLabel: 'Levers',
   },
 };
@@ -163,15 +163,15 @@ export function LessonLibrary({
               }
             : ({
                 width: '100%',
-                height: 36,
-                minHeight: 36,
-                marginTop: 9,
-                paddingHorizontal: 16,
-                paddingVertical: 6,
+                height: 28,
+                minHeight: 28,
+                marginTop: 8,
+                paddingHorizontal: 14,
+                paddingVertical: 2,
                 justifyContent: 'center',
                 alignItems: 'center',
-                borderRadius: 18,
-                borderWidth: 1.3,
+                borderRadius: 14,
+                borderWidth: 1,
                 borderColor: currentTheme.badgeBorder,
                 backgroundColor: currentTheme.badgeBg,
                 boxShadow: currentTheme.glow,
@@ -197,14 +197,14 @@ export function LessonLibrary({
               : {
                   color: currentTheme.text,
                   textAlign: 'center',
-                  fontSize: 12,
+                  fontSize: 10.5,
                   fontWeight: '800',
-                  letterSpacing: 0.9,
+                  letterSpacing: 0.8,
                   textTransform: 'uppercase',
                 }
           }
         >
-          {persistent ? `▶ ${currentTheme.persistentLabel}` : currentTheme.label}
+          {persistent ? `▷ ${currentTheme.persistentLabel}` : currentTheme.label}
         </Text>
       </TouchableOpacity>
 

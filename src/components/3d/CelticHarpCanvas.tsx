@@ -251,6 +251,7 @@ interface StringPhysicsState {
   glowColor: THREE.Color;
   botPt: THREE.Vector3;
   topPt: THREE.Vector3;
+  degreeNumber?: number;
   ghostLineA?: THREE.Line;
   ghostLineB?: THREE.Line;
 }
@@ -478,12 +479,21 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
       },
       applyStringGlowColor: (colorHex: string) => {
         const color = new THREE.Color(colorHex);
-        stringsRef.current.forEach((st) => {
+        stringsRef.current.forEach((st, deg) => {
           st.glowColor.copy(color);
           if (st.mesh && st.mesh.material) {
-            (st.mesh.material as any).color.copy(color);
-            (st.mesh.material as any).emissive.copy(color);
-            (st.mesh.material as any).emissiveIntensity = 0.42;
+            let restingBaseColor = new THREE.Color(0xffffff); // Ivory/clear nylon
+            let restingEmissive = new THREE.Color(0x1a2638);
+            if (deg === 1 || deg === 8) {
+              restingBaseColor = new THREE.Color(0xd92d20); // C string is always RED
+              restingEmissive = new THREE.Color(0x400808);
+            } else if (deg === 4) {
+              restingBaseColor = new THREE.Color(0x2563eb); // F string is always BLUE
+              restingEmissive = new THREE.Color(0x0a1a38);
+            }
+            (st.mesh.material as any).color.copy(restingBaseColor);
+            (st.mesh.material as any).emissive.copy(restingEmissive);
+            (st.mesh.material as any).emissiveIntensity = 0.24;
             (st.mesh.material as any).needsUpdate = true;
           }
         });
