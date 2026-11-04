@@ -184,7 +184,9 @@ def main():
                     'entry-a49f2219870238787821c6d504e6b75f.js',
                     'entry-fc79bdb2d21f8c68692ce218879293ee.js',
                     'entry-fdf04d7978d5b30d71f4f802296bd236.js',
-                    'entry-38c2155d5fb7a339c32c89950b088b56.js'
+                    'entry-38c2155d5fb7a339c32c89950b088b56.js',
+                    'entry-1c1d931d813cd44f8ed8dd82a1211c5e.js',
+                    'entry-947721a814af51f3e4c8f1ccfb9c449a.js'
                 ]
                 for compat in compat_names:
                     if compat != latest_entry:

@@ -275,8 +275,7 @@ export const LiquidGlassRoadmapCard: React.FC<LiquidGlassRoadmapCardProps> = ({
 const styles = StyleSheet.create({
   roadmapCard: {
     width: '100%',
-    height: 142,
-    minHeight: 142,
+    minHeight: 106,
     borderRadius: 18,
     paddingHorizontal: 13,
     paddingVertical: 10,

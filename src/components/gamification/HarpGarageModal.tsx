@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   },
   middleHarpCanvasContainer: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 194 : 202,
+    top: Platform.OS === 'web' ? 158 : 154,
     left: 0,
     right: 0,
     bottom: 0,

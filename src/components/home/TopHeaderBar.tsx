@@ -90,7 +90,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   }[activeTab || 'home'];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, activeTab !== 'profile' && styles.containerHeroLocked]}>
       {/* 1. Top Status Row: Profile Chip on Left, Shards in Center, Streak on Right (Tripartite Symmetry) */}
       <View style={styles.topStatusRow}>
         <TouchableOpacity
@@ -165,12 +165,15 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: Platform.OS === 'web' ? 194 : 202,
     paddingHorizontal: 12,
     paddingTop: Platform.OS === 'web' ? 8 : 4,
     paddingBottom: 4,
     zIndex: 20,
     backgroundColor: 'transparent',
+  },
+  containerHeroLocked: {
+    height: Platform.OS === 'web' ? 158 : 154,
+    overflow: 'visible',
   },
   topStatusRow: {
     width: '100%',

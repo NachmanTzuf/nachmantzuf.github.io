@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     zIndex: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: Platform.OS === 'web' ? 76 : 82,
+    paddingBottom: Platform.OS === 'web' ? 92 : 102,
     backgroundColor: 'transparent',
   },
   liquidGlassPlayButton: {
