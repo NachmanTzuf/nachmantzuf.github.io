@@ -1,23 +1,23 @@
 [
   {
-    "id": "SingleMotionPlus",
-    "title": "Single notes: watch and practise",
+    "id": "EarpaSingleNotesInstruction",
+    "title": "▷ QUICK LESSON · TONIC ANCHOR (80s)",
     "track": "single",
-    "seconds": 60,
-    "url": "/videos/plus/SingleMotionPlus.mp4"
+    "seconds": 80,
+    "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v28_20261108"
   },
   {
-    "id": "MelodyMotionPlus",
-    "title": "Melody: hear the whole pattern",
+    "id": "EarpaMelodyPhrasingInstruction",
+    "title": "▷ QUICK LESSON · MELODIC SEQUENCE (80s)",
     "track": "melody",
-    "seconds": 60,
-    "url": "/videos/plus/MelodyMotionPlus.mp4"
+    "seconds": 80,
+    "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v28_20261108"
   },
   {
-    "id": "LeverMotionPlus",
-    "title": "Levers: watch and practise",
+    "id": "EarpaCamacLeversInstruction",
+    "title": "▷ QUICK LESSON · LEVER MASTERY (110s)",
     "track": "levers",
-    "seconds": 90,
-    "url": "/videos/plus/LeverMotionPlus.mp4"
+    "seconds": 110,
+    "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v28_20261108"
   }
 ]
