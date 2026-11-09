@@ -23,7 +23,7 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
   useEffect(()=>()=>{timers.current.forEach(clearTimeout);synth.current.dispose();},[]);
   const later=(fn:()=>void,ms:number)=>{timers.current.push(setTimeout(fn,ms));};
   const [intro,setIntro]=useState((initialStage ?? db.getActiveProfile().leverStage ?? 0)===0 ? 0 : 5);
-  const [playing,setPlaying]=useState(false),[playingNote,setPlayingNote]=useState(-1),[showControls,setShowControls]=useState(false);
+  const [playing,setPlaying]=useState(false),[playingNote,setPlayingNote]=useState(-1);
   const [stage, setStage] = useState(Math.min(lessons.length-1,initialStage ?? db.getActiveProfile().leverStage ?? 0));
   const totalRounds = stage === 0 ? 3 : stage === 1 ? 4 : 5;
   const [round, setRound] = useState(0);
@@ -101,7 +101,7 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
   const playGuidedSemitone = () => {
     synth.current.initAudio();
     synth.current.unlockSynchronously();
-        const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
+    const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
     const sNum = guidedStrIdx + 1;
 
     // 1. Play open pitch
@@ -160,26 +160,83 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
 
   return <View style={{flex:1,backgroundColor:'#483b2a'}}>
     <Image source={{uri:'/images/ingame_bg_levers.jpg'}} style={StyleSheet.absoluteFillObject}/>
-    <ErrorBoundary componentName="LeverHarpCanvas">
-      <CelticHarpCanvas ref={canvas} initialLeverStates={states} onLeverToggled={(i,v)=>{
-        setLever(i-1,v);
-        if (intro === 1 && letters[i-1] === guidedLetter && v) {
-          setGuidedFlipped(true);
-          synth.current.initAudio();
-          synth.current.unlockSynchronously();
-          const rootMidi = TuningMatrixEngine.getRootMidiForKey(keys[0], 4);
-          const letterIdx = 'CDEFGAB'.indexOf(guidedLetter);
-          const intervals = [0, 2, 4, 5, 7, 9, 11];
-          const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
-          synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
-        }
-        if (intro === 4 && (i === 1 || i === 8)) {
-          if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
-        }
-      }} fixedInGameAngle customAngle={-0.95} customScale={1.12} targetY={0.85} minimalHeroMode style={{position:'absolute',top:145,bottom:190,left:0,right:0,width:'100%',height:undefined}}/>
-    </ErrorBoundary>
+    <View style={styles.fixedHarpContainer} pointerEvents="box-none">
+      <ErrorBoundary componentName="LeverHarpCanvas">
+        <CelticHarpCanvas
+          ref={canvas}
+          initialLeverStates={states}
+          onLeverToggled={(i,v)=>{
+            setLever(i-1,v);
+            if (intro === 1 && letters[i-1] === guidedLetter && v) {
+              setGuidedFlipped(true);
+              synth.current.initAudio();
+              synth.current.unlockSynchronously();
+              const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
+              synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
+            }
+            if (intro === 4 && (i === 1 || i === 8)) {
+              if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
+            }
+          }}
+          interactiveControls={true}
+          fixedInGameAngle={true}
+          customAngle={-0.95}
+          customScale={0.938}
+          targetY={0.590}
+          minimalHeroMode={true}
+          style={[styles.harpCanvas, { pointerEvents: 'auto' } as any]}
+        />
+      </ErrorBoundary>
+    </View>
     <View style={styles.top}><TouchableOpacity onPress={onBackToHome}><Text style={styles.text}>‹ Home</Text></TouchableOpacity><Text style={styles.text}>Level {stage+1} · {round+1} / {totalRounds}</Text></View>
-    {practice&&result===null&&<><View pointerEvents="none" style={{position:'absolute',top:65,left:20,right:20}}><Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.text}>Press the levers on your harp</Text></View><View style={styles.controls}><TouchableOpacity onPress={()=>{setPractice(false);setIntro(5);}}><Text style={styles.small}>Show the circle of fifths</Text></TouchableOpacity><TouchableOpacity onPress={()=>setShowControls(!showControls)}><Text style={styles.small}>Alternative lever controls {showControls?'−':'+'}</Text></TouchableOpacity>{showControls&&<View style={{flexDirection:'row',gap:4}}>{letters.map((l,i)=><TouchableOpacity key={i} accessibilityLabel={`${l}${i===7?' upper':''} lever ${states[i]?'up':'down'}`} onPress={()=>setLever(i,!states[i])} style={styles.lever}><Text style={styles.text}>{l}{states[i]?'↑':'↓'}</Text></TouchableOpacity>)}</View>}<TouchableOpacity style={styles.button} onPress={check}><Text style={styles.text}>Confirm scale →</Text></TouchableOpacity></View></>}
+    {practice&&result===null&&<>
+      <View pointerEvents="none" style={{position:'absolute',top:65,left:20,right:20,zIndex:50}}>
+        <Text style={styles.title}>{pretty(lesson.title)}</Text>
+        <Text style={styles.text}>Set levers on the harp or tap buttons below</Text>
+      </View>
+      <View style={styles.controls} pointerEvents="box-none">
+        <TouchableOpacity
+          style={styles.circleToggle}
+          onPress={()=>{setPractice(false);setIntro(5);}}
+        >
+          <Text style={styles.circleToggleText}>Show Circle of Fifths</Text>
+        </TouchableOpacity>
+        <View style={styles.leverRow}>
+          {letters.map((l,i)=>{
+            const isUp = states[i];
+            const isRed = l === 'C';
+            const isBlue = l === 'F';
+            const borderCol = isUp ? '#fbbf24' : isRed ? '#ef4444' : isBlue ? '#38bdf8' : '#786e58';
+            const textCol = isUp ? '#fbbf24' : isRed ? '#fca5a5' : isBlue ? '#93c5fd' : '#edddc0';
+            return (
+              <TouchableOpacity
+                key={i}
+                accessibilityLabel={`${l}${i===7?' upper':''} lever ${isUp?'up':'down'}`}
+                onPress={()=>setLever(i,!isUp)}
+                style={[
+                  styles.lever,
+                  {
+                    borderColor: borderCol,
+                    backgroundColor: isUp ? 'rgba(251, 191, 36, 0.25)' : 'rgba(30, 24, 18, 0.90)',
+                    borderWidth: isUp ? 1.5 : 1,
+                  }
+                ]}
+              >
+                <Text style={[styles.leverLetter, { color: textCol }]}>
+                  {l}{i === 7 ? '²' : ''}
+                </Text>
+                <Text style={[styles.leverState, { color: isUp ? '#fbbf24' : '#9ca3af' }]}>
+                  {isUp ? '↑ UP' : '↓ DN'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <TouchableOpacity style={styles.button} onPress={check}>
+          <Text style={[styles.text, { fontWeight: '700', fontSize: 16 }]}>Confirm scale →</Text>
+        </TouchableOpacity>
+      </View>
+    </>}
     {!practice&&<Reveal key={`${intro}-${target}`} style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:28,paddingTop:76,paddingBottom:36,gap:16}}>
       <Text style={styles.small}>{intro<5?`INTERACTIVE LEVER METHOD · ${intro+1} / 5`:'LEARN THE SCALE'}</Text>
       <Text style={styles.title}>{intro<5?lessonTitles[intro]:`${pretty(lesson.title)}`}</Text>
@@ -280,4 +337,22 @@ export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome:
     {result!==null&&<Reveal style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:26,paddingTop:76,paddingBottom:36,gap:22}}><Text style={[styles.title,{fontSize:40}]}>{round===totalRounds-1&&!playing?'Level complete':result?'Correct':'Not quite'}</Text>{round===totalRounds-1&&!playing&&<View style={{alignItems:'center',gap:12}}><Text style={{fontSize:54,color:'#ead7a9'}}>{score} / {totalRounds}</Text><Text style={styles.explanation}>{score===totalRounds?'Every scale matched.':`${score} ${score===1?'scale':'scales'} matched. Listen for the changed note as you move on.`}</Text></View>}<Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.explanation}>{result?'Every lever is in place.':`${8-mismatch.length} of 8 levers correct`}</Text>{!!mismatch.length&&<Text style={styles.explanation}>{mismatch.map(x=>`${x.l}${x.i===7?' upper':''} ${x.wanted?'↑ raise':'↓ lower'}`).join(' · ')}</Text>}<View style={{flexDirection:'row',justifyContent:'space-between'}}>{[1,2,3,4,5,6,7,8].map((n,i)=><View key={n} style={{width:30,height:42,alignItems:'center',justifyContent:'center',borderBottomWidth:2,borderColor:playingNote===i?'#f4d499':'#81765d',backgroundColor:playingNote===i?'rgba(210,183,126,.25)':'transparent'}}><Text style={[styles.text,{fontSize:13}]}>{pretty(notes[i].label)}</Text></View>)}</View><Text style={styles.small}>Listen to the correct scale · start to finish</Text><TouchableOpacity disabled={playing} style={[styles.button,{opacity:playing ? .5 : 1}]} onPress={next}><Text style={styles.text}>{playing?'Playing the scale…':round===totalRounds-1?`${score} / ${totalRounds} · ${stage===lessons.length-1?'Finish journey':'Next level'} →`:'Next scale →'}</Text></TouchableOpacity></ScrollView></Reveal>}
   </View>;
 }
-const styles=StyleSheet.create({top:{position:'absolute',top:22,left:18,right:18,flexDirection:'row',justifyContent:'space-between',zIndex:100},title:{fontFamily:'Cinzel-Bold',fontSize:30,color:'#f0d9ab',textAlign:'center'},text:{color:'#edddc0',fontSize:16,textAlign:'center',lineHeight:25},explanation:{color:'#edddc0',fontSize:18,lineHeight:29,textAlign:'center'},small:{color:'#cdbd9e',fontSize:12,lineHeight:20,textAlign:'center',padding:4},controls:{position:'absolute',bottom:28,left:16,right:16},lever:{flex:1,paddingVertical:8,borderWidth:1,borderColor:'#8c8068',backgroundColor:'rgba(54,43,30,.85)',borderRadius:8},button:{padding:17,marginTop:8,borderWidth:1,borderColor:'#c5a872',borderRadius:14,backgroundColor:'rgba(54,53,35,.9)'},overlay:{...StyleSheet.absoluteFillObject,zIndex:90,backgroundColor:'rgba(29,39,29,.7)',backgroundImage:'linear-gradient(180deg,rgba(44,50,34,.12),rgba(36,47,31,.75),rgba(44,50,34,.12))'} as any});
+const styles=StyleSheet.create({
+  top:{position:'absolute',top:22,left:18,right:18,flexDirection:'row',justifyContent:'space-between',zIndex:100},
+  title:{fontFamily:'Cinzel-Bold',fontSize:30,color:'#f0d9ab',textAlign:'center'},
+  text:{color:'#edddc0',fontSize:16,textAlign:'center',lineHeight:25},
+  explanation:{color:'#edddc0',fontSize:18,lineHeight:29,textAlign:'center'},
+  small:{color:'#cdbd9e',fontSize:12,lineHeight:20,textAlign:'center',padding:4},
+  fixedHarpContainer:{position:'absolute',top:0,left:0,right:0,bottom:0,pointerEvents:'box-none'},
+  harpCanvas:{width:'100%',height:'100%'},
+  controls:{position:'absolute',bottom:24,left:14,right:14,zIndex:60},
+  circleToggle:{alignSelf:'center',marginBottom:10,paddingVertical:6,paddingHorizontal:14,borderRadius:16,backgroundColor:'rgba(24,20,14,.75)',borderWidth:1,borderColor:'#786e58'},
+  circleToggleText:{color:'#cdbd9e',fontSize:12,fontWeight:'600'},
+  leverRow:{flexDirection:'row',gap:5,justifyContent:'center',marginBottom:10},
+  lever:{flex:1,paddingVertical:8,alignItems:'center',justifyContent:'center',borderRadius:8},
+  leverLetter:{fontSize:13,fontWeight:'700'},
+  leverState:{fontSize:10,fontWeight:'600',marginTop:2},
+  button:{padding:15,borderRadius:14,backgroundColor:'rgba(54,53,35,.95)',borderWidth:1,borderColor:'#c5a872',alignItems:'center'},
+  overlay:{...StyleSheet.absoluteFillObject,zIndex:90,backgroundColor:'rgba(29,39,29,.7)',backgroundImage:'linear-gradient(180deg,rgba(44,50,34,.12),rgba(36,47,31,.75),rgba(44,50,34,.12))'} as any
+});
+

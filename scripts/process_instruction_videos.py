@@ -122,21 +122,21 @@ def update_manifests():
             "title": "▷ QUICK LESSON · TONIC ANCHOR (90s)",
             "track": "single",
             "seconds": 90,
-            "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v29_20261109"
+            "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v30_20261109"
         },
         {
             "id": "EarpaMelodyPhrasingInstruction",
             "title": "▷ QUICK LESSON · MELODIC SEQUENCE (90s)",
             "track": "melody",
             "seconds": 90,
-            "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v29_20261109"
+            "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v30_20261109"
         },
         {
             "id": "EarpaCamacLeversInstruction",
             "title": "▷ QUICK LESSON · LEVER MASTERY (120s)",
             "track": "levers",
             "seconds": 120,
-            "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v29_20261109"
+            "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v30_20261109"
         }
     ]
     

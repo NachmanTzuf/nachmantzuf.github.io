@@ -52,7 +52,7 @@ const PRACTICE_VIDEOS = [
     subtitle: 'Camac Mechanics',
     duration: '120s',
     poster: '/videos/plus/LeverMotionPlus-poster.jpg',
-    url: '/videos/mission/EarpaCamacLeversInstruction.mp4?v=v29_20261109',
+    url: '/videos/mission/EarpaCamacLeversInstruction.mp4?v=v30_20261109',
     accent: '#fbbf24',
   },
 ] as const;

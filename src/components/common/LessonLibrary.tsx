@@ -70,7 +70,7 @@ export function LessonLibrary({
 
   useEffect(() => {
     let active = true;
-    fetch('/videos/mission/manifest.json?v=v29_20261109', { cache: 'no-store' })
+    fetch('/videos/mission/manifest.json?v=v30_20261109', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         if (active && Array.isArray(data)) setEntries(data);
