@@ -24,7 +24,7 @@ VIDEOS = [
         "id": "EarpaSingleNotesInstruction",
         "title": "How to Play: Single Notes & Tonic Anchor",
         "track": "single",
-        "seconds": 90,
+        "seconds": 100,
         "raw": "Earpa_Path1_Single_Notes_Lesson_raw.mp4",
         "final": "Earpa_Path1_Single_Notes_Lesson.mp4",
         "player": "EarpaSingleNotesInstruction.mp4",
@@ -34,7 +34,7 @@ VIDEOS = [
         "id": "EarpaMelodyPhrasingInstruction",
         "title": "How to Play: Melodic Phrasing & Contour",
         "track": "melody",
-        "seconds": 90,
+        "seconds": 100,
         "raw": "Earpa_Path2_Melodic_Sequence_Lesson_raw.mp4",
         "final": "Earpa_Path2_Melodic_Sequence_Lesson.mp4",
         "player": "EarpaMelodyPhrasingInstruction.mp4",
@@ -44,7 +44,7 @@ VIDEOS = [
         "id": "EarpaCamacLeversInstruction",
         "title": "How to Play: Camac Sharping Levers & Modal Shifts",
         "track": "levers",
-        "seconds": 120,
+        "seconds": 150,
         "raw": "Earpa_Path3_Camac_Levers_Lesson_raw.mp4",
         "final": "Earpa_Path3_Camac_Levers_Lesson.mp4",
         "player": "EarpaCamacLeversInstruction.mp4",
@@ -119,24 +119,24 @@ def update_manifests():
     manifest_entries = [
         {
             "id": "EarpaSingleNotesInstruction",
-            "title": "▷ QUICK LESSON · TONIC ANCHOR (90s)",
+            "title": "▷ QUICK LESSON · TONIC ANCHOR (100s)",
             "track": "single",
-            "seconds": 90,
-            "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v30_20261109"
+            "seconds": 100,
+            "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v31_20261109"
         },
         {
             "id": "EarpaMelodyPhrasingInstruction",
-            "title": "▷ QUICK LESSON · MELODIC SEQUENCE (90s)",
+            "title": "▷ QUICK LESSON · MELODIC SEQUENCE (100s)",
             "track": "melody",
-            "seconds": 90,
-            "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v30_20261109"
+            "seconds": 100,
+            "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v31_20261109"
         },
         {
             "id": "EarpaCamacLeversInstruction",
-            "title": "▷ QUICK LESSON · LEVER MASTERY (120s)",
+            "title": "▷ QUICK LESSON · LEVER MASTERY (150s)",
             "track": "levers",
-            "seconds": 120,
-            "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v30_20261109"
+            "seconds": 150,
+            "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v31_20261109"
         }
     ]
     

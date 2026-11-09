@@ -1,0 +1,142 @@
+[
+  {
+    "beat": 0,
+    "id": "s1_intro",
+    "start": 0.8,
+    "end": 19.568354166666666,
+    "title": "CELTIC HARP FOUNDATION"
+  },
+  {
+    "beat": 1,
+    "id": "s2_circle",
+    "start": 20.568354166666666,
+    "end": 42.24070833333333,
+    "title": "LEARN THE SCALE"
+  },
+  {
+    "beat": 2,
+    "id": "s3_arena",
+    "start": 43.24070833333333,
+    "end": 69.45377083333334,
+    "f_up_time": 57.129062499999996,
+    "lever_down_time": 64.94141666666667,
+    "lever_up_again_time": 66.54141666666666,
+    "title": "BIG HARP ARENA"
+  },
+  {
+    "beat": 3,
+    "id": "s4_scale_walk",
+    "start": 70.25377083333333,
+    "end": 96.04247916666668,
+    "walk_start": 83.374125,
+    "walk_end": 88.97412500000002,
+    "notes": [
+      {
+        "time": 83.374125,
+        "note": "G4",
+        "frame": 2501
+      },
+      {
+        "time": 83.924125,
+        "note": "A4",
+        "frame": 2517
+      },
+      {
+        "time": 84.474125,
+        "note": "B4",
+        "frame": 2534
+      },
+      {
+        "time": 85.02412500000001,
+        "note": "C5",
+        "frame": 2550
+      },
+      {
+        "time": 85.57412500000001,
+        "note": "D5",
+        "frame": 2567
+      },
+      {
+        "time": 86.124125,
+        "note": "E5",
+        "frame": 2583
+      },
+      {
+        "time": 86.674125,
+        "note": "F#5",
+        "frame": 2600
+      },
+      {
+        "time": 87.224125,
+        "note": "G5",
+        "frame": 2616
+      }
+    ],
+    "title": "CONFIRM & FULL SCALE WALK"
+  },
+  {
+    "beat": 4,
+    "id": "s5_verification",
+    "start": 96.84247916666668,
+    "end": 107.54683333333334,
+    "title": "RESULT VERIFICATION"
+  },
+  {
+    "beat": 5,
+    "id": "s6_dorian",
+    "start": 108.54683333333334,
+    "end": 131.00318750000002,
+    "walk_start": 125.60318750000002,
+    "walk_end": 131.00318750000002,
+    "notes": [
+      {
+        "time": 125.60318750000002,
+        "note": "D4",
+        "frame": 3768
+      },
+      {
+        "time": 126.15318750000002,
+        "note": "E4",
+        "frame": 3784
+      },
+      {
+        "time": 126.70318750000001,
+        "note": "F4",
+        "frame": 3801
+      },
+      {
+        "time": 127.25318750000002,
+        "note": "G4",
+        "frame": 3817
+      },
+      {
+        "time": 127.80318750000002,
+        "note": "A4",
+        "frame": 3834
+      },
+      {
+        "time": 128.35318750000002,
+        "note": "B4",
+        "frame": 3850
+      },
+      {
+        "time": 128.90318750000003,
+        "note": "C5",
+        "frame": 3867
+      },
+      {
+        "time": 129.4531875,
+        "note": "D5",
+        "frame": 3883
+      }
+    ],
+    "title": "LEVEL 6 \u00b7 D DORIAN"
+  },
+  {
+    "beat": 6,
+    "id": "s7_improve",
+    "start": 131.60318750000002,
+    "end": 146.2675416666667,
+    "title": "HOW TO IMPROVE"
+  }
+]

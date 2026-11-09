@@ -1,0 +1,66 @@
+[
+  {
+    "beat": 0,
+    "id": "s1_contour",
+    "start": 0.8,
+    "end": 18.848354166666667,
+    "title": "MELODIC CONTOUR"
+  },
+  {
+    "beat": 1,
+    "id": "s2_roadmap",
+    "start": 19.648354166666667,
+    "end": 24.620708333333333,
+    "title": "ROADMAP ENTRY"
+  },
+  {
+    "beat": 2,
+    "id": "s3_level1_ec",
+    "start": 24.720708333333334,
+    "end": 45.3590625,
+    "cadence_start": 24.720708333333334,
+    "phrase_start": 28.920708333333334,
+    "user_replay": 42.6090625,
+    "notes": [
+      {
+        "time": 28.920708333333334,
+        "note": "E4"
+      },
+      {
+        "time": 29.770708333333335,
+        "note": "C4"
+      }
+    ],
+    "title": "LEVEL 1 \u00b7 TWO NOTE PHRASE"
+  },
+  {
+    "beat": 3,
+    "id": "s4_level5_cge",
+    "start": 48.5,
+    "end": 72.81670833333334,
+    "cadence_start": 57.184354166666665,
+    "phrase_start": 61.38435416666667,
+    "notes": [
+      {
+        "time": 61.38435416666667,
+        "note": "C4"
+      },
+      {
+        "time": 62.13435416666667,
+        "note": "G4"
+      },
+      {
+        "time": 62.88435416666667,
+        "note": "E4"
+      }
+    ],
+    "title": "LEVEL 5 \u00b7 THREE NOTE PHRASE"
+  },
+  {
+    "beat": 4,
+    "id": "s5_improve",
+    "start": 77.0,
+    "end": 90.0,
+    "title": "HOW TO IMPROVE"
+  }
+]

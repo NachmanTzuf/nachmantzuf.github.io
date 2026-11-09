@@ -11,77 +11,171 @@ import {
 } from 'remotion';
 import { InstructionLayout, InstructionTheme } from './InstructionLayout';
 import { LetterButtonBar } from './LetterButtonBar';
-import { AlainBenbassatPaperCard } from './AlainBenbassatPaperCard';
+import { Harp3DCanvas, PluckEvent } from '../earpa/Harp3DCanvas';
+import timelineData from './timeline_path1.json';
 
 const THEME: InstructionTheme = {
-  primary: '#10b981',
+  primary: '#10b981', // Emerald
   primaryGlow: 'rgba(16, 185, 129, 0.45)',
   accent: '#34d399',
-  bgGradient: 'radial-gradient(circle at 50% 25%, #064e3b 0%, #061f18 45%, #030a08 100%)',
+  bgGradient: 'radial-gradient(circle at 50% 25%, #064e3b 0%, #022c22 45%, #01140e 100%)',
   trackLabel: 'PATH 1 · SINGLE NOTES',
 };
 
-// 90 seconds at 30 fps = 2700 frames
+const NOTE_TO_STRING: Record<string, number> = {
+  C4: 1,
+  D4: 2,
+  E4: 3,
+  F4: 4,
+  G4: 5,
+  A4: 6,
+  B4: 7,
+  C5: 8,
+};
+
 export const Path1SingleNotesVideo: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 6 Distinct Pedagogical Beats (Dynamic Pacing, Zero Static Frames)
-  // Beat 0: 0 - 645 (0s - 21.5s) -> Alain Benbassat Paper Card & Tonal Gravity Schema
-  // Beat 1: 645 - 810 (21.5s - 27.0s) -> Coastal Roadmap Pre-Roll & Level 1 Entry (2s before speech)
-  // Beat 2: 810 - 1440 (27.0s - 48.0s) -> Round 1: Cadence, Mystery G, Pluck & Resolution Walk
-  // Beat 3: 1440 - 2040 (48.0s - 68.0s) -> Round 2: Mystery F, Downward Ache & Walkdown
-  // Beat 4: 2040 - 2340 (68.0s - 78.0s) -> Round 3: Mystery B & Upward Snap to High C
-  // Beat 5: 2340 - 2700 (78.0s - 90.0s) -> Coastal Roadmap & 5-Minute Daily Habit
-
-  let beatIndex = 0;
-  let beatStart = 0;
-  let category = '01 · COGNITIVE METHOD';
-  let title = 'TONAL GRAVITY';
-  let subtitle = 'Why isolated interval guessing fails and functional gravity succeeds.';
-
-  if (frame >= 2340) {
-    beatIndex = 5;
-    beatStart = 2340;
-    category = '06 · DAILY FLUENCY';
-    title = '5-MINUTE ROUTINE';
-    subtitle = 'Hum tonic C before plucking to build permanent reflex recognition.';
-  } else if (frame >= 2040) {
-    beatIndex = 4;
-    beatStart = 2040;
-    category = '05 · UPWARD SNAP';
-    title = 'NOTE B · LEADING TONE';
-    subtitle = 'Hear the sharp upward magnetic snap: leading tone B snaps home to high C.';
-  } else if (frame >= 1440) {
-    beatIndex = 3;
-    beatStart = 1440;
-    category = '04 · DOWNWARD ACHE';
-    title = 'NOTE F · RESOLUTION';
-    subtitle = 'Feel the heavy downward ache: F resolves through E and D down to C.';
-  } else if (frame >= 810) {
-    beatIndex = 2;
-    beatStart = 810;
-    category = '03 · LEVEL 1 PLAY';
-    title = 'CADENCE & NOTE G';
-    subtitle = 'Cadence grounds tonic C. Pluck G and watch the stepwise resolution walk.';
-  } else if (frame >= 645) {
-    beatIndex = 1;
-    beatStart = 645;
-    category = '02 · REALM ROADMAP';
-    title = 'COASTAL RIDGE MAP';
-    subtitle = 'Opening Level 1 on the Sanctuary trail with tactile haptic response.';
+  // Find active beat from dynamic timeline JSON
+  const currentSec = frame / fps;
+  let activeBeatIndex = 0;
+  for (let i = 0; i < timelineData.length; i++) {
+    if (currentSec >= timelineData[i].start) {
+      activeBeatIndex = timelineData[i].beat;
+    }
   }
 
-  const localFrame = frame - beatStart;
+  const beatMeta = timelineData[activeBeatIndex] || timelineData[0];
+  const beatStartFrame = Math.round(beatMeta.start * fps);
+  const localFrame = Math.max(0, frame - beatStartFrame);
+
+  let category = '01 · CORE METHODOLOGY';
+  let title = 'TONAL GRAVITATION';
+  let subtitle = 'Train your ear to feel musical pull toward a home center, rather than guessing in a vacuum.';
+
+  if (activeBeatIndex === 1) {
+    category = '02 · ROADMAP ENTRY';
+    title = 'LEVEL 1 : THE TONIC ANCHOR';
+    subtitle = 'Enter the Coastal Ridge Sanctuary to begin functional interval training.';
+  } else if (activeBeatIndex === 2) {
+    category = '03 · ROUND 1 : STABILITY';
+    title = 'NOTE G : THE BRIGHT FIFTH';
+    subtitle = 'Hear the cadence ground your ear in C Major, then identify the stable open fifth.';
+  } else if (activeBeatIndex === 3) {
+    category = '04 · ROUND 2 : DOWNWARD ACHE';
+    title = 'NOTE F : DOWNWARD PULL';
+    subtitle = 'Feel the heavy downward ache toward home C, verified by the stepwise resolution walk.';
+  } else if (activeBeatIndex === 4) {
+    category = '05 · ROUND 3 : UPWARD SNAP';
+    title = 'NOTE B : LEADING TONE';
+    subtitle = 'Experience the intense magnetic upward snap resolving directly into high C.';
+  } else if (activeBeatIndex === 5) {
+    category = '06 · MASTERY BLUEPRINT';
+    title = 'THE 5-MINUTE DAILY HABIT';
+    subtitle = 'Always hum tonic C before touching a string to build an effortless musical ear.';
+  }
+
   const enterSpring = spring({
     frame: localFrame,
     fps,
     config: { damping: 20, stiffness: 140 },
   });
 
+  // Pluck events for Beat 2 (Round 1: Note G)
+  const s3Meta: any = timelineData[2];
+  const beat2PluckEvents: PluckEvent[] = [
+    {
+      stringNum: 5, // Mystery G4
+      startFrame: Math.round((s3Meta?.mystery_pluck || 36.28) * fps),
+      amplitude: 0.024,
+    },
+    {
+      stringNum: 5, // User pluck G4
+      startFrame: Math.round((s3Meta?.user_pluck || 47.44) * fps),
+      amplitude: 0.022,
+    },
+  ];
+  if (s3Meta?.notes) {
+    s3Meta.notes.forEach((n: any) => {
+      beat2PluckEvents.push({
+        stringNum: NOTE_TO_STRING[n.note] || 5,
+        startFrame: n.frame,
+        amplitude: 0.020,
+      });
+    });
+  }
+
+  // Active notes for button bar during Beat 2
+  const beat2ActiveNotes: string[] = [];
+  const mysteryGFrame = Math.round((s3Meta?.mystery_pluck || 36.28) * fps);
+  const userGFrame = Math.round((s3Meta?.user_pluck || 47.44) * fps);
+  if (frame >= userGFrame && frame < userGFrame + 24) {
+    beat2ActiveNotes.push('G');
+  }
+  if (s3Meta?.notes) {
+    s3Meta.notes.forEach((n: any) => {
+      if (frame >= n.frame && frame < n.frame + 15) {
+        beat2ActiveNotes.push(n.note.replace(/[0-9]/g, ''));
+      }
+    });
+  }
+
+  // Pluck events for Beat 3 (Round 2: Note F)
+  const s4Meta: any = timelineData[3];
+  const beat3PluckEvents: PluckEvent[] = [
+    {
+      stringNum: 4, // Mystery F4 Blue
+      startFrame: Math.round((s4Meta?.mystery_pluck || 56.74) * fps),
+      amplitude: 0.024,
+    },
+    {
+      stringNum: 4, // User pluck F4
+      startFrame: Math.round((s4Meta?.user_pluck || 62.74) * fps),
+      amplitude: 0.022,
+    },
+  ];
+  if (s4Meta?.notes) {
+    s4Meta.notes.forEach((n: any) => {
+      beat3PluckEvents.push({
+        stringNum: NOTE_TO_STRING[n.note] || 4,
+        startFrame: n.frame,
+        amplitude: 0.020,
+      });
+    });
+  }
+
+  const beat3ActiveNotes: string[] = [];
+  const userFFrame = Math.round((s4Meta?.user_pluck || 62.74) * fps);
+  if (frame >= userFFrame && frame < userFFrame + 24) {
+    beat3ActiveNotes.push('F');
+  }
+  if (s4Meta?.notes) {
+    s4Meta.notes.forEach((n: any) => {
+      if (frame >= n.frame && frame < n.frame + 15) {
+        beat3ActiveNotes.push(n.note.replace(/[0-9]/g, ''));
+      }
+    });
+  }
+
+  // Pluck events for Beat 4 (Round 3: Note B & Snap C5)
+  const s5Meta: any = timelineData[4];
+  const beat4PluckEvents: PluckEvent[] = [
+    {
+      stringNum: 7, // Mystery B4
+      startFrame: Math.round((s5Meta?.mystery_pluck || 74.64) * fps),
+      amplitude: 0.024,
+    },
+    {
+      stringNum: 8, // Snap C5 Red
+      startFrame: Math.round((s5Meta?.snap_c5 || 82.72) * fps),
+      amplitude: 0.026,
+    },
+  ];
+
   return (
     <AbsoluteFill>
-      {/* Authentic Master Audio: Edge-TTS + Warm Spruce Harp Cadence + Wood Foley */}
+      {/* Master Audio (V4): Broadcast narration + warm acoustic Sitka spruce Celtic harp */}
       <Audio src={staticFile('audio/instructions/path1_single_notes_master.mp3')} volume={1.0} />
 
       <InstructionLayout
@@ -89,160 +183,127 @@ export const Path1SingleNotesVideo: React.FC = () => {
         category={category}
         title={title}
         subtitle={subtitle}
-        beatIndex={beatIndex}
+        beatIndex={activeBeatIndex}
         totalBeats={6}
         localFrame={localFrame}
       >
-        {/* BEAT 0: Core Philosophy, Paper Card & Tonal Gravity Schema (0s - 21.5s / frames 0 - 645) */}
-        {beatIndex === 0 && (
+        {/* ===================================================================
+            BEAT 0: Core Alain Benbassat Methodology (0.0s - ~22.0s)
+           =================================================================== */}
+        {activeBeatIndex === 0 && (
           <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
             <Img
-              src={staticFile('textures/real/live_app/app_screen_single_home.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              src={staticFile('textures/real/live_app/app_screen_single_sanctuary.png')}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
 
-            {/* Sub-phase A: Problem Intro (0s - 7.0s / frames 0 - 210) */}
-            {frame < 210 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '46%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  padding: '14px 28px',
-                  borderRadius: 24,
-                  backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 30px ${THEME.primary}`,
-                  color: '#ffffff',
-                  fontWeight: 800,
-                  fontSize: 22,
-                  letterSpacing: 2,
-                  textAlign: 'center',
-                }}
-              >
-                FUNCTIONAL METHOD · 220+ LEVELS
+            {/* Liquid-Glass Tonal Gravitation Brief Card */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '42%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '88%',
+                padding: '24px',
+                borderRadius: 24,
+                backgroundColor: 'rgba(6, 44, 34, 0.92)',
+                border: `2px solid ${THEME.accent}`,
+                boxShadow: `0 0 40px ${THEME.primaryGlow}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 14,
+                zIndex: 30,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: THEME.accent, letterSpacing: 2 }}>
+                  ALAIN BENBASSAT LAW
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>TONAL GRAVITATION</span>
               </div>
-            )}
 
-            {/* Sub-phase B: Alain Benbassat Paper Card (7.0s - 14.5s / frames 210 - 435) */}
-            {frame >= 210 && frame < 435 && (
-              <AlainBenbassatPaperCard
-                themeColor={THEME.primary}
-                themeGlow={THEME.primaryGlow}
-                accentColor={THEME.accent}
-                localFrame={frame - 210}
-              />
-            )}
-
-            {/* Sub-phase C: Dynamic Tonal Gravity Schema (14.5s - 21.5s / frames 435 - 645) */}
-            {frame >= 435 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '22%',
-                  left: 20,
-                  right: 20,
-                  padding: '24px 22px',
-                  borderRadius: 28,
-                  backgroundColor: 'rgba(6, 78, 59, 0.96)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 40px ${THEME.primaryGlow}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 16,
-                  zIndex: 30,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: THEME.accent, letterSpacing: 2 }}>
-                    ALAIN BENBASSAT LAW
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
-                    TONAL GRAVITATION
-                  </span>
+              {/* Visual Pull Vectors */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Pull Downward */}
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 14,
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    border: '1.5px solid rgba(255,255,255,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: '#ffffff' }}>NOTE F → PULL DOWN</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: THEME.accent }}>
+                      Subdominant ache falling through E, D to C
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 24, color: '#38bdf8', fontWeight: 900 }}>↓</span>
                 </div>
 
-                {/* Visual Pull Vectors */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* Pull Downward: Note F */}
-                  <div
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 16,
-                      backgroundColor: 'rgba(0,0,0,0.4)',
-                      border: '1.5px solid rgba(255,255,255,0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff' }}>NOTE F → PULL DOWN</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: THEME.accent }}>
-                        Subdominant ache falling through E, D to C
-                      </div>
+                {/* Tonic Center */}
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    backgroundColor: 'rgba(16, 185, 129, 0.35)',
+                    border: `2px solid ${THEME.primary}`,
+                    boxShadow: `0 0 20px ${THEME.primary}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff' }}>TONIC HOME CENTER (C)</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#ffffff' }}>
+                      Complete rest · Zero tension
                     </div>
-                    <span style={{ fontSize: 26, color: '#38bdf8', fontWeight: 900 }}>↓</span>
                   </div>
+                  <span style={{ fontSize: 20, color: '#ffffff', fontWeight: 900 }}>●</span>
+                </div>
 
-                  {/* Tonic Anchor: Center C */}
-                  <div
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 16,
-                      backgroundColor: 'rgba(16, 185, 129, 0.35)',
-                      border: `2px solid ${THEME.primary}`,
-                      boxShadow: `0 0 20px ${THEME.primary}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: '#ffffff' }}>TONIC HOME CENTER (C)</div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>
-                        Zero tension · Complete physical rest
-                      </div>
+                {/* Pull Upward */}
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 14,
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    border: '1.5px solid rgba(255,255,255,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: '#ffffff' }}>NOTE B → SNAP UPWARD</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: THEME.accent }}>
+                      Leading tone magnetic snap up to high C
                     </div>
-                    <span style={{ fontSize: 22, color: '#ffffff', fontWeight: 900 }}>●</span>
                   </div>
-
-                  {/* Pull Upward: Note B */}
-                  <div
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 16,
-                      backgroundColor: 'rgba(0,0,0,0.4)',
-                      border: '1.5px solid rgba(255,255,255,0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 16, fontWeight: 900, color: '#ffffff' }}>NOTE B → SNAP UPWARD</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: THEME.accent }}>
-                        Leading tone magnetic snap up to high C
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 26, color: '#fbbf24', fontWeight: 900 }}>↑</span>
-                  </div>
+                  <span style={{ fontSize: 24, color: '#fbbf24', fontWeight: 900 }}>↑</span>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* BEAT 1: Coastal Ridge Roadmap Pre-Roll & Level 1 Entry (21.5s - 27.0s / frames 645 - 810) */}
-        {beatIndex === 1 && (
+        {/* ===================================================================
+            BEAT 1: Coastal Ridge Roadmap Pre-Roll (~22.0s - ~28.0s)
+           =================================================================== */}
+        {activeBeatIndex === 1 && (
           <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
             <Img
               src={staticFile('textures/real/live_app/app_screen_coastal_roadmap.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
 
-            {/* Level 1 Node Pulsing Ring & Tap Ripple at 24.5s (f735) */}
+            {/* Level 1 Node Pulsing Ring */}
             <div
               style={{
                 position: 'absolute',
@@ -258,40 +319,22 @@ export const Path1SingleNotesVideo: React.FC = () => {
               }}
             />
 
-            {/* Expanding Tap Ripple at f735 */}
-            {frame >= 735 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '83.5%',
-                  left: '41.5%',
-                  transform: 'translate(-50%, -50%)',
-                  width: 60 + (frame - 735) * 6,
-                  height: 60 + (frame - 735) * 6,
-                  borderRadius: '50%',
-                  border: `2px solid ${THEME.accent}`,
-                  opacity: Math.max(0, 1 - (frame - 735) / 30),
-                  pointerEvents: 'none',
-                }}
-              />
-            )}
-
             {/* Level 1 Entry Banner */}
             <div
               style={{
                 position: 'absolute',
-                top: 72,
+                top: 50,
                 left: 20,
                 right: 20,
-                padding: '16px 20px',
-                borderRadius: 22,
+                padding: '14px 20px',
+                borderRadius: 20,
                 backgroundColor: 'rgba(6, 78, 59, 0.94)',
                 border: `2px solid ${THEME.accent}`,
                 boxShadow: `0 0 30px ${THEME.primaryGlow}`,
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 800, color: THEME.accent }}>ENTERING LEVEL 1</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent }}>ENTERING LEVEL 1</div>
               <div style={{ fontSize: 20, fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
                 THE TONIC ANCHOR : HOME NOTE C
               </div>
@@ -299,451 +342,375 @@ export const Path1SingleNotesVideo: React.FC = () => {
           </div>
         )}
 
-        {/* BEAT 2: Round 1 In-Game Gameplay: Cadence, Mystery G, Pluck & Resolution Walk (27.0s - 48.0s / frames 810 - 1440) */}
-        {beatIndex === 2 && (
+        {/* ===================================================================
+            BEAT 2: Round 1 In-Game Play: Note G Stability & Resolution Walk (~28.0s - ~52.0s)
+            THE REAL 3D CELTIC HARP IS FULLY VISIBLE & CENTERED!
+           =================================================================== */}
+        {activeBeatIndex === 2 && (
           <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
+            {/* Absolute Arena Background */}
             <Img
               src={staticFile('textures/real/live_app/app_screen_ingame_playing.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
 
-            {/* Cadence Chord Progression Cards (27.5s - 35.0s / frames 825 - 1050) */}
-            {frame < 1050 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 72,
-                  left: 18,
-                  right: 18,
-                  height: 54,
-                  display: 'flex',
-                  gap: 8,
-                }}
-              >
-                {[
-                  { chord: 'I : C Maj', active: frame >= 825 },
-                  { chord: 'IV : F Maj', active: frame >= 854 },
-                  { chord: 'V : G Maj', active: frame >= 882 },
-                  { chord: 'I : C Maj', active: frame >= 910 },
-                ].map((c, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 12,
-                      backgroundColor: c.active ? 'rgba(16, 185, 129, 0.45)' : 'rgba(0, 0, 0, 0.4)',
-                      border: `1.5px solid ${c.active ? THEME.primary : 'rgba(255,255,255,0.2)'}`,
-                      boxShadow: c.active ? `0 0 16px ${THEME.primary}` : 'none',
-                      color: c.active ? '#ffffff' : 'rgba(255,255,255,0.6)',
-                      fontSize: 13,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {c.chord}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Mystery Note Sounds Banner (35.5s - 41.5s / frames 1065 - 1245) */}
-            {frame >= 1065 && frame < 1245 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 72,
-                  left: 20,
-                  right: 20,
-                  padding: '14px 20px',
-                  borderRadius: 20,
-                  backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 800, color: THEME.accent }}>MYSTERY NOTE SOUNDING</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
-                  HEAR THE OPEN, BRIGHT STABILITY
-                </div>
-              </div>
-            )}
-
-            {/* Pluck G Confirmation Card (41.5s - 44.0s / frames 1245 - 1320) */}
-            {frame >= 1245 && frame < 1320 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '46%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  padding: '16px 32px',
-                  borderRadius: 24,
-                  backgroundColor: 'rgba(6, 78, 59, 0.95)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 35px ${THEME.primary}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 44, fontWeight: 900, color: '#ffffff' }}>PLUCK: G</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.accent }}>
-                  +10 SHARDS · 5TH DEGREE LOCKED
-                </div>
-              </div>
-            )}
-
-            {/* Stepwise Resolution Walkdown Card (44.0s - 48.0s / frames 1320 - 1440) */}
-            {frame >= 1320 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 72,
-                  left: 16,
-                  right: 16,
-                  padding: '16px 18px',
-                  borderRadius: 22,
-                  backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                }}
-              >
-                {[
-                  { note: 'G', deg: '5th', active: frame >= 1320 },
-                  { note: 'F', deg: '4th', active: frame >= 1335 },
-                  { note: 'E', deg: '3rd', active: frame >= 1350 },
-                  { note: 'D', deg: '2nd', active: frame >= 1365 },
-                  { note: 'C', deg: 'Home', active: frame >= 1380 },
-                ].map((step, idx) => (
-                  <div key={idx} style={{ textAlign: 'center' }}>
-                    <div
-                      style={{
-                        fontSize: 24,
-                        fontWeight: 900,
-                        color: step.active ? '#ffffff' : 'rgba(255,255,255,0.3)',
-                        textShadow: step.active ? `0 0 12px ${THEME.primary}` : 'none',
-                      }}
-                    >
-                      {step.note}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: step.active ? THEME.accent : 'rgba(255,255,255,0.25)',
-                      }}
-                    >
-                      {step.deg}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Native Pad Glow Overlay */}
-            <LetterButtonBar
-              activeNotes={
-                frame >= 1380
-                  ? ['C']
-                  : frame >= 1320
-                  ? ['G']
-                  : frame >= 1245
-                  ? ['G']
-                  : frame >= 910 && frame < 1050
-                  ? ['C']
-                  : []
-              }
-              themeColor={THEME.primary}
-              themeGlow={THEME.primaryGlow}
-            />
-          </div>
-        )}
-
-        {/* BEAT 3: Round 2 In-Game Gameplay: Mystery F & Downward Resolution Walk (48.0s - 68.0s / frames 1440 - 2040) */}
-        {beatIndex === 3 && (
-          <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
-            <Img
-              src={
-                frame >= 1905
-                  ? staticFile('textures/real/live_app/app_screen_ingame_resolution.png')
-                  : staticFile('textures/real/live_app/app_screen_ingame_playing.png')
-              }
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-
-            {/* Re-grounding Cadence Banner (48.5s - 54.5s / frames 1455 - 1635) */}
-            {frame < 1635 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 72,
-                  left: 20,
-                  right: 20,
-                  padding: '14px 20px',
-                  borderRadius: 20,
-                  backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 800, color: THEME.accent }}>ROUND 2 CADENCE</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', marginTop: 4 }}>
-                  RE-GROUNDING EAR IN C MAJOR
-                </div>
-              </div>
-            )}
-
-            {/* Mystery Note F Sounds Card (55.0s - 61.5s / frames 1650 - 1845) */}
-            {frame >= 1650 && frame < 1845 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '46%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  padding: '18px 32px',
-                  borderRadius: 24,
-                  backgroundColor: 'rgba(6, 78, 59, 0.95)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 35px ${THEME.primary}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 40, fontWeight: 900, color: '#ffffff' }}>FEEL THE ACHE</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.accent }}>
-                  HEAVY DOWNWARD PULL TOWARD HOME
-                </div>
-              </div>
-            )}
-
-            {/* Pluck F at 61.5s (f1845) */}
-            {frame >= 1845 && frame < 1905 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '46%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  padding: '16px 32px',
-                  borderRadius: 24,
-                  backgroundColor: 'rgba(6, 78, 59, 0.95)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 35px ${THEME.primary}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 44, fontWeight: 900, color: '#ffffff' }}>PLUCK: F</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.accent }}>
-                  DOWNWARD TENSION IDENTIFIED
-                </div>
-              </div>
-            )}
-
-            {/* Stepwise Resolution Walkdown (63.5s - 68.0s / frames 1905 - 2040) */}
-            {frame >= 1905 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 72,
-                  left: 20,
-                  right: 20,
-                  padding: '16px 20px',
-                  borderRadius: 22,
-                  backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                }}
-              >
-                {[
-                  { note: 'F', deg: 'Ache', active: frame >= 1905 },
-                  { note: 'E', deg: 'Fall', active: frame >= 1920 },
-                  { note: 'D', deg: 'Drop', active: frame >= 1935 },
-                  { note: 'C', deg: 'Home', active: frame >= 1950 },
-                ].map((step, idx) => (
-                  <div key={idx} style={{ textAlign: 'center' }}>
-                    <div
-                      style={{
-                        fontSize: 26,
-                        fontWeight: 900,
-                        color: step.active ? '#ffffff' : 'rgba(255,255,255,0.3)',
-                        textShadow: step.active ? `0 0 12px ${THEME.primary}` : 'none',
-                      }}
-                    >
-                      {step.note}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: step.active ? THEME.accent : 'rgba(255,255,255,0.25)',
-                      }}
-                    >
-                      {step.deg}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Native Pad Highlights */}
-            <LetterButtonBar
-              activeNotes={
-                frame >= 1950
-                  ? ['C']
-                  : frame >= 1905
-                  ? ['F']
-                  : frame >= 1845
-                  ? ['F']
-                  : []
-              }
-              themeColor={THEME.primary}
-              themeGlow={THEME.primaryGlow}
-            />
-          </div>
-        )}
-
-        {/* BEAT 4: Round 3 In-Game Gameplay: Mystery Note B & Upward Snap (68.0s - 78.0s / frames 2040 - 2340) */}
-        {beatIndex === 4 && (
-          <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
-            <Img
-              src={staticFile('textures/real/live_app/app_screen_ingame_playing.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-
-            {/* Note B Upward Gravity Card */}
+            {/* 3D Big Celtic Harp: Fixed Absolutely at (0, 0) */}
             <div
               style={{
                 position: 'absolute',
-                top: 72,
+                top: 0,
+                left: 0,
+                width: 655,
+                height: 1420,
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
+            >
+              <Harp3DCanvas
+                width={655}
+                height={1420}
+                theta={-0.95}
+                phi={1.34}
+                radius={2.40}
+                targetX={0}
+                targetY={0.590}
+                targetZ={0}
+                fov={34}
+                harpScale={0.938}
+                leverEvents={[]}
+                pluckEvents={beat2PluckEvents}
+              />
+            </div>
+
+            {/* Top Prompt Header */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 50,
                 left: 20,
                 right: 20,
-                padding: '16px 20px',
-                borderRadius: 22,
-                backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                border: `2px solid ${THEME.accent}`,
-                boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                padding: '12px 18px',
+                borderRadius: 20,
+                backgroundColor: 'rgba(6, 44, 34, 0.90)',
+                border: `1.5px solid ${THEME.accent}`,
+                textAlign: 'center',
+                zIndex: 40,
               }}
             >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: THEME.accent }}>LEADING TONE TENSION</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
-                  NOTE B → SNAP TO HIGH C
-                </div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent }}>ROUND 1 · TONAL ANCHOR</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
+                IDENTIFY THE MYSTERY NOTE
               </div>
-              <span style={{ fontSize: 24, fontWeight: 900, color: THEME.primary }}>↑</span>
             </div>
 
-            {/* Central Pluck & Snap Visualizer */}
-            {frame >= 2130 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '46%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  padding: '18px 32px',
-                  borderRadius: 24,
-                  backgroundColor: 'rgba(6, 78, 59, 0.95)',
-                  border: `2px solid ${THEME.accent}`,
-                  boxShadow: `0 0 35px ${THEME.primary}`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 40, fontWeight: 900, color: '#ffffff' }}>
-                  {frame >= 2268 ? 'MAGNETIC SNAP: C' : 'NOTE B : LEADING TONE'}
-                </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: THEME.accent }}>
-                  {frame >= 2268 ? 'RESOLVED TO TONIC OCTAVE' : 'MAXIMUM UPWARD GRAVITATIONAL PULL'}
-                </div>
-              </div>
-            )}
-
-            {/* Native Pad Highlights */}
+            {/* LetterButtonBar: Always Accessible at Bottom */}
             <LetterButtonBar
-              activeNotes={frame >= 2268 ? ['C'] : frame >= 2130 ? ['B'] : []}
+              activeNotes={beat2ActiveNotes}
               themeColor={THEME.primary}
               themeGlow={THEME.primaryGlow}
             />
           </div>
         )}
 
-        {/* BEAT 5: Coastal Ridge Sanctuary Roadmap & 5-Minute Routine (78.0s - 90.0s / frames 2340 - 2700) */}
-        {beatIndex === 5 && (
+        {/* ===================================================================
+            BEAT 3: Round 2 In-Game Play: Note F Downward Ache (~52.0s - ~74.0s)
+            Real 3D Harp Plucking String 4 (F4 Blue) & Falling Resolution Walk!
+           =================================================================== */}
+        {activeBeatIndex === 3 && (
           <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
             <Img
-              src={staticFile('textures/real/live_app/app_screen_coastal_roadmap.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              src={staticFile('textures/real/live_app/app_screen_ingame_playing.png')}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
-            {/* Progress Badge */}
+
+            {/* 3D Big Celtic Harp */}
             <div
               style={{
                 position: 'absolute',
-                top: 80,
-                left: 30,
-                right: 30,
-                padding: '18px 24px',
-                borderRadius: 24,
-                backgroundColor: 'rgba(6, 78, 59, 0.94)',
-                border: `2px solid ${THEME.accent}`,
-                boxShadow: `0 0 35px ${THEME.primaryGlow}`,
-                display: 'flex',
-                justifyContent: 'space-around',
-                alignItems: 'center',
+                top: 0,
+                left: 0,
+                width: 655,
+                height: 1420,
+                pointerEvents: 'none',
+                zIndex: 10,
               }}
             >
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#ffffff' }}>70</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.accent }}>LEVELS</div>
-              </div>
-              <div style={{ width: 1, height: 40, backgroundColor: 'rgba(255,255,255,0.2)' }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#ffffff' }}>5 MIN</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.accent }}>DAILY DISCIPLINE</div>
+              <Harp3DCanvas
+                width={655}
+                height={1420}
+                theta={-0.95}
+                phi={1.34}
+                radius={2.40}
+                targetX={0}
+                targetY={0.590}
+                targetZ={0}
+                fov={34}
+                harpScale={0.938}
+                leverEvents={[]}
+                pluckEvents={beat3PluckEvents}
+              />
+            </div>
+
+            {/* Top Prompt Header */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 50,
+                left: 20,
+                right: 20,
+                padding: '12px 18px',
+                borderRadius: 20,
+                backgroundColor: 'rgba(6, 44, 34, 0.90)',
+                border: `1.5px solid ${THEME.accent}`,
+                textAlign: 'center',
+                zIndex: 40,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent }}>ROUND 2 · DOWNWARD PULL</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
+                NOTE F → FALLING TO HOME C
               </div>
             </div>
 
-            {/* Bottom Call to Action Button */}
+            {/* LetterButtonBar */}
+            <LetterButtonBar
+              activeNotes={beat3ActiveNotes}
+              themeColor={THEME.primary}
+              themeGlow={THEME.primaryGlow}
+            />
+          </div>
+        )}
+
+        {/* ===================================================================
+            BEAT 4: Round 3 In-Game Play: Note B Upward Snap (~74.0s - ~85.0s)
+           =================================================================== */}
+        {activeBeatIndex === 4 && (
+          <div style={{ position: 'relative', width: '100%', height: '100%', opacity: enterSpring }}>
+            <Img
+              src={staticFile('textures/real/live_app/app_screen_ingame_playing.png')}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+
+            {/* 3D Big Celtic Harp */}
             <div
               style={{
                 position: 'absolute',
-                bottom: 80,
-                left: 40,
-                right: 40,
-                padding: '18px 0',
-                borderRadius: 28,
-                backgroundColor: THEME.primary,
-                boxShadow: `0 0 30px ${THEME.primaryGlow}`,
-                textAlign: 'center',
-                fontSize: 22,
-                fontWeight: 800,
-                letterSpacing: 2,
-                color: '#000000',
+                top: 0,
+                left: 0,
+                width: 655,
+                height: 1420,
+                pointerEvents: 'none',
+                zIndex: 10,
               }}
             >
-              ▷ START COASTAL RIDGE
+              <Harp3DCanvas
+                width={655}
+                height={1420}
+                theta={-0.95}
+                phi={1.34}
+                radius={2.40}
+                targetX={0}
+                targetY={0.590}
+                targetZ={0}
+                fov={34}
+                harpScale={0.938}
+                leverEvents={[]}
+                pluckEvents={beat4PluckEvents}
+              />
+            </div>
+
+            {/* Top Prompt Header */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 50,
+                left: 20,
+                right: 20,
+                padding: '12px 18px',
+                borderRadius: 20,
+                backgroundColor: 'rgba(6, 44, 34, 0.90)',
+                border: `1.5px solid ${THEME.accent}`,
+                textAlign: 'center',
+                zIndex: 40,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 800, color: THEME.accent }}>ROUND 3 · UPWARD SNAP</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
+                NOTE B → SNAPPING UP TO C5
+              </div>
+            </div>
+
+            {/* LetterButtonBar */}
+            <LetterButtonBar
+              activeNotes={frame >= Math.round((s5Meta?.snap_c5 || 82.72) * fps) ? ['C'] : ['B']}
+              themeColor={THEME.primary}
+              themeGlow={THEME.primaryGlow}
+            />
+          </div>
+        )}
+
+        {/* ===================================================================
+            BEAT 5: Mastery & 5-Minute Habit (~85.0s - 100.0s)
+           =================================================================== */}
+        {activeBeatIndex === 5 && (
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#031f18',
+              opacity: enterSpring,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              padding: 24,
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '14px 20px',
+                borderRadius: 18,
+                backgroundColor: 'rgba(6, 78, 59, 0.90)',
+                border: `1.5px solid ${THEME.accent}`,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 800, color: THEME.accent, letterSpacing: 2 }}>
+                MASTERY BLUEPRINT
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
+                THE 5-MINUTE DAILY HABIT
+              </div>
+            </div>
+
+            {/* Step 1 */}
+            <div
+              style={{
+                padding: '14px 18px',
+                borderRadius: 16,
+                backgroundColor: 'rgba(4, 47, 36, 0.90)',
+                border: '1px solid rgba(52, 211, 153, 0.3)',
+                display: 'flex',
+                gap: 14,
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  backgroundColor: THEME.primary,
+                  color: '#ffffff',
+                  fontWeight: 900,
+                  fontSize: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                1
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>HUM TONIC HOME NOTE C</div>
+                <div style={{ fontSize: 12, color: '#d6d3d1', marginTop: 2 }}>
+                  Always ground your vocal pitch center before touching a string.
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div
+              style={{
+                padding: '14px 18px',
+                borderRadius: 16,
+                backgroundColor: 'rgba(4, 47, 36, 0.90)',
+                border: '1px solid rgba(52, 211, 153, 0.3)',
+                display: 'flex',
+                gap: 14,
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  backgroundColor: THEME.primary,
+                  color: '#ffffff',
+                  fontWeight: 900,
+                  fontSize: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                2
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>FEEL TONAL GRAVITATION</div>
+                <div style={{ fontSize: 12, color: '#d6d3d1', marginTop: 2 }}>
+                  Listen for the ache: is the note pulling downward, or snapping upward?
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div
+              style={{
+                padding: '14px 18px',
+                borderRadius: 16,
+                backgroundColor: 'rgba(4, 47, 36, 0.90)',
+                border: '1px solid rgba(52, 211, 153, 0.3)',
+                display: 'flex',
+                gap: 14,
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  backgroundColor: THEME.primary,
+                  color: '#ffffff',
+                  fontWeight: 900,
+                  fontSize: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                3
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#ffffff' }}>RESOLVE STEPWISE TO TONIC</div>
+                <div style={{ fontSize: 12, color: '#d6d3d1', marginTop: 2 }}>
+                  Verify your guess with the resolution walk to build instant reflex.
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Pill */}
+            <div
+              style={{
+                marginTop: 6,
+                padding: '14px',
+                borderRadius: 14,
+                backgroundColor: 'rgba(16, 185, 129, 0.95)',
+                border: `2px solid ${THEME.accent}`,
+                color: '#ffffff',
+                fontWeight: 900,
+                fontSize: 16,
+                textAlign: 'center',
+                boxShadow: `0 0 25px ${THEME.primaryGlow}`,
+              }}
+            >
+              Start 5 Minutes Daily Practice
             </div>
           </div>
         )}

@@ -1,0 +1,103 @@
+[
+  {
+    "beat": 0,
+    "id": "s1_method",
+    "start": 0.8,
+    "end": 22.136354166666667,
+    "title": "TONAL GRAVITATION"
+  },
+  {
+    "beat": 1,
+    "id": "s2_roadmap",
+    "start": 22.936354166666668,
+    "end": 27.764708333333335,
+    "title": "ROADMAP ENTRY"
+  },
+  {
+    "beat": 2,
+    "id": "s3_round1_g",
+    "start": 27.864708333333336,
+    "end": 51.937416666666664,
+    "cadence_start": 27.864708333333336,
+    "mystery_pluck": 36.2810625,
+    "user_pluck": 47.437416666666664,
+    "walk_start": 48.33741666666666,
+    "notes": [
+      {
+        "time": 48.33741666666666,
+        "note": "G4",
+        "frame": 1450
+      },
+      {
+        "time": 48.857416666666666,
+        "note": "F4",
+        "frame": 1465
+      },
+      {
+        "time": 49.37741666666666,
+        "note": "E4",
+        "frame": 1481
+      },
+      {
+        "time": 49.897416666666665,
+        "note": "D4",
+        "frame": 1496
+      },
+      {
+        "time": 50.41741666666666,
+        "note": "C4",
+        "frame": 1512
+      }
+    ],
+    "title": "ROUND 1 \u00b7 NOTE G"
+  },
+  {
+    "beat": 3,
+    "id": "s4_round2_f",
+    "start": 52.537416666666665,
+    "end": 74.03777083333333,
+    "cadence_start": 52.537416666666665,
+    "mystery_pluck": 56.73741666666667,
+    "user_pluck": 62.73741666666667,
+    "walk_start": 70.95777083333333,
+    "notes": [
+      {
+        "time": 70.95777083333333,
+        "note": "F4",
+        "frame": 2128
+      },
+      {
+        "time": 71.47777083333332,
+        "note": "E4",
+        "frame": 2144
+      },
+      {
+        "time": 71.99777083333333,
+        "note": "D4",
+        "frame": 2159
+      },
+      {
+        "time": 72.51777083333333,
+        "note": "C4",
+        "frame": 2175
+      }
+    ],
+    "title": "ROUND 2 \u00b7 NOTE F"
+  },
+  {
+    "beat": 4,
+    "id": "s5_round3_b",
+    "start": 74.63777083333332,
+    "end": 84.72212499999999,
+    "mystery_pluck": 74.63777083333332,
+    "snap_c5": 82.72212499999999,
+    "title": "ROUND 3 \u00b7 NOTE B"
+  },
+  {
+    "beat": 5,
+    "id": "s6_improve",
+    "start": 84.72212499999999,
+    "end": 90.0,
+    "title": "HOW TO IMPROVE"
+  }
+]
