@@ -1,66 +1,42 @@
 [
   {
     "beat": 0,
-    "id": "s1_contour",
-    "start": 0.8,
-    "end": 18.848354166666667,
-    "title": "MELODIC CONTOUR"
+    "id": "beat0_intro",
+    "start": 0.0,
+    "end": 12.0,
+    "title": "MELODIC PHRASING CONTOUR",
+    "subtitle": "Hear melodic curves and shapes rather than isolated single pitches."
   },
   {
     "beat": 1,
-    "id": "s2_roadmap",
-    "start": 19.648354166666667,
-    "end": 24.620708333333333,
-    "title": "ROADMAP ENTRY"
+    "id": "beat1_two_note_motif",
+    "start": 12.0,
+    "end": 34.5,
+    "title": "PHRASE AUDIATION",
+    "subtitle": "Cadence, two-note melodic motif demonstration, and sequential reply."
   },
   {
     "beat": 2,
-    "id": "s3_level1_ec",
-    "start": 24.720708333333334,
-    "end": 45.3590625,
-    "cadence_start": 24.720708333333334,
-    "phrase_start": 28.920708333333334,
-    "user_replay": 42.6090625,
-    "notes": [
-      {
-        "time": 28.920708333333334,
-        "note": "E4"
-      },
-      {
-        "time": 29.770708333333335,
-        "note": "C4"
-      }
-    ],
-    "title": "LEVEL 1 \u00b7 TWO NOTE PHRASE"
+    "id": "beat2_fundamental_catch",
+    "start": 34.5,
+    "end": 56.5,
+    "title": "TONIC RESOLUTION",
+    "subtitle": "Anchoring melodies through gravitational resolution to tonic C."
   },
   {
     "beat": 3,
-    "id": "s4_level5_cge",
-    "start": 48.5,
-    "end": 72.81670833333334,
-    "cadence_start": 57.184354166666665,
-    "phrase_start": 61.38435416666667,
-    "notes": [
-      {
-        "time": 61.38435416666667,
-        "note": "C4"
-      },
-      {
-        "time": 62.13435416666667,
-        "note": "G4"
-      },
-      {
-        "time": 62.88435416666667,
-        "note": "E4"
-      }
-    ],
-    "title": "LEVEL 5 \u00b7 THREE NOTE PHRASE"
+    "id": "beat3_silent_drill",
+    "start": 56.5,
+    "end": 75.0,
+    "title": "SILENT AUDIATION DRILL",
+    "subtitle": "Hear the full phrase internally before your fingers strike the harp strings."
   },
   {
     "beat": 4,
-    "id": "s5_improve",
-    "start": 77.0,
+    "id": "beat4_session_mastery",
+    "start": 75.0,
     "end": 90.0,
-    "title": "HOW TO IMPROVE"
+    "title": "TRADITIONAL SESSION MASTERY",
+    "subtitle": "Pick up reels and jigs on the fly without looking at sheet music."
   }
 ]

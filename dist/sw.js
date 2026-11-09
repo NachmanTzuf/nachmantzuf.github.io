@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v31';
+const CACHE_NAME = 'earpa-pwa-v32';
 const ASSETS_TO_CACHE = [
   '/',
   '/?source=pwa',

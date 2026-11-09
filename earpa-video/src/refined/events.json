@@ -1,0 +1,658 @@
+[
+  {
+    "track": "single",
+    "time": 7.6,
+    "midi": 48,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 7.651999999999999,
+    "midi": 67,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 7.704,
+    "midi": 64,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 7.755999999999999,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 8.549999999999999,
+    "midi": 53,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 8.601999999999999,
+    "midi": 69,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 8.653999999999998,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 8.706,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 9.499999999999998,
+    "midi": 55,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 9.551999999999998,
+    "midi": 71,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 9.603999999999997,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 9.655999999999999,
+    "midi": 74,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 10.449999999999998,
+    "midi": 48,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 10.501999999999997,
+    "midi": 67,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 10.553999999999997,
+    "midi": 64,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 10.605999999999998,
+    "midi": 72,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 12.289999999999997,
+    "midi": 60,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "single",
+    "time": 19.7,
+    "midi": 48,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 19.752,
+    "midi": 67,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 19.804,
+    "midi": 64,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 19.855999999999998,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 20.65,
+    "midi": 53,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 20.701999999999998,
+    "midi": 69,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 20.753999999999998,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 20.805999999999997,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 21.599999999999998,
+    "midi": 55,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 21.651999999999997,
+    "midi": 71,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 21.703999999999997,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 21.755999999999997,
+    "midi": 74,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 22.549999999999997,
+    "midi": 48,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 22.601999999999997,
+    "midi": 67,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 22.653999999999996,
+    "midi": 64,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 22.705999999999996,
+    "midi": 72,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 24.389999999999997,
+    "midi": 62,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "single",
+    "time": 32.65,
+    "midi": 48,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 32.702,
+    "midi": 67,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 32.754,
+    "midi": 64,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 32.806,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 33.6,
+    "midi": 53,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 33.652,
+    "midi": 69,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 33.704,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 33.756,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "single",
+    "time": 34.550000000000004,
+    "midi": 55,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 34.602000000000004,
+    "midi": 71,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 34.654,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 34.706,
+    "midi": 74,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "single",
+    "time": 35.50000000000001,
+    "midi": 48,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 35.55200000000001,
+    "midi": 67,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 35.604000000000006,
+    "midi": 64,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 35.656000000000006,
+    "midi": 72,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "single",
+    "time": 37.34000000000001,
+    "midi": 60,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "single",
+    "time": 15.08,
+    "midi": 62,
+    "duration": 0.35,
+    "velocity": 0.6,
+    "label": "guess"
+  },
+  {
+    "track": "single",
+    "time": 15.2,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "resolution"
+  },
+  {
+    "track": "single",
+    "time": 27.13,
+    "midi": 62,
+    "duration": 0.35,
+    "velocity": 0.6,
+    "label": "guess"
+  },
+  {
+    "track": "single",
+    "time": 27.25,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "resolution"
+  },
+  {
+    "track": "single",
+    "time": 28.2,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "resolution"
+  },
+  {
+    "track": "single",
+    "time": 39.080000000000005,
+    "midi": 60,
+    "duration": 0.35,
+    "velocity": 0.6,
+    "label": "guess"
+  },
+  {
+    "track": "single",
+    "time": 39.2,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "resolution"
+  },
+  {
+    "track": "levers",
+    "time": 30.32,
+    "midi": 70,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 30.87,
+    "midi": 72,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 31.42,
+    "midi": 74,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 31.97,
+    "midi": 75,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 32.52,
+    "midi": 77,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 33.07,
+    "midi": 79,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 33.62,
+    "midi": 81,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 34.17,
+    "midi": 82,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 44.5,
+    "midi": 63,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 45.05,
+    "midi": 65,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 45.6,
+    "midi": 67,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 46.15,
+    "midi": 68,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 46.7,
+    "midi": 70,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 47.25,
+    "midi": 72,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 47.8,
+    "midi": 74,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 48.35,
+    "midi": 75,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 62.31,
+    "midi": 63,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 62.86,
+    "midi": 65,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 63.410000000000004,
+    "midi": 67,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 63.96,
+    "midi": 68,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 64.51,
+    "midi": 70,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 65.06,
+    "midi": 72,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 65.61,
+    "midi": 74,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  },
+  {
+    "track": "levers",
+    "time": 66.16,
+    "midi": 75,
+    "duration": 0.55,
+    "velocity": 0.82,
+    "label": "scale"
+  }
+]

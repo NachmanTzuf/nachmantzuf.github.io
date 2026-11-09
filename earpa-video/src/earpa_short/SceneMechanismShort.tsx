@@ -8,114 +8,89 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import { Harp3DCanvas, PluckEvent } from '../earpa/Harp3DCanvas';
 import { PhoneFrame } from './PhoneFrame';
 
 // Scene 3 runs from global frame 660 to 930 (270 frames: local 0..270)
-const MECHANISM_PLUCKS: PluckEvent[] = [
-  // I Chord Cadence (local frame 15 = global 675)
-  { stringNum: 1, startFrame: 15, amplitude: 0.022 },
-  { stringNum: 3, startFrame: 17, amplitude: 0.018 },
-  { stringNum: 5, startFrame: 19, amplitude: 0.018 },
-  { stringNum: 8, startFrame: 21, amplitude: 0.021 },
-  // IV Chord (local frame 45 = global 705)
-  { stringNum: 4, startFrame: 45, amplitude: 0.023 },
-  { stringNum: 6, startFrame: 47, amplitude: 0.019 },
-  { stringNum: 8, startFrame: 49, amplitude: 0.020 },
-  // V Chord (local frame 75 = global 735)
-  { stringNum: 2, startFrame: 75, amplitude: 0.020 },
-  { stringNum: 5, startFrame: 77, amplitude: 0.021 },
-  { stringNum: 7, startFrame: 79, amplitude: 0.022 },
-  // I Chord Tonic Anchor (local frame 105 = global 765)
-  { stringNum: 1, startFrame: 105, amplitude: 0.024 },
-  { stringNum: 3, startFrame: 107, amplitude: 0.019 },
-  { stringNum: 5, startFrame: 109, amplitude: 0.019 },
-  { stringNum: 8, startFrame: 111, amplitude: 0.024 },
-  // Mystery Note F4 (local frame 140 = global 800)
-  { stringNum: 4, startFrame: 140, amplitude: 0.025 },
-  // Stepwise Gravity Resolution Walk: 4 -> 3 -> 2 -> 1 (local frames 170, 190, 210, 230)
-  { stringNum: 4, startFrame: 170, amplitude: 0.023 },
-  { stringNum: 3, startFrame: 190, amplitude: 0.022 },
-  { stringNum: 2, startFrame: 210, amplitude: 0.022 },
-  { stringNum: 1, startFrame: 230, amplitude: 0.026 },
-  { stringNum: 8, startFrame: 230, amplitude: 0.024 },
-];
-
-const CADENCE_STEPS = [
-  { roman: 'I', label: 'TONIC HOME', chord: 'C Maj', trigger: 15, color: '#ef4444' },
-  { roman: 'IV', label: 'SUBDOMINANT', chord: 'F Maj', trigger: 45, color: '#38bdf8' },
-  { roman: 'V', label: 'DOMINANT PULL', chord: 'G Maj', trigger: 75, color: '#fbbf24' },
-  { roman: 'I', label: 'ANCHOR LOCKED', chord: 'C Maj', trigger: 105, color: '#10b981' },
-];
+// Voiceover:
+// "First, a chord progression grounds your ear.
+//  Then you hear a note, and feel its magnetic pull home...
+//  while tracking your mastery inside the new Journey and Melody cards."
 
 export const SceneMechanismShort: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Phase 1 (0 to 115): 3D Harp Cadence Grounds the Ear
-  // Phase 2 (110 to 185): Polarized Journey Tab & Floating Melody Studio Card
-  // Phase 3 (180 to 270): Magnetic Resolution Walk (4 -> 3 -> 2 -> 1)
+  // Phase 1 (0 to 110): Cadence Grounds the Ear in Live In-Game Arena
+  // Phase 2 (110 to 180): Magnetic Gravity & Resolution to DO (Degree 1)
+  // Phase 3 (180 to 270): Real Journey & Mastery Analytics Tracking Cards
 
-  const isPhase1 = frame < 118;
-  const isPhase2 = frame >= 110 && frame < 188;
+  const isPhase1 = frame < 110;
+  const isPhase2 = frame >= 110 && frame < 180;
   const isPhase3 = frame >= 180;
 
-  // Phase 1: 3D Harp Entrance & Cadence
-  const harpPopIn = spring({
-    frame: frame - 8,
+  // Phone Entrance Spring
+  const phoneEnter = spring({
+    frame: frame - 4,
     fps,
-    config: { damping: 14, stiffness: 120, mass: 0.85 },
+    config: { damping: 14, stiffness: 120, mass: 0.9 },
   });
-  const harpExit = spring({
-    frame: frame - 108,
+
+  // Smooth 3D tilt transitions between stages
+  const screenFlip1 = spring({
+    frame: frame - 110,
     fps,
     config: { damping: 14, stiffness: 130 },
   });
-
-  const harpScale = interpolate(harpPopIn, [0, 1], [0.35, 0.82]) * interpolate(harpExit, [0, 1], [1, 0.75]);
-  const harpOpacity = interpolate(harpPopIn, [0, 1], [0, 1]) * interpolate(harpExit, [0, 1], [1, 0]);
-  const theta = interpolate(frame, [0, 135, 270], [-1.35, 0.88, 2.25]);
-  const phi = interpolate(frame, [0, 90, 180, 270], [1.45, 1.18, 1.42, 1.32]);
-  const radius = interpolate(harpPopIn, [0, 1], [2.9, 2.22]);
-
-  // Phase 2: Polarized Journey & Melody Studio
-  const journeyEnter = spring({
-    frame: frame - 110,
-    fps,
-    config: { damping: 14, stiffness: 120 },
-  });
-  const journeyExit = spring({
+  const screenFlip2 = spring({
     frame: frame - 180,
+    fps,
+    config: { damping: 14, stiffness: 130 },
+  });
+  const screenFlip3 = spring({
+    frame: frame - 225,
     fps,
     config: { damping: 14, stiffness: 140 },
   });
-  const journeyScale = interpolate(journeyEnter, [0, 1], [0.85, 1.0]) * interpolate(journeyExit, [0, 1], [1, 0.8]);
-  const journeyOpacity = interpolate(journeyEnter, [0, 1], [0, 1]) * interpolate(journeyExit, [0, 1], [1, 0]);
 
-  // Smooth vertical scroll through Journey dashboard
-  const journeyScrollY = interpolate(frame, [115, 180], [0, -280], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const phoneRotateY =
+    interpolate(phoneEnter, [0, 1], [-10, 0]) +
+    interpolate(screenFlip1, [0, 0.5, 1], [0, 8, 0]) +
+    interpolate(screenFlip2, [0, 0.5, 1], [0, -8, 0]) +
+    interpolate(screenFlip3, [0, 0.5, 1], [0, 6, 0]);
 
-  // Floating Melody Studio card pop-in
-  const melodyCardPop = spring({
-    frame: frame - 130,
+  const phoneScale = interpolate(phoneEnter, [0, 1], [0.88, 1.0]);
+  const phoneOpacity = interpolate(phoneEnter, [0, 1], [0, 1]);
+
+  // Gentle continuous floating drift
+  const floatY = Math.sin(frame * 0.04) * 6;
+
+  // Current screen image inside PhoneFrame
+  const currentScreen = isPhase1
+    ? 'textures/real/live_app/app_screen_ingame_playing.png'
+    : isPhase2
+    ? 'textures/real/live_app/app_screen_ingame_resolution.png'
+    : frame < 225
+    ? 'plus/melody-results.png'
+    : 'textures/real/live_app/app_screen_journey_updated.png';
+
+  // Floating Badge Springs
+  const badge1Spring = spring({
+    frame: frame - 12,
     fps,
-    config: { damping: 12, stiffness: 150 },
+    config: { damping: 13, stiffness: 150 },
   });
 
-  // Phase 3: Resolution Engine
-  const resolutionEnter = spring({
-    frame: frame - 180,
+  const badge2Spring = spring({
+    frame: frame - 118,
     fps,
-    config: { damping: 14, stiffness: 130 },
+    config: { damping: 13, stiffness: 150 },
   });
-  const resolutionScale = interpolate(resolutionEnter, [0, 1], [0.88, 1.0]);
-  const resolutionOpacity = interpolate(resolutionEnter, [0, 1], [0, 1]);
 
-  const activeResolutionStep =
-    frame >= 230 ? 1 : frame >= 210 ? 2 : frame >= 190 ? 3 : frame >= 180 ? 4 : null;
+  const badge3Spring = spring({
+    frame: frame - 188,
+    fps,
+    config: { damping: 13, stiffness: 150 },
+  });
 
   return (
     <AbsoluteFill
@@ -125,390 +100,212 @@ export const SceneMechanismShort: React.FC = () => {
         fontFamily: 'Inter, system-ui, sans-serif',
       }}
     >
-      {/* 1. Ambient Sanctuary Gold & Cyan Tonal Gravity Field */}
+      {/* 1. Ambient Volumetric Atmospheric Aura */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background:
-            'radial-gradient(circle at 50% 36%, rgba(212, 175, 55, 0.26) 0%, rgba(56, 189, 248, 0.14) 40%, rgba(6, 10, 17, 0.98) 78%)',
+          background: isPhase1
+            ? 'radial-gradient(circle at 50% 36%, rgba(212, 175, 55, 0.22) 0%, rgba(56, 189, 248, 0.12) 42%, rgba(6, 10, 17, 0.98) 78%)'
+            : isPhase2
+            ? 'radial-gradient(circle at 50% 36%, rgba(16, 185, 129, 0.24) 0%, rgba(56, 189, 248, 0.14) 42%, rgba(6, 10, 17, 0.98) 78%)'
+            : 'radial-gradient(circle at 50% 36%, rgba(168, 85, 247, 0.22) 0%, rgba(212, 175, 55, 0.12) 42%, rgba(6, 10, 17, 0.98) 78%)',
+          transition: 'background 0.4s ease',
         }}
       />
 
-      {/* 2. TOP HUD: Cadence Progression Badges */}
+      {/* Harmonic Concentric Wave Rings */}
+      <svg
+        width={1080}
+        height={1920}
+        style={{ position: 'absolute', inset: 0, opacity: 0.25, pointerEvents: 'none' }}
+      >
+        <circle
+          cx={540}
+          cy={960}
+          r={420 + Math.sin(frame * 0.05) * 16}
+          fill="none"
+          stroke={isPhase1 ? '#fbbf24' : isPhase2 ? '#10b981' : '#c084fc'}
+          strokeWidth={1.5}
+        />
+        <circle
+          cx={540}
+          cy={960}
+          r={520 + Math.cos(frame * 0.05) * 16}
+          fill="none"
+          stroke={isPhase1 ? '#38bdf8' : isPhase2 ? '#34d399' : '#a855f7'}
+          strokeWidth={1.2}
+          strokeDasharray="8 8"
+        />
+      </svg>
+
+
+
+      {/* 3. HERO CENTERPIECE: Gorgeous Titanium Phone Displaying Real App Arena */}
       <div
         style={{
           position: 'absolute',
-          top: 64,
-          left: 54,
-          right: 54,
+          left: 215,
+          top: 240 + floatY,
+          width: 650,
           display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-          zIndex: 25,
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 15,
+          opacity: phoneOpacity,
+          transform: `perspective(1200px) rotateY(${phoneRotateY}deg) scale(${phoneScale})`,
+          pointerEvents: 'none',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+        <PhoneFrame
+          width={650}
+          accent={isPhase1 ? '#fbbf24' : isPhase2 ? '#10b981' : '#c084fc'}
         >
-          <div
-            style={{
-              padding: '8px 20px',
-              borderRadius: 999,
-              background: 'rgba(212, 175, 55, 0.16)',
-              border: '1px solid rgba(212, 175, 55, 0.55)',
-              color: '#fbbf24',
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: 2,
-            }}
-          >
-            03 // TONAL GRAVITY ENGINE
-          </div>
-
-          <div
-            style={{
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 12,
-              color: '#38bdf8',
-              fontWeight: 800,
-              letterSpacing: 1.2,
-            }}
-          >
-            ALAIN BENBASSAT METHOD
-          </div>
-        </div>
-
-        {/* 4 Cadence Progression Badges */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
-          {CADENCE_STEPS.map((c, idx) => {
-            const isTriggered = frame >= c.trigger;
-            const isCurrent =
-              frame >= c.trigger &&
-              (idx === CADENCE_STEPS.length - 1 ? frame < 125 : frame < CADENCE_STEPS[idx + 1].trigger);
-            return (
-              <div
-                key={c.roman}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: 14,
-                  background: isCurrent ? `${c.color}35` : isTriggered ? 'rgba(30,41,59,0.85)' : 'rgba(15,23,42,0.6)',
-                  border: `1.5px solid ${isCurrent ? c.color : isTriggered ? `${c.color}88` : 'rgba(255,255,255,0.1)'}`,
-                  color: isTriggered ? '#ffffff' : '#64748b',
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: 13,
-                  fontWeight: 800,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 3,
-                  boxShadow: isCurrent ? `0 0 16px ${c.color}55` : 'none',
-                }}
-              >
-                <span style={{ fontSize: 14 }}>{c.roman}</span>
-                <span style={{ fontSize: 11, color: isTriggered ? c.color : '#64748b' }}>{c.chord}</span>
-              </div>
-            );
-          })}
-        </div>
+          <Img
+            src={staticFile(currentScreen)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </PhoneFrame>
       </div>
 
-      {/* 3. PHASE 1: FULL-SCREEN 3D HARP CADENCE STAGE (Frames 0 to 118) */}
+      {/* 4. COMPLEMENTARY MINIMALIST FLOATING CHIPS (Flanking the phone, zero overlap!) */}
+      {/* Chip Phase 1: Cadence Lock (Left) */}
       {isPhase1 && (
         <div
           style={{
             position: 'absolute',
-            left: 54,
-            top: 140,
-            width: 972,
-            height: 1540,
-            transform: `scale(${Math.max(0.08, harpScale)})`,
-            opacity: harpOpacity,
-            zIndex: 10,
+            left: 48,
+            top: 560,
+            zIndex: 20,
+            transform: `scale(${badge1Spring}) translateX(${interpolate(
+              badge1Spring,
+              [0, 1],
+              [-40, 0]
+            )}px)`,
+            opacity: badge1Spring,
             pointerEvents: 'none',
           }}
         >
-          <Harp3DCanvas
-            width={972}
-            height={1540}
-            theta={theta}
-            phi={phi}
-            radius={radius}
-            targetY={0.50}
-            fov={34}
-            pluckEvents={MECHANISM_PLUCKS}
-            harpScale={0.82}
-            tiltX={0.05}
-            tiltZ={-0.05}
-          />
+          <div
+            style={{
+              padding: '14px 22px',
+              borderRadius: 20,
+              background: 'rgba(10, 16, 26, 0.92)',
+              border: '1.5px solid rgba(212, 175, 55, 0.65)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.85), 0 0 24px rgba(212, 175, 55, 0.35)',
+              backdropFilter: 'blur(20px)',
+              maxWidth: 240,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 11,
+                fontWeight: 900,
+                color: '#fbbf24',
+                letterSpacing: 1.5,
+                marginBottom: 4,
+              }}
+            >
+              ★ CADENCE LOCK
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
+              Tonal Center Established
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 4. PHASE 2: FULL-SCREEN POLARIZED JOURNEY & MELODY STUDIO STAGE (Frames 110 to 188) */}
+      {/* Chip Phase 2: Gravity Pull to Tonic DO (Right) */}
       {isPhase2 && (
         <div
           style={{
             position: 'absolute',
-            left: 54,
-            right: 54,
-            top: 200,
-            height: 1350,
-            borderRadius: 36,
-            background: 'rgba(13, 20, 33, 0.94)',
-            border: '2px solid rgba(168, 85, 247, 0.55)',
-            boxShadow: '0 25px 70px rgba(0,0,0,0.8), 0 0 35px rgba(168, 85, 247, 0.25)',
-            padding: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            zIndex: 12,
-            opacity: journeyOpacity,
-            transform: `scale(${journeyScale})`,
+            right: 48,
+            top: 640,
+            zIndex: 20,
+            transform: `scale(${badge2Spring}) translateX(${interpolate(
+              badge2Spring,
+              [0, 1],
+              [40, 0]
+            )}px)`,
+            opacity: badge2Spring,
             pointerEvents: 'none',
-            overflow: 'hidden',
           }}
         >
-          {/* Header */}
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingBottom: 14,
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              padding: '14px 22px',
+              borderRadius: 20,
+              background: 'rgba(10, 16, 26, 0.92)',
+              border: '1.5px solid rgba(16, 185, 129, 0.65)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.85), 0 0 24px rgba(16, 185, 129, 0.35)',
+              backdropFilter: 'blur(20px)',
+              maxWidth: 240,
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  color: '#c084fc',
-                  letterSpacing: 1.8,
-                  marginBottom: 4,
-                }}
-              >
-                POLARIZED JOURNEY • MASTERY ANALYTICS
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: '#ffffff' }}>
-                Track Every Degree • Real Progression
-              </div>
-            </div>
-
             <div
               style={{
-                padding: '6px 14px',
-                borderRadius: 10,
-                background: 'rgba(168, 85, 247, 0.2)',
-                border: '1.5px solid #a855f7',
-                color: '#ffffff',
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: 11,
-                fontWeight: 800,
+                fontWeight: 900,
+                color: '#34d399',
+                letterSpacing: 1.5,
+                marginBottom: 4,
               }}
             >
-              TAB 04
+              ★ MAGNETIC GRAVITY
             </div>
-          </div>
-
-          {/* Scrolling Dashboard Viewport */}
-          <div
-            style={{
-              flex: 1,
-              marginTop: 16,
-              borderRadius: 24,
-              overflow: 'hidden',
-              position: 'relative',
-              background: '#030712',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                transform: `translateY(${journeyScrollY}px)`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-                padding: 10,
-              }}
-            >
-              <Img
-                src={staticFile('textures/real/app_screen_journey_analytics.png')}
-                style={{ width: '100%', borderRadius: 24, objectFit: 'cover' }}
-              />
-              <Img
-                src={staticFile('textures/real/app_screen_profile_dashboard.png')}
-                style={{ width: '100%', borderRadius: 24, objectFit: 'cover' }}
-              />
-            </div>
-
-            {/* Floating New Melody Studio Card Pop-In */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 24,
-                left: 20,
-                right: 20,
-                transform: `scale(${melodyCardPop}) translateY(${interpolate(
-                  melodyCardPop,
-                  [0, 1],
-                  [50, 0]
-                )}px)`,
-                opacity: melodyCardPop,
-                borderRadius: 28,
-                background: 'rgba(10, 16, 26, 0.98)',
-                border: '2px solid #34d399',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.9), 0 0 35px rgba(52, 211, 153, 0.45)',
-                padding: 14,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  color: '#34d399',
-                  marginBottom: 8,
-                  textAlign: 'center',
-                  letterSpacing: 1.4,
-                }}
-              >
-                ★ NEW MELODY STUDIO TAB • BY-EAR PHRASING
-              </div>
-              <div style={{ width: '100%', height: 260, borderRadius: 18, overflow: 'hidden' }}>
-                <Img
-                  src={staticFile('textures/real/app_screen_melody_studio.png')}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
+              Stepwise Resolution to DO
             </div>
           </div>
         </div>
       )}
 
-      {/* 5. PHASE 3: FULL-SCREEN MAGNETIC RESOLUTION ENGINE STAGE (Frames 180 to 270) */}
+      {/* Chip Phase 3: Journey & Mastery Analytics (Left) */}
       {isPhase3 && (
         <div
           style={{
             position: 'absolute',
-            left: 54,
-            right: 54,
-            top: 200,
-            height: 1350,
-            borderRadius: 36,
-            background: 'rgba(13, 20, 33, 0.95)',
-            border: '2px solid rgba(16, 185, 129, 0.55)',
-            boxShadow: '0 25px 70px rgba(0,0,0,0.8), 0 0 35px rgba(16, 185, 129, 0.25)',
-            padding: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            zIndex: 15,
-            opacity: resolutionOpacity,
-            transform: `scale(${resolutionScale})`,
+            left: 48,
+            top: 560,
+            zIndex: 20,
+            transform: `scale(${badge3Spring}) translateX(${interpolate(
+              badge3Spring,
+              [0, 1],
+              [-40, 0]
+            )}px)`,
+            opacity: badge3Spring,
             pointerEvents: 'none',
           }}
         >
-          {/* Header */}
-          <div>
+          <div
+            style={{
+              padding: '14px 22px',
+              borderRadius: 20,
+              background: 'rgba(10, 16, 26, 0.92)',
+              border: '1.5px solid rgba(168, 85, 247, 0.65)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.85), 0 0 24px rgba(168, 85, 247, 0.35)',
+              backdropFilter: 'blur(20px)',
+              maxWidth: 240,
+            }}
+          >
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 10,
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 11,
+                fontWeight: 900,
+                color: '#c084fc',
+                letterSpacing: 1.5,
+                marginBottom: 4,
               }}
             >
-              <span
-                style={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: 13,
-                  fontWeight: 900,
-                  color: '#34d399',
-                  letterSpacing: 1.8,
-                }}
-              >
-                RESOLUTION ENGINE • TONAL GRAVITY
-              </span>
-              <span
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: 8,
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  border: '1px solid #10b981',
-                  color: '#ffffff',
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: 11,
-                  fontWeight: 900,
-                }}
-              >
-                4 → 3 → 2 → 1
-              </span>
+              ★ REAL PROGRESSION
             </div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: '#ffffff', lineHeight: 1.25 }}>
-              Feel the Pull Home • Tension Resolves to DO
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
+              Every Degree Mapped & Measured
             </div>
-          </div>
-
-          {/* 4 Stepwise Resolution Indicators */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, margin: '14px 0' }}>
-            {[
-              { num: 4, label: 'FA', sub: 'Tension', active: activeResolutionStep === 4, color: '#38bdf8' },
-              { num: 3, label: 'MI', sub: 'Step Down', active: activeResolutionStep === 3, color: '#fbbf24' },
-              { num: 2, label: 'RE', sub: 'Urgency', active: activeResolutionStep === 2, color: '#f97316' },
-              { num: 1, label: 'DO', sub: 'RESOLVED', active: activeResolutionStep === 1, color: '#10b981' },
-            ].map((step) => (
-              <div
-                key={step.num}
-                style={{
-                  padding: '14px 10px',
-                  borderRadius: 16,
-                  background: step.active ? `${step.color}35` : 'rgba(255,255,255,0.04)',
-                  border: `2px solid ${step.active ? step.color : 'rgba(255,255,255,0.08)'}`,
-                  textAlign: 'center',
-                  transform: step.active ? 'scale(1.06)' : 'scale(1)',
-                  boxShadow: step.active ? `0 0 20px ${step.color}66` : 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: 26,
-                    fontWeight: 900,
-                    color: step.active ? step.color : '#94a3b8',
-                  }}
-                >
-                  {step.num}
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 900, color: '#ffffff', marginTop: 2 }}>
-                  {step.label}
-                </div>
-                <div style={{ fontSize: 11, color: step.active ? step.color : '#64748b', marginTop: 2, fontWeight: 700 }}>
-                  {step.sub}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Sleek Titanium Phone Frame (100% Edge-to-Edge Screen Cover) */}
-          <div style={{ marginTop: 10, display: 'flex', justifyContent: 'center' }}>
-            <PhoneFrame width={660} accent="#10b981">
-              <Img
-                src={staticFile('textures/real/app_screen_resolution_walk.png')}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </PhoneFrame>
           </div>
         </div>
       )}

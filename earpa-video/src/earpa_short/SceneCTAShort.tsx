@@ -38,17 +38,7 @@ export const SceneCTAShort: React.FC = () => {
     config: { damping: 14, stiffness: 120, mass: 0.9 },
   });
 
-  const crestScale = spring({
-    frame: frame - 8,
-    fps,
-    config: { damping: 12, stiffness: 160 },
-  });
 
-  const urlEnter = spring({
-    frame: frame - 24,
-    fps,
-    config: { damping: 14, stiffness: 140 },
-  });
 
   const bottomActionEnter = spring({
     frame: frame - 32,
@@ -111,130 +101,7 @@ export const SceneCTAShort: React.FC = () => {
         </g>
       </svg>
 
-      {/* 2. TOP BRAND CREST LOCKUP & CTA */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 64,
-          left: 54,
-          right: 54,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          zIndex: 25,
-        }}
-      >
-        {/* Brand Crest + Typography */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 18,
-            marginBottom: 14,
-            transform: `scale(${crestScale})`,
-          }}
-        >
-          <div
-            style={{
-              width: 86,
-              height: 86,
-              borderRadius: 22,
-              background: 'rgba(212, 175, 55, 0.15)',
-              border: '2px solid rgba(212, 175, 55, 0.65)',
-              padding: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 12px 30px rgba(212, 175, 55, 0.35)',
-            }}
-          >
-            <Img
-              src={staticFile('textures/real/earpa_logo_3d.png')}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          </div>
 
-          <div style={{ textAlign: 'left' }}>
-            <div
-              style={{
-                fontFamily: '"Cinzel", Georgia, serif',
-                fontSize: 44,
-                fontWeight: 900,
-                color: '#ffffff',
-                letterSpacing: 6,
-                lineHeight: 1,
-              }}
-            >
-              EARPA
-            </div>
-            <div
-              style={{
-                fontFamily: '"JetBrains Mono", monospace',
-                fontSize: 13,
-                color: '#fbbf24',
-                letterSpacing: 2.2,
-                fontWeight: 800,
-                marginTop: 4,
-              }}
-            >
-              FUNCTIONAL EAR TRAINING
-            </div>
-          </div>
-        </div>
-
-        {/* Punchy Headline */}
-        <div
-          style={{
-            fontSize: 27,
-            fontWeight: 800,
-            color: '#f8fafc',
-            lineHeight: 1.3,
-            maxWidth: 820,
-            marginBottom: 16,
-            textShadow: '0 2px 14px rgba(0,0,0,0.85)',
-          }}
-        >
-          Stop guessing notes.
-          <br />
-          <span style={{ color: '#38bdf8' }}>Speak through your instrument.</span>
-        </div>
-
-        {/* High-Converting CTA Button */}
-        <div
-          style={{
-            transform: `scale(${urlEnter})`,
-            opacity: urlEnter,
-          }}
-        >
-          <div
-            style={{
-              padding: '16px 52px',
-              borderRadius: 999,
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              border: '2px solid rgba(254, 240, 138, 0.85)',
-              boxShadow:
-                '0 16px 45px rgba(245, 158, 11, 0.55), inset 0 2px 6px rgba(255,255,255,0.6)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: '"JetBrains Mono", monospace',
-                fontSize: 28,
-                fontWeight: 900,
-                letterSpacing: 3,
-                color: '#070b12',
-              }}
-            >
-              EARPA.APP
-            </span>
-            <span style={{ fontSize: 28, color: '#070b12', fontWeight: 900 }}>→</span>
-          </div>
-        </div>
-      </div>
 
       {/* 3. CENTER HERO STAGE: 3D Harp Burst-In from Depth + Phone Flanks */}
       <div
@@ -270,7 +137,7 @@ export const SceneCTAShort: React.FC = () => {
           }}
         >
           <Img
-            src={staticFile('textures/real/app_screen_single_note.png')}
+            src={staticFile('plus/home-single.png')}
             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 20 }}
           />
         </div>
@@ -295,34 +162,34 @@ export const SceneCTAShort: React.FC = () => {
           }}
         >
           <Img
-            src={staticFile('textures/real/app_screen_coastal_roadmap.png')}
+            src={staticFile('plus/map-single.png')}
             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 20 }}
           />
         </div>
 
-        {/* Center Live 3D Celtic Harp */}
+        {/* Center Live 3D Celtic Harp (100% Unclipped & Majestic) */}
         <div
           style={{
             position: 'absolute',
-            left: 54,
+            left: 0,
+            right: 0,
             top: 0,
-            width: 864,
-            height: 860,
+            height: 1050,
             zIndex: 8,
             transform: `scale(${Math.max(0.08, harpBurstIn)})`,
             opacity: Math.max(0, harpBurstIn),
           }}
         >
           <Harp3DCanvas
-            width={864}
-            height={860}
+            width={972}
+            height={1050}
             theta={theta}
             phi={phi}
-            radius={radius}
-            targetY={0.48}
+            radius={2.50}
+            targetY={0.46}
             fov={34}
             pluckEvents={CTA_PLUCKS}
-            harpScale={0.82}
+            harpScale={0.78}
             tiltX={tiltX}
             tiltZ={tiltZ}
           />
@@ -380,10 +247,10 @@ export const SceneCTAShort: React.FC = () => {
             }}
           >
             {[
-              { id: 0, icon: '🏛️', label: 'Home', color: '#10b981' },
-              { id: 1, icon: '🎶', label: 'Melody', color: '#38bdf8' },
-              { id: 2, icon: '⚙️', label: 'Levers', color: '#f59e0b' },
-              { id: 3, icon: '🕶️', label: 'Journey', color: '#a855f7' },
+              { id: 0, tag: '01', label: 'Single', color: '#10b981' },
+              { id: 1, tag: '02', label: 'Melody', color: '#38bdf8' },
+              { id: 2, tag: '03', label: 'Levers', color: '#f59e0b' },
+              { id: 3, tag: '04', label: 'Journey', color: '#a855f7' },
             ].map((tab) => {
               const isActive = activeDockTab === tab.id;
               return (
@@ -401,7 +268,16 @@ export const SceneCTAShort: React.FC = () => {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <span style={{ fontSize: 20 }}>{tab.icon}</span>
+                  <span
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: 14,
+                      fontWeight: 900,
+                      color: tab.color,
+                    }}
+                  >
+                    {tab.tag}
+                  </span>
                   <span
                     style={{
                       fontFamily: '"JetBrains Mono", monospace',

@@ -1,0 +1,378 @@
+[
+  {
+    "track": "melody",
+    "time": 6,
+    "midi": 48,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 6.052,
+    "midi": 67,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 6.104,
+    "midi": 64,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 6.156,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 6.95,
+    "midi": 53,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 7.002,
+    "midi": 69,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 7.054,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 7.106,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 7.9,
+    "midi": 55,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 7.952,
+    "midi": 71,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 8.004,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 8.056000000000001,
+    "midi": 74,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 8.85,
+    "midi": 48,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 8.902,
+    "midi": 67,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 8.953999999999999,
+    "midi": 64,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 9.006,
+    "midi": 72,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 10.69,
+    "midi": 62,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "melody",
+    "time": 11.69,
+    "midi": 62,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "melody",
+    "time": 29,
+    "midi": 48,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 29.052,
+    "midi": 67,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 29.104,
+    "midi": 64,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 29.156,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 29.95,
+    "midi": 53,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 30.002,
+    "midi": 69,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 30.054,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 30.105999999999998,
+    "midi": 72,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "IV"
+  },
+  {
+    "track": "melody",
+    "time": 30.9,
+    "midi": 55,
+    "duration": 0.95,
+    "velocity": 0.92,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 30.951999999999998,
+    "midi": 71,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 31.003999999999998,
+    "midi": 65,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 31.055999999999997,
+    "midi": 74,
+    "duration": 0.95,
+    "velocity": 0.76,
+    "label": "V"
+  },
+  {
+    "track": "melody",
+    "time": 31.849999999999998,
+    "midi": 48,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 31.901999999999997,
+    "midi": 67,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 31.953999999999997,
+    "midi": 64,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 32.006,
+    "midi": 72,
+    "duration": 1.6,
+    "velocity": 0.76,
+    "label": "I"
+  },
+  {
+    "track": "melody",
+    "time": 33.69,
+    "midi": 60,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "melody",
+    "time": 34.69,
+    "midi": 62,
+    "duration": 1.6,
+    "velocity": 0.92,
+    "label": "mystery"
+  },
+  {
+    "track": "melody",
+    "time": 15.1,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 18.1,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 19.1,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 20.1,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 24,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 25,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 35.1,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 36.1,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 37.1,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 42,
+    "midi": 60,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  },
+  {
+    "track": "melody",
+    "time": 43,
+    "midi": 62,
+    "duration": 0.95,
+    "velocity": 0.85,
+    "label": "sequence"
+  }
+]

@@ -203,51 +203,6 @@ export const InstructionLayout: React.FC<Props> = ({
             backgroundColor: '#090d16',
           }}
         >
-          {/* Dynamic Island Cutout */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 14,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 140,
-              height: 34,
-              borderRadius: 20,
-              backgroundColor: '#000000',
-              zIndex: 50,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 14px',
-            }}
-          >
-            {/* Audio Wave Indicator */}
-            <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-              {[0.4, 0.9, 0.6, 1.0, 0.5].map((h, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: 3,
-                    height: 8 + 12 * Math.sin((frame + i * 4) * 0.25) * h,
-                    borderRadius: 2,
-                    backgroundColor: theme.primary,
-                  }}
-                />
-              ))}
-            </div>
-            {/* Camera Dot */}
-            <div
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                backgroundColor: '#18181b',
-                border: '1px solid #27272a',
-              }}
-            />
-          </div>
-
           {/* Actual Screen Content */}
           {children}
 
