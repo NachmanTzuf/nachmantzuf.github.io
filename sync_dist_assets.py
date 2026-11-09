@@ -169,24 +169,9 @@ def main():
         if latest_entry:
             latest_path = os.path.join(js_dir, latest_entry)
             if os.path.exists(latest_path):
+                # Only keep the immediate previous v31 bundle alias for seamless cached PWA transitions
                 compat_names = [
-                    'entry-03da5b86f18fc9b21e8c5a2514d3f575.js',
-                    'entry-591f221d562db681e981d133989945c4.js',
-                    'entry-5fffed3a26a629f68471eb69882fc2ac.js',
-                    'entry-63bc5b44169e6314d26378b2a3b84271.js',
-                    'entry-8d69bb973d5da92adcfe80a2740a1c6d.js',
-                    'entry-86005dad95ff916afb02c5c3ad3085ff.js',
-                    'entry-241dc2b474c7dc0ebd966e8cad672510.js',
-                    'entry-a06af7961980fc5b205cf9622d5a1429.js',
-                    'entry-85de23aecec6a4f3ae346b50bf4463fe.js',
-                    'entry-6c4df1355ef891d45fea586cbfabc9fd.js',
-                    'entry-15c957fb40a97aa35069b2daee361093.js',
-                    'entry-a49f2219870238787821c6d504e6b75f.js',
-                    'entry-fc79bdb2d21f8c68692ce218879293ee.js',
-                    'entry-fdf04d7978d5b30d71f4f802296bd236.js',
-                    'entry-38c2155d5fb7a339c32c89950b088b56.js',
-                    'entry-1c1d931d813cd44f8ed8dd82a1211c5e.js',
-                    'entry-947721a814af51f3e4c8f1ccfb9c449a.js'
+                    'entry-f0660f1d82bfa3ee76997e99ae70f69c.js'
                 ]
                 for compat in compat_names:
                     if compat != latest_entry:
