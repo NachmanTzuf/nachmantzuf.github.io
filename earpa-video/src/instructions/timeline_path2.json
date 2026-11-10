@@ -1,42 +1,52 @@
 [
   {
     "beat": 0,
-    "id": "beat0_intro",
+    "id": "p2_intro",
     "start": 0.0,
-    "end": 12.0,
+    "end": 17.96,
+    "duration": 17.96,
+    "speech_start": 0.4,
     "title": "MELODIC PHRASING CONTOUR",
     "subtitle": "Hear melodic curves and shapes rather than isolated single pitches."
   },
   {
     "beat": 1,
-    "id": "beat1_two_note_motif",
-    "start": 12.0,
-    "end": 34.5,
+    "id": "p2_audiation",
+    "start": 17.96,
+    "end": 32.64,
+    "duration": 14.68,
+    "speech_start": 18.36,
     "title": "PHRASE AUDIATION",
-    "subtitle": "Cadence, two-note melodic motif demonstration, and sequential reply."
+    "subtitle": "Internalize the melodic motif before your fingers strike the harp strings."
   },
   {
     "beat": 2,
-    "id": "beat2_fundamental_catch",
-    "start": 34.5,
-    "end": 56.5,
-    "title": "TONIC RESOLUTION",
-    "subtitle": "Anchoring melodies through gravitational resolution to tonic C."
+    "id": "p2_drill",
+    "start": 32.64,
+    "end": 49.89,
+    "duration": 17.24,
+    "speech_start": 33.04,
+    "title": "THE AUDIATION PROTOCOL",
+    "subtitle": "Listen, audiate internally, then pluck with absolute muscle confidence."
   },
   {
     "beat": 3,
-    "id": "beat3_silent_drill",
-    "start": 56.5,
-    "end": 75.0,
-    "title": "SILENT AUDIATION DRILL",
-    "subtitle": "Hear the full phrase internally before your fingers strike the harp strings."
+    "id": "p2_expansion",
+    "start": 49.89,
+    "end": 63.65,
+    "duration": 13.76,
+    "speech_start": 50.29,
+    "title": "EXPANDING MELODIC ARCS",
+    "subtitle": "Recognize traditional Celtic ornaments and rolls by overall contour."
   },
   {
     "beat": 4,
-    "id": "beat4_session_mastery",
-    "start": 75.0,
-    "end": 90.0,
-    "title": "TRADITIONAL SESSION MASTERY",
-    "subtitle": "Pick up reels and jigs on the fly without looking at sheet music."
+    "id": "p2_session",
+    "start": 63.65,
+    "end": 78.08,
+    "duration": 14.43,
+    "speech_start": 64.05,
+    "title": "CELTIC SESSION READINESS",
+    "subtitle": "Join live pub sessions and pick up reels on the fly without sheet music."
   }
 ]

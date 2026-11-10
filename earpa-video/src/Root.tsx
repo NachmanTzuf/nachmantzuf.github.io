@@ -92,7 +92,7 @@ export const Root: React.FC = () => {
       <Composition
         id="EarpaPath1SingleNotesLesson"
         component={Path1SingleNotesVideo}
-        durationInFrames={2700}
+        durationInFrames={2715}
         fps={30}
         width={1080}
         height={1920}
@@ -100,7 +100,7 @@ export const Root: React.FC = () => {
       <Composition
         id="EarpaPath2MelodicSequenceLesson"
         component={Path2MelodyPhrasingVideo}
-        durationInFrames={2700}
+        durationInFrames={2380}
         fps={30}
         width={1080}
         height={1920}
@@ -108,7 +108,7 @@ export const Root: React.FC = () => {
       <Composition
         id="EarpaPath3CamacLeversLesson"
         component={Path3CamacLeversVideo}
-        durationInFrames={4050}
+        durationInFrames={2900}
         fps={30}
         width={1080}
         height={1920}

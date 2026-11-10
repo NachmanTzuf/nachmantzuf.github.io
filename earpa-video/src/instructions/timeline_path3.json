@@ -1,50 +1,62 @@
 [
   {
     "beat": 0,
-    "id": "beat0_intro",
+    "id": "p3_intro",
     "start": 0.0,
-    "end": 12.0,
+    "end": 17.22,
+    "duration": 17.22,
+    "speech_start": 0.4,
     "title": "CAMAC LEVER HARPING",
     "subtitle": "Mechanical and harmonic mastery for instant key changes across the Circle of Fifths."
   },
   {
     "beat": 1,
-    "id": "beat1_eb_foundation",
-    "start": 12.0,
-    "end": 36.0,
+    "id": "p3_tut",
+    "start": 17.22,
+    "end": 35.73,
+    "duration": 18.51,
+    "speech_start": 17.62,
     "title": "E-FLAT MAJOR FOUNDATION",
-    "subtitle": "Every lever down sets Eb Major. Raising a lever engages the bridge pin for +1 semitone."
+    "subtitle": "Every lever down sets Eb Major. Raising lever A engages B-flat Major."
   },
   {
     "beat": 2,
-    "id": "beat2_circle_fifths",
-    "start": 36.0,
-    "end": 58.0,
-    "title": "CIRCLE OF FIFTHS DIAL",
-    "subtitle": "Explore target scales and active lever indicator arrays before entering gameplay."
+    "id": "p3_l1_walk",
+    "start": 35.73,
+    "end": 55.73,
+    "duration": 20.0,
+    "speech_start": 36.13,
+    "title": "SCALE RESOLUTION WALK",
+    "subtitle": "Set levers, confirm scale, and the app plays the entire 8-note scale from start to finish."
   },
   {
     "beat": 3,
-    "id": "beat3_gameplay_bb_walk",
-    "start": 58.0,
-    "end": 93.0,
-    "title": "B-FLAT MAJOR : FULL SCALE WALK",
-    "subtitle": "Prompt challenges Bb Major, raise lever A, confirm, and hear automated 8-note scale walk."
+    "id": "p3_dial",
+    "start": 55.73,
+    "end": 70.69,
+    "duration": 14.96,
+    "speech_start": 56.13,
+    "title": "CIRCLE OF FIFTHS DIAL",
+    "subtitle": "Explore target scales and active lever indicator arrays before confirming your tuning."
   },
   {
     "beat": 4,
-    "id": "beat4_advanced_modes",
-    "start": 93.0,
-    "end": 118.0,
-    "title": "MODAL SCALES & SHIFTS",
-    "subtitle": "Seamlessly shift between C Major, G Major, and D Dorian with instant audiation."
+    "id": "p3_mastery",
+    "start": 70.69,
+    "end": 84.84,
+    "duration": 14.15,
+    "speech_start": 71.09,
+    "title": "CONFIDENT LIVE MODULATION",
+    "subtitle": "Switch keys on stage with intuitive muscle memory and zero performance hesitation."
   },
   {
     "beat": 5,
-    "id": "beat5_stage_mastery",
-    "start": 118.0,
-    "end": 135.0,
-    "title": "CONFIDENT LIVE PERFORMANCE",
-    "subtitle": "Switch keys on stage with intuitive muscle memory and zero performance hesitation."
+    "id": "p3_outro",
+    "start": 84.84,
+    "end": 95.64,
+    "duration": 10.8,
+    "speech_start": 85.24,
+    "title": "STAGE MASTERY",
+    "subtitle": "Intuitive muscle memory for rapid key modulation on your physical Celtic harp."
   }
 ]

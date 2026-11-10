@@ -1,50 +1,62 @@
 [
   {
     "beat": 0,
-    "id": "beat0_intro",
+    "id": "p1_intro",
     "start": 0.0,
-    "end": 12.0,
+    "end": 23.24,
+    "duration": 23.24,
+    "speech_start": 0.4,
     "title": "TONAL GRAVITATION",
-    "subtitle": "Feel how every note pulls toward home note C instead of guessing intervals."
+    "subtitle": "Feel how every note pulls toward home note C instead of guessing intervals in a vacuum."
   },
   {
     "beat": 1,
-    "id": "beat1_gameplay_r1",
-    "start": 12.0,
-    "end": 34.5,
+    "id": "p1_r1",
+    "start": 23.24,
+    "end": 35.87,
+    "duration": 12.62,
+    "speech_start": 23.64,
     "title": "ROUND 1 : NOTE A",
-    "subtitle": "Cadence grounds in C Major, mystery note sounds, user plucks Note A with walkdown resolution."
+    "subtitle": "Cadence grounds in C Major, mystery note sounds, pluck Note A with resolution walkdown."
   },
   {
     "beat": 2,
-    "id": "beat2_gameplay_r2",
-    "start": 34.5,
-    "end": 56.5,
+    "id": "p1_r2",
+    "start": 35.87,
+    "end": 49.69,
+    "duration": 13.82,
+    "speech_start": 36.27,
     "title": "ROUND 2 : NOTE G",
-    "subtitle": "Stable open fifth recognition with immediate stepwise resolution to tonic."
+    "subtitle": "Hear the stable open fifth, tap note G, and watch the app walk down to home C."
   },
   {
     "beat": 3,
-    "id": "beat3_gameplay_note4",
-    "start": 56.5,
-    "end": 68.5,
-    "title": "NOTE F : DOWNWARD PULL",
-    "subtitle": "Subdominant ache falling through E and D into tonic C."
+    "id": "p1_r3_mistake",
+    "start": 49.69,
+    "end": 63.16,
+    "duration": 13.46,
+    "speech_start": 50.09,
+    "title": "DIAGNOSTIC FEEDBACK",
+    "subtitle": "Mistakes are flagged in red with harmonic overtone analysis to accelerate real listening."
   },
   {
     "beat": 4,
-    "id": "beat4_gameplay_note7",
-    "start": 68.5,
-    "end": 80.5,
-    "title": "NOTE B : UPWARD SNAP",
-    "subtitle": "Leading tone magnetic snap resolving directly into high C."
+    "id": "p1_r7_b",
+    "start": 63.16,
+    "end": 75.36,
+    "duration": 12.2,
+    "speech_start": 63.56,
+    "title": "NOTE B : LEADING TONE",
+    "subtitle": "Experience the intense magnetic upward snap resolving directly into high C."
   },
   {
     "beat": 5,
-    "id": "beat5_mastery",
-    "start": 80.5,
-    "end": 90.0,
+    "id": "p1_outro",
+    "start": 75.36,
+    "end": 89.36,
+    "duration": 14.0,
+    "speech_start": 75.76,
     "title": "THE 5-MINUTE DAILY HABIT",
-    "subtitle": "Ten minutes a day unlocks instant intuitive playing by ear on stage."
+    "subtitle": "Ten minutes a day locks in tonal gravitation for effortless intuitive playing on stage."
   }
 ]

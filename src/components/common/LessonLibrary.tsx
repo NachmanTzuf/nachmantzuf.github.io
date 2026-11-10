@@ -38,7 +38,7 @@ const TRACK_THEMES: Record<
     badgeBorder: 'rgba(56, 189, 248, 0.75)',
     text: '#e0f2fe',
     glow: '0 2px 12px rgba(56, 189, 248, 0.45)',
-    label: '▷ QUICK LESSON · MELODIC SEQUENCE (90s)',
+    label: '▷ QUICK LESSON · MELODIC SEQUENCE (80s)',
     persistentLabel: 'Melody',
   },
   levers: {
@@ -47,7 +47,7 @@ const TRACK_THEMES: Record<
     badgeBorder: 'rgba(245, 158, 11, 0.70)',
     text: '#fef08a',
     glow: '0 2px 10px rgba(245, 158, 11, 0.40)',
-    label: '▷ QUICK LESSON · LEVER MASTERY (135s)',
+    label: '▷ QUICK LESSON · LEVER MASTERY (97s)',
     persistentLabel: 'Levers',
   },
 };
@@ -70,7 +70,7 @@ export function LessonLibrary({
 
   useEffect(() => {
     let active = true;
-    fetch('/videos/mission/manifest.json?v=v32_20261109', { cache: 'no-store' })
+    fetch('/videos/mission/manifest.json?v=v33_20261110', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         if (active && Array.isArray(data)) setEntries(data);

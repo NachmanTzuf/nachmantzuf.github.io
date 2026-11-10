@@ -4,20 +4,20 @@
     "title": "\u25b7 QUICK LESSON \u00b7 TONIC ANCHOR (90s)",
     "track": "single",
     "seconds": 90,
-    "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v32_20261109"
+    "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v33_20261110"
   },
   {
     "id": "EarpaMelodyPhrasingInstruction",
-    "title": "\u25b7 QUICK LESSON \u00b7 MELODIC SEQUENCE (90s)",
+    "title": "\u25b7 QUICK LESSON \u00b7 MELODIC SEQUENCE (80s)",
     "track": "melody",
-    "seconds": 90,
-    "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v32_20261109"
+    "seconds": 80,
+    "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v33_20261110"
   },
   {
     "id": "EarpaCamacLeversInstruction",
-    "title": "\u25b7 QUICK LESSON \u00b7 LEVER MASTERY (135s)",
+    "title": "\u25b7 QUICK LESSON \u00b7 LEVER MASTERY (97s)",
     "track": "levers",
-    "seconds": 135,
-    "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v32_20261109"
+    "seconds": 97,
+    "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v33_20261110"
   }
 ]
