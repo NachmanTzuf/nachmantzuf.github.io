@@ -92,7 +92,7 @@ export const Root: React.FC = () => {
       <Composition
         id="EarpaPath1SingleNotesLesson"
         component={Path1SingleNotesVideo}
-        durationInFrames={2715}
+        durationInFrames={3354}
         fps={30}
         width={1080}
         height={1920}

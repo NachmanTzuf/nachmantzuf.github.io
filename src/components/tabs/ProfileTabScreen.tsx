@@ -32,9 +32,9 @@ const PRACTICE_VIDEOS = [
     id: 'single',
     title: 'Single Note',
     subtitle: 'Tonic Anchor',
-    duration: '90s',
+    duration: '112s',
     poster: '/videos/plus/SingleMotionPlus-poster.jpg',
-    url: '/videos/mission/EarpaSingleNotesInstruction.mp4?v=v32_20261109',
+    url: '/videos/mission/EarpaSingleNotesInstruction.mp4?v=v34_20261111',
     accent: '#10b981',
   },
   {
