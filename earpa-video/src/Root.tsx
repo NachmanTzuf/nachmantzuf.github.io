@@ -3,6 +3,7 @@ import {RefinedMarketing,RefinedLesson} from './refined/Refined';
 import {KineticAd,SingleTutorial,LeverMasterclass} from './kinetic/Kinetic';
 import {MotionSuite} from './mission/MotionSuite';
 import { Path1SingleNotesVideo } from './instructions/Path1SingleNotesVideo';
+import { Path1SingleNotesOverlay } from './instructions/Path1SingleNotesOverlay';
 import { Path2MelodyPhrasingVideo } from './instructions/Path2MelodyPhrasingVideo';
 import { Path3CamacLeversVideo } from './instructions/Path3CamacLeversVideo';
 import React from 'react';
@@ -92,6 +93,14 @@ export const Root: React.FC = () => {
       <Composition
         id="EarpaPath1SingleNotesLesson"
         component={Path1SingleNotesVideo}
+        durationInFrames={3354}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="EarpaPath1SingleNotesOverlay"
+        component={Path1SingleNotesOverlay}
         durationInFrames={3354}
         fps={30}
         width={1080}
