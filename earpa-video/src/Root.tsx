@@ -4,6 +4,7 @@ import {KineticAd,SingleTutorial,LeverMasterclass} from './kinetic/Kinetic';
 import {MotionSuite} from './mission/MotionSuite';
 import { Path1SingleNotesVideo } from './instructions/Path1SingleNotesVideo';
 import { Path1SingleNotesOverlay } from './instructions/Path1SingleNotesOverlay';
+import { Path1MotionVideo } from './instructions/path1_v36/Path1MotionVideo';
 import { Path2MelodyPhrasingVideo } from './instructions/Path2MelodyPhrasingVideo';
 import { Path3CamacLeversVideo } from './instructions/Path3CamacLeversVideo';
 import React from 'react';
@@ -102,6 +103,14 @@ export const Root: React.FC = () => {
         id="EarpaPath1SingleNotesOverlay"
         component={Path1SingleNotesOverlay}
         durationInFrames={3354}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="EarpaPath1SingleNotesMotionV36"
+        component={Path1MotionVideo}
+        durationInFrames={5107}
         fps={30}
         width={1080}
         height={1920}
