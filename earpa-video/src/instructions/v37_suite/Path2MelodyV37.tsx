@@ -36,6 +36,7 @@ export const Path2MelodyV37: React.FC = () => {
     mysteryStrings: r.mysteryStrings,
     humCueStartFrame: r.humCueStartFrame - s.ingameStart,
     humCueEndFrame: r.humCueEndFrame - s.ingameStart,
+    decideStartFrame: r.decideStartFrame - s.ingameStart,
     keyTaps: r.keyTaps.map((kt) => ({
       ...kt,
       tapFrame: kt.tapFrame - s.ingameStart,
@@ -44,6 +45,7 @@ export const Path2MelodyV37: React.FC = () => {
       ...sn,
       revealFrame: sn.revealFrame - s.ingameStart,
     })),
+    lockInBanner: r.lockInBanner,
     verdictFrame: r.verdictFrame - s.ingameStart,
     verdictCorrect: r.verdictCorrect,
     verdictTitle: r.verdictTitle,
@@ -56,49 +58,65 @@ export const Path2MelodyV37: React.FC = () => {
 
   const r1 = ingameRounds[0];
   const r2 = ingameRounds[1];
+  const r1LastTap = r1.keyTaps[r1.keyTaps.length - 1].tapFrame;
+  const r2LastTap = r2.keyTaps[r2.keyTaps.length - 1].tapFrame;
 
   const gameplayCaptions = [
     {
       startFrame: 0,
       endFrame: r1.mysteryPluckFrames[0],
-      topTag: 'ROUND 1 · LIVE 60 BPM PACE',
-      topTitle: 'Anchor Cadence (I · IV · V · I)',
-      bottomCoach: 'Four harmonic chords lock tonic C before the three-note phrase.',
+      topTag: 'ROUND 1 · LISTEN',
+      topTitle: 'Home Chords & 3-Note Melody',
+      bottomCoach: 'Listen to the home chords, then hear three steady notes play.',
     },
     {
       startFrame: r1.mysteryPluckFrames[0],
+      endFrame: r1.decideStartFrame ?? r1LastTap,
+      topTag: 'STEP 1 · THINK',
+      topTitle: 'Hum Home C · Picture the Shape',
+      bottomCoach: 'Pause to remember how the melody starts at C and climbs upward.',
+    },
+    {
+      startFrame: r1.decideStartFrame ?? r1LastTap,
       endFrame: r1.verdictFrame,
-      topTag: 'MELODY & THINKING PAUSE',
-      topTitle: 'Hum C · Catch All 3 Notes',
-      bottomCoach: 'Hum home C quietly — recognize C opening upward through E and G.',
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Tap C · E · G to Lock Sequence',
+      bottomCoach: 'Each tap fills a slot in order; after the third note, your answer locks in.',
     },
     {
       startFrame: r1.verdictFrame,
       endFrame: r2.roundStartFrame,
-      topTag: 'REPLAY @ 60 BPM · 1000ms/NOTE',
-      topTitle: 'Spot On! · C · E · G',
-      bottomCoach: 'After confirming, listen back to the clean ascending triad shape.',
+      topTag: 'STEP 3 · APP CONFIRMS RIGHT',
+      topTitle: 'Right Sequence · Listen Back',
+      bottomCoach: 'The app checks all three notes, confirms you are right, and replays them.',
     },
     {
       startFrame: r2.roundStartFrame,
       endFrame: r2.mysteryPluckFrames[0],
-      topTag: 'ROUND 2 · IDENTICAL PACE',
-      topTitle: 'Same Cadence & Tempo',
-      bottomCoach: 'Identical grounding progression before the second phrase.',
+      topTag: 'ROUND 2 · LISTEN',
+      topTitle: 'Same Home Chords & Speed',
+      bottomCoach: 'Listen for the same steady pace before the second three-note tune.',
     },
     {
       startFrame: r2.mysteryPluckFrames[0],
+      endFrame: r2.decideStartFrame ?? r2LastTap,
+      topTag: 'STEP 1 · THINK',
+      topTitle: 'Trace Starting High & Stepping Down',
+      bottomCoach: 'Hum home C — feel this shape start higher and walk back home.',
+    },
+    {
+      startFrame: r2.decideStartFrame ?? r2LastTap,
       endFrame: r2.verdictFrame,
-      topTag: 'MELODY & THINKING PAUSE',
-      topTitle: 'Trace Descending Direction',
-      bottomCoach: 'Hum C — notice this phrase starts high on G and falls home.',
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Lock In Your Guess · C · G · E',
+      bottomCoach: 'Watch what happens once you tap three notes in order and lock them in.',
     },
     {
       startFrame: r2.verdictFrame,
       endFrame: ingameDur + 30,
-      topTag: 'TRUE CONTOUR REPLAY',
-      topTitle: 'Actual Phrase: G · E · C',
-      bottomCoach: 'Wrong guesses show the real phrase immediately and replay it step by step.',
+      topTag: 'STEP 3 · APP CONFIRMS WRONG',
+      topTitle: 'Wrong Sequence · Real: G · E · C',
+      bottomCoach: 'The app shows your wrong guess immediately and replays the real tune.',
     },
   ];
 

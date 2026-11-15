@@ -1,23 +1,23 @@
 [
   {
     "id": "EarpaSingleNotesInstruction",
-    "title": "\u25b7 QUICK LESSON \u00b7 TONIC ANCHOR (91s)",
+    "title": "\u25b7 QUICK LESSON \u00b7 TONIC ANCHOR (116s)",
     "track": "single",
-    "seconds": 91,
-    "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v37_20261115"
+    "seconds": 116,
+    "url": "/videos/mission/EarpaSingleNotesInstruction.mp4?v=v38_20261115"
   },
   {
     "id": "EarpaMelodyPhrasingInstruction",
-    "title": "\u25b7 QUICK LESSON \u00b7 MELODIC SEQUENCE (86s)",
+    "title": "\u25b7 QUICK LESSON \u00b7 MELODIC SEQUENCE (106s)",
     "track": "melody",
-    "seconds": 86,
-    "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v37_20261115"
+    "seconds": 106,
+    "url": "/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v38_20261115"
   },
   {
     "id": "EarpaCamacLeversInstruction",
-    "title": "\u25b7 QUICK LESSON \u00b7 LEVER MASTERY (78s)",
+    "title": "\u25b7 QUICK LESSON \u00b7 LEVER MASTERY (140s)",
     "track": "levers",
-    "seconds": 78,
-    "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v37_20261115"
+    "seconds": 140,
+    "url": "/videos/mission/EarpaCamacLeversInstruction.mp4?v=v38_20261115"
   }
 ]

@@ -1,118 +1,125 @@
 {
   "fps": 30,
-  "durationSec": 90.801,
-  "totalFrames": 2724,
+  "durationSec": 116.438,
+  "totalFrames": 3493,
   "scenes": {
     "introStart": 0,
-    "introEnd": 223,
-    "conceptStart": 223,
-    "conceptEnd": 826,
-    "gravLowFrame": 235,
-    "gravHighFrame": 526,
-    "mapStart": 826,
-    "mapEnd": 949,
-    "mapTapPlay": 922,
-    "ingameStart": 949,
-    "ingameEnd": 2283,
-    "insightsStart": 2283,
-    "insightsEnd": 2562,
-    "insightsSplitFrame": 2447,
-    "outroStart": 2562
+    "introEnd": 236,
+    "conceptStart": 236,
+    "conceptEnd": 866,
+    "gravLowFrame": 248,
+    "gravHighFrame": 558,
+    "mapStart": 866,
+    "mapEnd": 1004,
+    "mapTapPlay": 968,
+    "ingameStart": 1004,
+    "ingameEnd": 2995,
+    "insightsStart": 2995,
+    "insightsEnd": 3306,
+    "insightsSplitFrame": 3180,
+    "outroStart": 3306
   },
   "rounds": [
     {
       "roundNumber": 1,
-      "roundStartFrame": 957,
+      "roundStartFrame": 1011,
       "cadenceChordFrames": [
-        1054,
-        1083,
-        1111,
-        1140
+        1155,
+        1183,
+        1212,
+        1240
       ],
       "mysteryPluckFrames": [
-        1195
+        1296
       ],
       "mysteryStrings": [
         4
       ],
-      "humCueStartFrame": 1226,
-      "humCueEndFrame": 1360,
+      "humCueStartFrame": 1327,
+      "humCueEndFrame": 1534,
+      "decideStartFrame": 1537,
       "keyTaps": [
         {
           "keyIndex": 3,
-          "tapFrame": 1364,
-          "isCorrect": true
+          "tapFrame": 1622,
+          "isCorrect": true,
+          "label": "F"
         }
       ],
-      "verdictFrame": 1366,
+      "lockInBanner": "LOCKED IN \u00b7 YOUR GUESS: F",
+      "verdictFrame": 1677,
       "verdictCorrect": true,
-      "verdictTitle": "Spot On!",
-      "verdictDetail": "Note F \u00b7 Subdominant (4)",
+      "verdictTitle": "Right Answer!",
+      "verdictDetail": "Your guess F matches \u00b7 Note F",
       "walkPlucks": [
         {
           "stringNum": 4,
-          "frame": 1515,
+          "frame": 1918,
           "noteLabel": "F"
         },
         {
           "stringNum": 3,
-          "frame": 1543,
+          "frame": 1947,
           "noteLabel": "E"
         },
         {
           "stringNum": 2,
-          "frame": 1572,
+          "frame": 1975,
           "noteLabel": "D"
         },
         {
           "stringNum": 1,
-          "frame": 1600,
+          "frame": 2004,
           "noteLabel": "C"
         }
       ],
-      "walkEndFrame": 1641
+      "walkEndFrame": 2044
     },
     {
       "roundNumber": 2,
-      "roundStartFrame": 1641,
+      "roundStartFrame": 2044,
       "cadenceChordFrames": [
-        1759,
-        1787,
-        1816,
-        1844
+        2150,
+        2179,
+        2207,
+        2236
       ],
       "mysteryPluckFrames": [
-        1899
+        2291
       ],
       "mysteryStrings": [
         7
       ],
-      "humCueStartFrame": 1922,
-      "humCueEndFrame": 2064,
+      "humCueStartFrame": 2317,
+      "humCueEndFrame": 2494,
+      "decideStartFrame": 2497,
       "keyTaps": [
         {
           "keyIndex": 4,
-          "tapFrame": 2069,
-          "isCorrect": false
+          "tapFrame": 2600,
+          "isCorrect": false,
+          "label": "G"
         }
       ],
-      "verdictFrame": 2071,
+      "lockInBanner": "LOCKED IN \u00b7 YOUR GUESS: G",
+      "verdictFrame": 2656,
       "verdictCorrect": false,
-      "verdictTitle": "Listen Closely...",
-      "verdictDetail": "Actual note: B (7) \u00b7 Not G",
+      "verdictTitle": "Wrong Note",
+      "verdictDetail": "You guessed G \u00b7 Actual note: B",
+      "actualKeyIndex": 6,
       "walkPlucks": [
         {
           "stringNum": 7,
-          "frame": 2202,
+          "frame": 2914,
           "noteLabel": "B"
         },
         {
           "stringNum": 8,
-          "frame": 2230,
+          "frame": 2943,
           "noteLabel": "C\u2075"
         }
       ],
-      "walkEndFrame": 2283
+      "walkEndFrame": 2995
     }
   ]
 }

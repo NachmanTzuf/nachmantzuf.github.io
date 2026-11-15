@@ -580,12 +580,22 @@ export const MelodyContourStage: React.FC<{
 
 /**
  * Minimalistic Mechanical Macro + Symmetrical Circle of Fifths Stage (Path 3).
- * Demonstrates "+1 semitone" lever mechanism & key signature order A->E->B->F->C->G->D.
+ * Expanded intuitive non-technical demonstration:
+ * 1) Tuned to Eb Major with all levers down
+ * 2) Flipping a lever tightens string to raise pitch one step higher
+ * 3) Clockwise Circle of Fifths adds 1 lever per step in order: A -> E -> B -> F -> C -> G -> D
  */
 export const LeversConceptStage: React.FC<{
   totalFrames: number;
   leverFlipFrame?: number;
-}> = ({ totalFrames, leverFlipFrame = 42 }) => {
+  conceptOrderFrame?: number;
+  circleStepFrames?: number[];
+}> = ({
+  totalFrames,
+  leverFlipFrame = 42,
+  conceptOrderFrame = 180,
+  circleStepFrames = [240, 295, 360, 420, 475],
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const theme = PATH_THEMES.levers;
@@ -597,32 +607,52 @@ export const LeversConceptStage: React.FC<{
   });
 
   const fifthsKeys = [
-    { k: 'C', label: 'C', flats: '0' },
-    { k: 'G', label: 'G', flats: '1#' },
-    { k: 'D', label: 'D', flats: '2#' },
-    { k: 'A', label: 'A', flats: '3#' },
-    { k: 'E', label: 'E', flats: '4#' },
-    { k: 'B', label: 'B', flats: '5#' },
-    { k: 'F#', label: 'F♯', flats: '6#' },
-    { k: 'Db', label: 'D♭', flats: '5♭' },
-    { k: 'Ab', label: 'A♭', flats: '4♭' },
-    { k: 'Eb', label: 'E♭', flats: '3♭' },
-    { k: 'Bb', label: 'B♭', flats: '2♭' },
-    { k: 'F', label: 'F', flats: '1♭' },
+    { k: 'C', label: 'C', flats: '3 Levers Up · A, E, B', orderCount: 3 },
+    { k: 'G', label: 'G', flats: '4 Levers Up · A, E, B, F', orderCount: 4 },
+    { k: 'D', label: 'D', flats: '5 Levers Up · A..C', orderCount: 5 },
+    { k: 'A', label: 'A', flats: '6 Levers Up · A..G', orderCount: 6 },
+    { k: 'E', label: 'E', flats: '7 Levers Up · All Up', orderCount: 7 },
+    { k: 'B', label: 'B', flats: '5# Key', orderCount: 7 },
+    { k: 'F#', label: 'F♯', flats: '6# Key', orderCount: 7 },
+    { k: 'Db', label: 'D♭', flats: '5♭ Key', orderCount: 0 },
+    { k: 'Ab', label: 'A♭', flats: '4♭ Key', orderCount: 0 },
+    { k: 'Eb', label: 'E♭', flats: 'All Levers Down (Home)', orderCount: 0 },
+    { k: 'Bb', label: 'B♭', flats: '1 Lever Up · A', orderCount: 1 },
+    { k: 'F', label: 'F', flats: '2 Levers Up · A, E', orderCount: 2 },
   ];
 
-  // Progress clockwise from Eb (idx 9) -> Bb (10) -> F (11) -> C (0)
-  const stepIdx = frame < 85 ? 9 : frame < 140 ? 10 : frame < 190 ? 11 : 0;
+  // Progress cleanly in sync with synthesized audio timestamps
+  const [fEb, fBb, fF, fC, fG] = [
+    circleStepFrames[0] ?? 240,
+    circleStepFrames[1] ?? 300,
+    circleStepFrames[2] ?? 370,
+    circleStepFrames[3] ?? 430,
+    circleStepFrames[4] ?? 485,
+  ];
+  const stepIdx =
+    frame < fBb ? 9 : frame < fF ? 10 : frame < fC ? 11 : frame < fG ? 0 : 1;
+  const activeKey = fifthsKeys[stepIdx];
+  const raisedOrder = ['A', 'E', 'B', 'F', 'C', 'G', 'D'];
+  const orderRailShown = frame >= conceptOrderFrame - 12;
+  const activeUpCount = frame < fBb ? 0 : activeKey.orderCount;
 
   const macroLevers: LeverFlipEvent[] = [
     { leverNum: 1, flipFrame: leverFlipFrame },
-    { leverNum: 3, flipFrame: leverFlipFrame + 18 },
-    { leverNum: 6, flipFrame: leverFlipFrame + 36 },
+    { leverNum: 3, flipFrame: leverFlipFrame + 30 },
   ];
   const macroPlucks: PluckEvent[] = [
-    { stringNum: 1, startFrame: leverFlipFrame + 6 },
-    { stringNum: 3, startFrame: leverFlipFrame + 24 },
+    { stringNum: 1, startFrame: leverFlipFrame + 5 },
+    { stringNum: 3, startFrame: leverFlipFrame + 35 },
   ];
+
+  let bottomRuleText = 'Most Celtic harps sit in E♭ major when every lever is flipped down.';
+  if (frame >= leverFlipFrame - 6 && frame < conceptOrderFrame - 6) {
+    bottomRuleText = 'Flipping a lever up raises that string’s note one step higher.';
+  } else if (frame >= conceptOrderFrame - 6 && frame < fEb - 8) {
+    bottomRuleText = 'Think of the Circle of Fifths like a clock: step clockwise to add one lever.';
+  } else if (frame >= fEb - 8) {
+    bottomRuleText = 'Always raise levers in one memorable order: A · E · B · F · C · G · D.';
+  }
 
   return (
     <AbsoluteFill style={{ opacity: Math.min(entry, exit) }}>
@@ -631,7 +661,7 @@ export const LeversConceptStage: React.FC<{
       <div
         style={{
           position: 'absolute',
-          top: 86,
+          top: 76,
           left: 72,
           right: 72,
           textAlign: 'center',
@@ -643,26 +673,26 @@ export const LeversConceptStage: React.FC<{
             fontFamily: FONT_NUM,
             fontSize: 19,
             fontWeight: 700,
-            letterSpacing: '0.28em',
+            letterSpacing: '0.26em',
             color: theme.accentSoft,
             marginBottom: 10,
           }}
         >
-          MECHANICS · +1 SEMITONE PER LEVER
+          HOW LEVERS CHANGE KEYS
         </div>
         <div style={{ fontFamily: FONT_DISPLAY, fontSize: 52, fontWeight: 700, color: '#f8fafc' }}>
           Circle of Fifths & Levers
         </div>
       </div>
 
-      {/* Upper Half: Macro Close-up of Camac Levers with pure alpha CSS gradient mask (ZERO box seam) */}
+      {/* Upper Half: Macro Close-up of Camac Levers with seamless CSS alpha mask */}
       <div
         style={{
           position: 'absolute',
           left: 0,
-          top: 190,
+          top: 175,
           width: 1080,
-          height: 680,
+          height: 620,
           zIndex: 2,
           overflow: 'hidden',
           maskImage: 'linear-gradient(180deg, #000 0%, #000 62%, transparent 94%)',
@@ -671,8 +701,8 @@ export const LeversConceptStage: React.FC<{
       >
         <Harp3DCanvas
           width={1080}
-          height={680}
-          theta={-0.30 + frame * 0.0045}
+          height={620}
+          theta={-0.30 + frame * 0.004}
           phi={1.28}
           radius={0.92}
           targetY={1.06}
@@ -684,36 +714,59 @@ export const LeversConceptStage: React.FC<{
         />
       </div>
 
-      {/* Lower Half: Futuristic Illuminated Circle of Fifths Wheel */}
+      {/* Lower Half: Illuminated Circle of Fifths Clock Dial */}
       <div
         style={{
           position: 'absolute',
           left: '50%',
-          top: 900,
-          width: 660,
-          height: 660,
+          top: 810,
+          width: 650,
+          height: 650,
           transform: 'translateX(-50%)',
           zIndex: 4,
         }}
       >
-        <svg width="660" height="660" viewBox="0 0 660 660">
-          <circle cx="330" cy="330" r="265" fill="rgba(16, 12, 8, 0.56)" stroke="rgba(245, 184, 65, 0.28)" strokeWidth="2" />
-          <circle cx="330" cy="330" r="210" fill="none" stroke="rgba(253, 230, 138, 0.14)" strokeWidth="1.2" strokeDasharray="6 14" />
+        <svg width="650" height="650" viewBox="0 0 650 650">
+          <circle cx="325" cy="325" r="258" fill="rgba(16, 12, 8, 0.58)" stroke="rgba(245, 184, 65, 0.28)" strokeWidth="2" />
+          <circle cx="325" cy="325" r="204" fill="none" stroke="rgba(253, 230, 138, 0.14)" strokeWidth="1.2" strokeDasharray="6 14" />
+
+          {/* Clockwise Progression Arc from Eb (idx 9) to Active Step */}
+          {frame >= fBb && (
+            <path
+              d="M 103 325 A 222 222 0 0 1 436 133"
+              fill="none"
+              stroke="rgba(251, 191, 36, 0.5)"
+              strokeWidth="4"
+              strokeLinecap="round"
+            />
+          )}
 
           {fifthsKeys.map((item, idx) => {
             const angle = ((idx * 30 - 90) * Math.PI) / 180;
-            const cx = 330 + 245 * Math.cos(angle);
-            const cy = 330 + 245 * Math.sin(angle);
+            const cx = 325 + 238 * Math.cos(angle);
+            const cy = 325 + 238 * Math.sin(angle);
             const isActive = idx === stepIdx;
+            const isVisited =
+              (idx === 9 && frame >= fEb) ||
+              (idx === 10 && frame >= fBb) ||
+              (idx === 11 && frame >= fF) ||
+              (idx === 0 && frame >= fC) ||
+              (idx === 1 && frame >= fG);
             return (
               <g key={item.k}>
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={isActive ? 38 : 28}
-                  fill={isActive ? 'rgba(245, 184, 65, 0.94)' : 'rgba(26, 21, 14, 0.92)'}
-                  stroke={isActive ? '#fef3c7' : 'rgba(245, 184, 65, 0.42)'}
-                  strokeWidth={isActive ? 2.6 : 1.4}
+                  r={isActive ? 39 : 28}
+                  fill={
+                    isActive
+                      ? 'rgba(245, 184, 65, 0.96)'
+                      : isVisited
+                      ? 'rgba(72, 52, 18, 0.92)'
+                      : 'rgba(26, 21, 14, 0.90)'
+                  }
+                  stroke={isActive ? '#fef3c7' : isVisited ? '#f59e0b' : 'rgba(245, 184, 65, 0.38)'}
+                  strokeWidth={isActive ? 2.8 : 1.4}
                 />
                 <text
                   x={cx}
@@ -721,7 +774,7 @@ export const LeversConceptStage: React.FC<{
                   textAnchor="middle"
                   style={{
                     fontFamily: FONT_DISPLAY,
-                    fontSize: isActive ? 24 : 18,
+                    fontSize: isActive ? 25 : 18,
                     fontWeight: 700,
                     fill: isActive ? '#0c0904' : '#fde68a',
                   }}
@@ -741,33 +794,85 @@ export const LeversConceptStage: React.FC<{
             top: '50%',
             transform: 'translate(-50%, -50%)',
             textAlign: 'center',
+            width: 310,
           }}
         >
-          <div style={{ fontFamily: FONT_DISPLAY, fontSize: 64, fontWeight: 700, color: '#fef3c7', lineHeight: 1 }}>
-            {fifthsKeys[stepIdx].label}
+          <div style={{ fontFamily: FONT_DISPLAY, fontSize: 66, fontWeight: 700, color: '#fef3c7', lineHeight: 1 }}>
+            {activeKey.label}
           </div>
-          <div style={{ fontFamily: FONT_NUM, fontSize: 18, fontWeight: 700, letterSpacing: '0.16em', color: '#fbbf24', marginTop: 8 }}>
-            MAJOR · {fifthsKeys[stepIdx].flats}
+          <div style={{ fontFamily: FONT_NUM, fontSize: 16, fontWeight: 700, letterSpacing: '0.14em', color: '#fbbf24', marginTop: 10 }}>
+            MAJOR KEY
           </div>
-          <div style={{ fontFamily: FONT_SANS, fontSize: 18, color: 'rgba(241,245,249,0.72)', marginTop: 6 }}>
-            Raise order: A · E · B · F · C · G · D
+          <div style={{ fontFamily: FONT_SANS, fontSize: 20, fontWeight: 600, color: '#f8fafc', marginTop: 6 }}>
+            {activeKey.flats}
           </div>
         </div>
       </div>
 
-      {/* Bottom Clean Pedagogy Note */}
+      {/* Cumulative Clockwise Lever Order Strip (A · E · B · F · C · G · D) */}
       <div
         style={{
           position: 'absolute',
-          bottom: 92,
+          left: 110,
+          right: 110,
+          bottom: 205,
+          opacity: orderRailShown ? 1 : 0.35,
+          zIndex: 5,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT_NUM,
+            fontSize: 14,
+            fontWeight: 700,
+            letterSpacing: '0.2em',
+            color: 'rgba(253, 230, 138, 0.78)',
+            textAlign: 'center',
+            marginBottom: 10,
+          }}
+        >
+          CLOCKWISE LEVER ORDER · EACH STEP RAISES THE NEXT
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+          {raisedOrder.map((ltr, i) => {
+            const lit = i < activeUpCount;
+            return (
+              <div
+                key={ltr}
+                style={{
+                  flex: 1,
+                  padding: '12px 0',
+                  borderRadius: 16,
+                  background: lit ? 'rgba(245, 184, 65, 0.24)' : 'rgba(18, 14, 10, 0.78)',
+                  border: lit ? '1.8px solid #fbbf24' : '1.2px solid rgba(255,255,255,0.16)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 24, fontWeight: 700, color: lit ? '#fef3c7' : '#94a3b8' }}>
+                  {ltr}
+                </div>
+                <div style={{ fontFamily: FONT_NUM, fontSize: 11, fontWeight: 700, color: lit ? '#fbbf24' : '#64748b', marginTop: 3 }}>
+                  {lit ? '↑ UP' : '↓ DN'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Plain-English Rule */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 72,
           left: 84,
           right: 84,
           textAlign: 'center',
           zIndex: 5,
         }}
       >
-        <div style={{ fontFamily: FONT_SANS, fontSize: 27, fontWeight: 500, color: 'rgba(241,245,249,0.92)', lineHeight: 1.42 }}>
-          Celtic harps are most commonly tuned to E♭ major with all levers down.
+        <div style={{ fontFamily: FONT_SANS, fontSize: 27, fontWeight: 500, color: 'rgba(241,245,249,0.94)', lineHeight: 1.4 }}>
+          {bottomRuleText}
         </div>
       </div>
     </AbsoluteFill>

@@ -1,176 +1,186 @@
 {
   "fps": 30,
-  "durationSec": 85.553,
-  "totalFrames": 2567,
+  "durationSec": 105.658,
+  "totalFrames": 3170,
   "scenes": {
     "introStart": 0,
-    "introEnd": 219,
-    "conceptStart": 219,
-    "conceptEnd": 459,
+    "introEnd": 215,
+    "conceptStart": 215,
+    "conceptEnd": 488,
     "conceptNotes": [
-      361,
       391,
-      421
+      421,
+      451
     ],
-    "mapStart": 459,
-    "mapEnd": 600,
-    "mapTapPlay": 566,
-    "ingameStart": 600,
-    "ingameEnd": 2219,
-    "insightsStart": 2219,
-    "insightsEnd": 2388,
-    "outroStart": 2388
+    "mapStart": 488,
+    "mapEnd": 622,
+    "mapTapPlay": 587,
+    "ingameStart": 622,
+    "ingameEnd": 2786,
+    "insightsStart": 2786,
+    "insightsEnd": 2975,
+    "outroStart": 2975
   },
   "rounds": [
     {
       "roundNumber": 1,
-      "roundStartFrame": 608,
+      "roundStartFrame": 629,
       "cadenceChordFrames": [
-        737,
-        765,
-        794,
-        822
+        756,
+        784,
+        813,
+        841
       ],
       "mysteryPluckFrames": [
-        878,
-        908,
-        938
+        896,
+        926,
+        956
       ],
       "mysteryStrings": [
         1,
         3,
         5
       ],
-      "humCueStartFrame": 957,
-      "humCueEndFrame": 1113,
+      "humCueStartFrame": 982,
+      "humCueEndFrame": 1143,
+      "decideStartFrame": 1146,
       "keyTaps": [
         {
           "keyIndex": 0,
-          "tapFrame": 1116,
-          "isCorrect": true
+          "tapFrame": 1220,
+          "isCorrect": true,
+          "label": "C"
         },
         {
           "keyIndex": 2,
-          "tapFrame": 1132,
-          "isCorrect": true
+          "tapFrame": 1243,
+          "isCorrect": true,
+          "label": "E"
         },
         {
           "keyIndex": 4,
-          "tapFrame": 1149,
-          "isCorrect": true
+          "tapFrame": 1320,
+          "isCorrect": true,
+          "label": "G"
         }
       ],
       "slotNotes": [
         {
           "note": "C",
-          "revealFrame": 1116
+          "revealFrame": 1220
         },
         {
           "note": "E",
-          "revealFrame": 1132
+          "revealFrame": 1243
         },
         {
           "note": "G",
-          "revealFrame": 1149
+          "revealFrame": 1320
         }
       ],
-      "verdictFrame": 1151,
+      "lockInBanner": "LOCKED IN \u00b7 C \u00b7 E \u00b7 G",
+      "verdictFrame": 1375,
       "verdictCorrect": true,
-      "verdictTitle": "Spot On!",
-      "verdictDetail": "Melody \u00b7 C \u00b7 E \u00b7 G",
+      "verdictTitle": "Right Answer!",
+      "verdictDetail": "Your sequence C \u00b7 E \u00b7 G matches",
       "walkPlucks": [
         {
           "stringNum": 1,
-          "frame": 1324,
+          "frame": 1575,
           "noteLabel": "C"
         },
         {
           "stringNum": 3,
-          "frame": 1354,
+          "frame": 1605,
           "noteLabel": "E"
         },
         {
           "stringNum": 5,
-          "frame": 1384,
+          "frame": 1635,
           "noteLabel": "G"
         }
       ],
-      "walkEndFrame": 1427
+      "walkEndFrame": 1678
     },
     {
       "roundNumber": 2,
-      "roundStartFrame": 1427,
+      "roundStartFrame": 1678,
       "cadenceChordFrames": [
-        1563,
-        1592,
-        1620,
-        1649
+        1784,
+        1813,
+        1841,
+        1870
       ],
       "mysteryPluckFrames": [
-        1704,
-        1734,
-        1764
+        1925,
+        1955,
+        1985
       ],
       "mysteryStrings": [
         5,
         3,
         1
       ],
-      "humCueStartFrame": 1784,
-      "humCueEndFrame": 1939,
+      "humCueStartFrame": 2011,
+      "humCueEndFrame": 2212,
+      "decideStartFrame": 2215,
       "keyTaps": [
         {
           "keyIndex": 0,
-          "tapFrame": 1942,
-          "isCorrect": false
+          "tapFrame": 2283,
+          "isCorrect": false,
+          "label": "C"
         },
         {
           "keyIndex": 4,
-          "tapFrame": 1959,
-          "isCorrect": false
+          "tapFrame": 2306,
+          "isCorrect": false,
+          "label": "G"
         },
         {
           "keyIndex": 2,
-          "tapFrame": 1975,
-          "isCorrect": false
+          "tapFrame": 2376,
+          "isCorrect": false,
+          "label": "E"
         }
       ],
       "slotNotes": [
         {
           "note": "C",
-          "revealFrame": 1942
+          "revealFrame": 2283
         },
         {
           "note": "G",
-          "revealFrame": 1959
+          "revealFrame": 2306
         },
         {
           "note": "E",
-          "revealFrame": 1975
+          "revealFrame": 2376
         }
       ],
-      "verdictFrame": 1978,
+      "lockInBanner": "LOCKED IN \u00b7 C \u00b7 G \u00b7 E",
+      "verdictFrame": 2431,
       "verdictCorrect": false,
-      "verdictTitle": "Listen Closely...",
-      "verdictDetail": "Actual phrase: G \u00b7 E \u00b7 C",
+      "verdictTitle": "Wrong Sequence",
+      "verdictDetail": "You guessed C \u00b7 G \u00b7 E \u00b7 Real: G \u00b7 E \u00b7 C",
       "walkPlucks": [
         {
           "stringNum": 5,
-          "frame": 2112,
+          "frame": 2680,
           "noteLabel": "G"
         },
         {
           "stringNum": 3,
-          "frame": 2142,
+          "frame": 2710,
           "noteLabel": "E"
         },
         {
           "stringNum": 1,
-          "frame": 2172,
+          "frame": 2740,
           "noteLabel": "C"
         }
       ],
-      "walkEndFrame": 2219
+      "walkEndFrame": 2786
     }
   ]
 }

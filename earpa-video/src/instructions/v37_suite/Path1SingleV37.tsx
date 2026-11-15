@@ -37,14 +37,17 @@ export const Path1SingleV37: React.FC = () => {
     mysteryStrings: r.mysteryStrings,
     humCueStartFrame: r.humCueStartFrame - s.ingameStart,
     humCueEndFrame: r.humCueEndFrame - s.ingameStart,
+    decideStartFrame: r.decideStartFrame - s.ingameStart,
     keyTaps: r.keyTaps.map((kt) => ({
       ...kt,
       tapFrame: kt.tapFrame - s.ingameStart,
     })),
+    lockInBanner: r.lockInBanner,
     verdictFrame: r.verdictFrame - s.ingameStart,
     verdictCorrect: r.verdictCorrect,
     verdictTitle: r.verdictTitle,
     verdictDetail: r.verdictDetail,
+    actualKeyIndex: 'actualKeyIndex' in r ? r.actualKeyIndex : undefined,
     walkPlucks: r.walkPlucks.map((wp) => ({
       ...wp,
       frame: wp.frame - s.ingameStart,
@@ -53,49 +56,65 @@ export const Path1SingleV37: React.FC = () => {
 
   const r1 = ingameRounds[0];
   const r2 = ingameRounds[1];
+  const r1LockFrame = r1.keyTaps[0].tapFrame;
+  const r2LockFrame = r2.keyTaps[0].tapFrame;
 
   const gameplayCaptions = [
     {
       startFrame: 0,
       endFrame: r1.mysteryPluckFrames[0],
-      topTag: 'ROUND 1 · LIVE IN-APP PACE',
-      topTitle: 'Anchor Cadence (I · IV · V · I)',
+      topTag: 'ROUND 1 · LISTEN',
+      topTitle: 'Home Chords Set the Key',
       bottomCoach: 'Listen to four grounding chords establishing home key C major.',
     },
     {
       startFrame: r1.mysteryPluckFrames[0],
-      endFrame: r1.verdictFrame,
-      topTag: 'THINKING WINDOW · FEEL PULL',
+      endFrame: r1.decideStartFrame ?? r1LockFrame,
+      topTag: 'STEP 1 · THINK',
       topTitle: 'Pause & Hum Home C',
-      bottomCoach: 'Hum low C gently — does the note settle downward or rise upward?',
+      bottomCoach: 'Take a quiet second to hum low C and feel which way the note pulls.',
+    },
+    {
+      startFrame: r1.decideStartFrame ?? r1LockFrame,
+      endFrame: r1.verdictFrame,
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Tap Note F to Lock Your Guess',
+      bottomCoach: 'Once you tap F, your guess locks in while the app checks your answer.',
     },
     {
       startFrame: r1.verdictFrame,
       endFrame: r2.roundStartFrame,
-      topTag: 'VERDICT & WALKDOWN · 950ms/STEP',
-      topTitle: 'Spot On! · F Resolves Down',
-      bottomCoach: 'Clear confirmation first — then hear F step down through E and D to C.',
+      topTag: 'STEP 3 · APP CONFIRMS RIGHT',
+      topTitle: 'Right Answer · Hear It Walk Home',
+      bottomCoach: 'The app confirms your guess straight away, then plays F down to home C.',
     },
     {
       startFrame: r2.roundStartFrame,
       endFrame: r2.mysteryPluckFrames[0],
-      topTag: 'ROUND 2 · IDENTICAL TIMING',
-      topTitle: 'Same Anchor Cadence',
-      bottomCoach: 'Exact same harmonic speed before the second mystery pitch.',
+      topTag: 'ROUND 2 · LISTEN',
+      topTitle: 'Same Home Chords & Pace',
+      bottomCoach: 'Exact same speed before the second mystery note plays.',
     },
     {
       startFrame: r2.mysteryPluckFrames[0],
+      endFrame: r2.decideStartFrame ?? r2LockFrame,
+      topTag: 'STEP 1 · THINK',
+      topTitle: 'Hum Low C · Notice Upward Pull',
+      bottomCoach: 'Think quietly — notice how this bright note wants to reach up to high C.',
+    },
+    {
+      startFrame: r2.decideStartFrame ?? r2LockFrame,
       endFrame: r2.verdictFrame,
-      topTag: 'THINKING WINDOW · HUM HOME C',
-      topTitle: 'Listen for Upward Urge',
-      bottomCoach: 'Hum low C again — feel the bright upward pull toward high C.',
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Tap G · Answer Locked In',
+      bottomCoach: 'Watch what happens when you pick G and the app checks your choice.',
     },
     {
       startFrame: r2.verdictFrame,
       endFrame: ingameDur + 30,
-      topTag: 'RECOVERY WALK · RECALIBRATE',
-      topTitle: 'Actual Note: B Resolves Up',
-      bottomCoach: 'Wrong guess is corrected gently — then B pulls straight up to high C.',
+      topTag: 'STEP 3 · APP CONFIRMS WRONG',
+      topTitle: 'Wrong Note · True Answer: B',
+      bottomCoach: 'It shows your wrong guess, highlights actual note B, then resolves B up to C.',
     },
   ];
 

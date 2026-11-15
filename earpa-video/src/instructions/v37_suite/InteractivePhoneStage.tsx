@@ -54,11 +54,14 @@ export interface GameplayRoundEvent {
   mysteryStrings: number[]; // e.g. [4] or [1,3,5]
   humCueStartFrame?: number;
   humCueEndFrame?: number;
+  decideStartFrame?: number;
   keyTaps: KeyTapSpec[];
+  lockInBanner?: string;
   verdictFrame: number;
   verdictCorrect: boolean;
   verdictTitle: string;
   verdictDetail: string;
+  actualKeyIndex?: number;
   walkPlucks: { stringNum: number; frame: number; noteLabel: string }[];
   // Optional Path 2 note slot labels synced with keyTaps
   slotNotes?: { note: string; revealFrame: number }[];
@@ -68,10 +71,14 @@ export interface LeverRoundEvent {
   scaleName: string;
   roundLabel: string; // e.g. "Level 1 · 2 / 3"
   roundStartFrame: number;
+  decideStartFrame?: number;
+  lockInPromptFrame?: number;
   // Target initial & user-flipped states per string 1..8 (true = UP)
   initialLevers: boolean[];
   leverFlips: { stringNum: number; flipFrame: number; targetUp: boolean }[];
+  skippedStringNum?: number;
   confirmTapFrame: number;
+  verdictFrame?: number;
   verdictCorrect: boolean;
   verdictHeadline: string;
   verdictSubline: string;
@@ -360,16 +367,58 @@ interface PhaseHudCaption {
   bottomCoach: string;
 }
 
+/** Crisp visible fingertip cursor + ripple inside phone frame */
+const TouchCursor: React.FC<{
+  xPct: number;
+  yPct: number;
+  visible: boolean;
+  pressed: boolean;
+  accentColor: string;
+}> = ({ xPct, yPct, visible, pressed, accentColor }) => {
+  if (!visible) return null;
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: `${xPct}%`,
+        top: `${yPct}%`,
+        transform: `translate(-50%, -50%) scale(${pressed ? 0.84 : 1})`,
+        width: 44,
+        height: 44,
+        borderRadius: '50%',
+        background: pressed ? 'rgba(255,255,255,0.42)' : 'rgba(255,255,255,0.22)',
+        border: `2.5px solid ${pressed ? '#fde68a' : accentColor}`,
+        boxShadow: `0 0 ${pressed ? 24 : 14}px rgba(255,255,255,0.55)`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        zIndex: 12,
+      }}
+    >
+      <div
+        style={{
+          width: 14,
+          height: 14,
+          borderRadius: '50%',
+          backgroundColor: '#ffffff',
+          boxShadow: '0 0 8px rgba(0,0,0,0.5)',
+        }}
+      />
+    </div>
+  );
+};
+
 /**
  * Large Live Gameplay Stage (710px wide phone) supporting Path 1 & Path 2
- * with exact real-time cadence chords, hum-C pause indicator, subtle string filaments,
- * authentic frosted Verdict pills, and accurate walkdown/replay animations.
+ * with exact real-time cadence chords, thinking hum-C window, visible cursor deciding & tapping,
+ * dedicated 1.85s LOCKED IN evaluation card, clear Right/Wrong confirmation, and walkdown/replay.
  */
 export const LiveGameplayPhoneStage: React.FC<{
   theme: 'single' | 'melody';
   textureSrc: string;
   totalFrames: number;
-  levelCode: string; // e.g. 'P1-12 · C Major - Full Octave' or 'P2-04 · Seq Intro 4: Three-Note Triad'
+  levelCode: string;
   rounds: GameplayRoundEvent[];
   captions: PhaseHudCaption[];
 }> = ({ theme, textureSrc, totalFrames, levelCode, rounds, captions }) => {
@@ -388,7 +437,6 @@ export const LiveGameplayPhoneStage: React.FC<{
     extrapolateRight: 'clamp',
   });
 
-  // Active round calculation
   let activeRound = rounds[0];
   for (const r of rounds) {
     if (frame >= r.roundStartFrame) activeRound = r;
@@ -398,35 +446,22 @@ export const LiveGameplayPhoneStage: React.FC<{
     captions.find((c) => frame >= c.startFrame && frame < c.endFrame) ||
     captions[captions.length - 1];
 
-  // Collect active subtle string filaments across cadence, mystery, and walkdown
   const plucks: StringPluckSpec[] = [];
   for (const r of rounds) {
-    // Cadence I-IV-V-I triads
     const c1 = r.cadenceChordFrames[0];
     const c2 = r.cadenceChordFrames[1];
     const c3 = r.cadenceChordFrames[2];
     const c4 = r.cadenceChordFrames[3];
-    // Chord I: C-E-G
     [1, 3, 5].forEach((s) => plucks.push({ stringNum: s, startFrame: c1, durationFrames: 24, color: '#fde68a' }));
-    // Chord IV: F-A-C
     [4, 6, 8].forEach((s) => plucks.push({ stringNum: s, startFrame: c2, durationFrames: 24, color: '#fde68a' }));
-    // Chord V: G-B
     [5, 7].forEach((s) => plucks.push({ stringNum: s, startFrame: c3, durationFrames: 24, color: '#fde68a' }));
-    // Chord I resolve: C-E-G
     [1, 3, 5].forEach((s) => plucks.push({ stringNum: s, startFrame: c4, durationFrames: 34, color: '#fde68a' }));
 
-    // Mystery note(s)
     r.mysteryPluckFrames.forEach((pf, idx) => {
       const sNum = r.mysteryStrings[idx] ?? r.mysteryStrings[0];
-      plucks.push({
-        stringNum: sNum,
-        startFrame: pf,
-        durationFrames: 42,
-        color: palette.accentSoft,
-      });
+      plucks.push({ stringNum: sNum, startFrame: pf, durationFrames: 42, color: palette.accentSoft });
     });
 
-    // Walkdown / Melody Replay notes
     r.walkPlucks.forEach((wp) => {
       plucks.push({
         stringNum: wp.stringNum,
@@ -437,18 +472,22 @@ export const LiveGameplayPhoneStage: React.FC<{
     });
   }
 
-  // Determine cadence step indicator (0..3) if currently inside activeRound cadence
   let activeChordIdx = -1;
   activeRound.cadenceChordFrames.forEach((cf, idx) => {
     const chordEnd = idx < 3 ? activeRound.cadenceChordFrames[idx + 1] : cf + 48;
     if (frame >= cf && frame < chordEnd) activeChordIdx = idx;
   });
 
-  // Determine status bar text inside phone
-  const afterMystery = frame >= activeRound.mysteryPluckFrames[activeRound.mysteryPluckFrames.length - 1];
+  const lastMysteryFrame = activeRound.mysteryPluckFrames[activeRound.mysteryPluckFrames.length - 1];
+  const lastTapFrame =
+    activeRound.keyTaps[activeRound.keyTaps.length - 1]?.tapFrame ?? activeRound.verdictFrame - 45;
+  const decideStart = activeRound.decideStartFrame ?? Math.max(lastMysteryFrame + 30, (activeRound.keyTaps[0]?.tapFrame ?? lastTapFrame) - 36);
+
+  const afterMystery = frame >= lastMysteryFrame;
+  const inDecidePhase = frame >= decideStart && frame < lastTapFrame + 4;
+  const inLockInBeat = frame >= lastTapFrame && frame < activeRound.verdictFrame;
   const afterVerdict = frame >= activeRound.verdictFrame;
-  const inWalk =
-    activeRound.walkPlucks.length > 0 && frame >= activeRound.walkPlucks[0].frame - 4;
+  const inWalk = activeRound.walkPlucks.length > 0 && frame >= activeRound.walkPlucks[0].frame - 4;
 
   let currentWalkLabel = '';
   if (inWalk) {
@@ -458,33 +497,43 @@ export const LiveGameplayPhoneStage: React.FC<{
     }
   }
 
-  let promptPillText = 'Your turn · pluck a string or choose a note';
+  let promptPillText = 'Listen to the home chords...';
   let promptBorderColor = 'rgba(52, 211, 153, 0.45)';
   if (activeChordIdx >= 0) {
     const chordNames = ['I (C)', 'IV (F)', 'V (G)', 'I (C)'];
-    promptPillText = `Cadence · ${chordNames[activeChordIdx]} · Lock in Home`;
+    promptPillText = `Home Chords · ${chordNames[activeChordIdx]} · Settles to C`;
     promptBorderColor = 'rgba(251, 191, 36, 0.55)';
-  } else if (
-    !afterMystery &&
-    theme === 'melody' &&
-    frame >= activeRound.mysteryPluckFrames[0] - 2
-  ) {
-    promptPillText = 'Listen · Follow the 3-note melody shape';
+  } else if (!afterMystery && theme === 'melody' && frame >= activeRound.mysteryPluckFrames[0] - 2) {
+    promptPillText = 'Listen · Catch all 3 melody notes';
     promptBorderColor = 'rgba(56, 189, 248, 0.55)';
-  } else if (afterMystery && !afterVerdict) {
+  } else if (afterMystery && frame < decideStart) {
     promptPillText =
       theme === 'single'
-        ? 'Hear the gravity · Hum tonic C gently'
-        : 'Tap the 3 notes in order';
-    promptBorderColor = 'rgba(253, 230, 138, 0.55)';
+        ? 'Think · Hum home C and feel the pull'
+        : 'Think · Hum home C & picture the shape';
+    promptBorderColor = 'rgba(253, 230, 138, 0.60)';
+  } else if (inDecidePhase) {
+    promptPillText =
+      theme === 'single'
+        ? 'Decide · Tap your chosen note to lock in'
+        : 'Decide · Tap the 3 notes in order';
+    promptBorderColor = '#fde68a';
+  } else if (inLockInBeat) {
+    promptPillText = 'Locked In · App checking your answer...';
+    promptBorderColor = '#fde68a';
+  } else if (afterVerdict && !inWalk) {
+    promptPillText = activeRound.verdictCorrect
+      ? 'Confirmed · Right Answer!'
+      : 'Confirmed · Wrong Answer — See Actual Note';
+    promptBorderColor = activeRound.verdictCorrect ? '#34d399' : '#f59e0b';
   } else if (afterVerdict && inWalk && currentWalkLabel) {
     promptPillText =
       theme === 'single'
-        ? `Resolving to C · ${currentWalkLabel}`
-        : `Listening back · ${currentWalkLabel}`;
+        ? `Walking back to home C · ${currentWalkLabel}`
+        : `Hearing true melody · ${currentWalkLabel}`;
     promptBorderColor = activeRound.verdictCorrect
-      ? 'rgba(52, 211, 153, 0.65)'
-      : 'rgba(251, 191, 36, 0.65)';
+      ? 'rgba(52, 211, 153, 0.72)'
+      : 'rgba(251, 191, 36, 0.72)';
   }
 
   const showHumC =
@@ -493,47 +542,68 @@ export const LiveGameplayPhoneStage: React.FC<{
     frame >= activeRound.humCueStartFrame &&
     frame <= activeRound.humCueEndFrame;
 
-  // Next round transition check to clear verdict smoothly before next round cadence
   const nextRound = rounds.find((r) => r.roundNumber === activeRound.roundNumber + 1);
-  const verdictVisible =
-    afterVerdict && (!nextRound || frame < nextRound.roundStartFrame - 4);
+  const verdictVisible = afterVerdict && (!nextRound || frame < nextRound.roundStartFrame - 4);
+  const lockInVisible = inLockInBeat && (!nextRound || frame < nextRound.roundStartFrame - 4);
+
+  // Animate TouchCursor gliding cleanly across keyTaps
+  let cursorVisible = false;
+  let cursorX = 50;
+  let cursorY = 82;
+  let cursorPressed = false;
+  if (frame >= decideStart - 6 && frame <= lastTapFrame + 14) {
+    cursorVisible = true;
+    const taps = activeRound.keyTaps;
+    if (taps.length === 1) {
+      const targetX = 8.5 + taps[0].keyIndex * 11.95;
+      const p = interpolate(frame, [decideStart - 4, taps[0].tapFrame - 6], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+      cursorX = interpolate(p, [0, 1], [50, targetX]);
+      cursorY = interpolate(p, [0, 1], [78, 94.3]);
+      cursorPressed = frame >= taps[0].tapFrame - 2 && frame <= taps[0].tapFrame + 8;
+    } else if (taps.length > 1) {
+      const kIdx0 = taps[0];
+      const tx0 = 8.5 + kIdx0.keyIndex * 11.95;
+      if (frame < kIdx0.tapFrame + 4) {
+        const p = interpolate(frame, [decideStart - 4, kIdx0.tapFrame - 5], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+        cursorX = interpolate(p, [0, 1], [50, tx0]);
+        cursorY = interpolate(p, [0, 1], [78, 94.3]);
+        cursorPressed = frame >= kIdx0.tapFrame - 2 && frame <= kIdx0.tapFrame + 4;
+      } else {
+        // Interpolate hop between sequential notes
+        let segIdx = 0;
+        for (let i = 1; i < taps.length; i++) {
+          if (frame >= taps[i - 1].tapFrame + 4) segIdx = i;
+        }
+        const prevTap = taps[Math.max(0, segIdx - 1)];
+        const curTap = taps[segIdx];
+        const prevX = 8.5 + prevTap.keyIndex * 11.95;
+        const curX = 8.5 + curTap.keyIndex * 11.95;
+        const p = interpolate(frame, [prevTap.tapFrame + 5, curTap.tapFrame - 4], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+        cursorX = interpolate(p, [0, 1], [prevX, curX]);
+        cursorY = 94.3 - Math.sin(p * Math.PI) * 3.5;
+        cursorPressed = frame >= curTap.tapFrame - 2 && frame <= curTap.tapFrame + 5;
+      }
+    }
+  }
 
   return (
     <AbsoluteFill style={{ opacity: Math.min(entry, exit) }}>
       <SanctuaryBackdrop theme={theme} blurPx={18} photoOpacity={0.28} ringOpacity={0.12} />
 
-      {/* Top Editorial Scene Header */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 48,
-          left: 56,
-          right: 56,
-          textAlign: 'center',
-          zIndex: 8,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_NUM,
-            fontSize: 18,
-            fontWeight: 700,
-            letterSpacing: '0.26em',
-            color: palette.accentSoft,
-            marginBottom: 8,
-          }}
-        >
+      <div style={{ position: 'absolute', top: 48, left: 56, right: 56, textAlign: 'center', zIndex: 8 }}>
+        <div style={{ fontFamily: FONT_NUM, fontSize: 18, fontWeight: 700, letterSpacing: '0.26em', color: palette.accentSoft, marginBottom: 8 }}>
           {activeCaption.topTag}
         </div>
-        <div
-          style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 48,
-            fontWeight: 700,
-            color: '#f8fafc',
-            lineHeight: 1.08,
-          }}
-        >
+        <div style={{ fontFamily: FONT_DISPLAY, fontSize: 48, fontWeight: 700, color: '#f8fafc', lineHeight: 1.08 }}>
           {activeCaption.topTitle}
         </div>
       </div>
@@ -553,22 +623,10 @@ export const LiveGameplayPhoneStage: React.FC<{
           zIndex: 4,
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            borderRadius: 48,
-            overflow: 'hidden',
-            backgroundColor: '#040a0c',
-          }}
-        >
-          <Img
-            src={staticFile(textureSrc)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+        <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 48, overflow: 'hidden', backgroundColor: '#040a0c' }}>
+          <Img src={staticFile(textureSrc)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 
-          {/* Top Round Progress Pill Replacement (100% opaque to eliminate underlying text bleed) */}
+          {/* Top Round Progress Pill Replacement (100% opaque) */}
           <div
             style={{
               position: 'absolute',
@@ -615,44 +673,17 @@ export const LiveGameplayPhoneStage: React.FC<{
               const y1 = sCoord.y1 * ih;
               const x2 = sCoord.x2 * iw;
               const y2 = sCoord.y2 * ih;
-
               const mx = (x1 + x2) * 0.5;
               const my = (y1 + y2) * 0.5;
               const vibAmp = Math.sin(dt * 1.45) * 4.5 * env;
               const cx = mx + vibAmp;
-
               const strokeCol = p.color || '#fde68a';
               return (
                 <g key={`pluck-${idx}-${p.stringNum}-${p.startFrame}`}>
-                  {/* Subtle soft halo */}
-                  <path
-                    d={`M ${x1} ${y1} Q ${cx} ${my} ${x2} ${y2}`}
-                    fill="none"
-                    stroke={strokeCol}
-                    strokeWidth="7.5"
-                    strokeLinecap="round"
-                    opacity={0.28 * env}
-                  />
-                  {/* Crisp delicate warm/emerald string filament */}
-                  <path
-                    d={`M ${x1} ${y1} Q ${cx} ${my} ${x2} ${y2}`}
-                    fill="none"
-                    stroke={strokeCol}
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                    opacity={0.82 * env}
-                  />
-                  {/* Subtle pluck flare at mid string on initial impact */}
+                  <path d={`M ${x1} ${y1} Q ${cx} ${my} ${x2} ${y2}`} fill="none" stroke={strokeCol} strokeWidth="7.5" strokeLinecap="round" opacity={0.28 * env} />
+                  <path d={`M ${x1} ${y1} Q ${cx} ${my} ${x2} ${y2}`} fill="none" stroke={strokeCol} strokeWidth="2.8" strokeLinecap="round" opacity={0.82 * env} />
                   {dt <= 14 && (
-                    <circle
-                      cx={cx}
-                      cy={my}
-                      r={interpolate(dt, [0, 14], [4, 15])}
-                      fill="none"
-                      stroke={strokeCol}
-                      strokeWidth="1.6"
-                      opacity={interpolate(dt, [0, 14], [0.7, 0])}
-                    />
+                    <circle cx={cx} cy={my} r={interpolate(dt, [0, 14], [4, 15])} fill="none" stroke={strokeCol} strokeWidth="1.6" opacity={interpolate(dt, [0, 14], [0.7, 0])} />
                   )}
                 </g>
               );
@@ -684,10 +715,10 @@ export const LiveGameplayPhoneStage: React.FC<{
             <div
               style={{
                 position: 'absolute',
-                left: '26%',
+                left: '24%',
                 top: '87.4%',
-                width: '48%',
-                height: '3.0%',
+                width: '52%',
+                height: '3.1%',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -698,6 +729,8 @@ export const LiveGameplayPhoneStage: React.FC<{
               {[0, 1, 2].map((slotIdx) => {
                 const sn = activeRound.slotNotes?.[slotIdx];
                 const filled = sn && frame >= sn.revealFrame;
+                const clearAtNext = nextRound && frame >= nextRound.roundStartFrame - 4;
+                const showFill = filled && !clearAtNext;
                 return (
                   <div
                     key={slotIdx}
@@ -705,37 +738,36 @@ export const LiveGameplayPhoneStage: React.FC<{
                       flex: 1,
                       height: '100%',
                       borderRadius: 999,
-                      background: filled ? '#0d3654' : '#121926',
-                      border: filled
-                        ? '1.5px solid #38bdf8'
-                        : '1px solid rgba(148, 163, 184, 0.34)',
+                      background: showFill ? '#0d3654' : '#121926',
+                      border: showFill ? '1.8px solid #38bdf8' : '1px solid rgba(148, 163, 184, 0.34)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontFamily: FONT_DISPLAY,
-                      fontSize: filled ? 17 : 13,
+                      fontSize: showFill ? 17 : 13,
                       fontWeight: 700,
-                      color: filled ? '#e0f2fe' : '#64748b',
+                      color: showFill ? '#e0f2fe' : '#64748b',
                     }}
                   >
-                    {filled ? sn.note : `Note ${slotIdx + 1}`}
+                    {showFill ? sn.note : `Note ${slotIdx + 1}`}
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Key Touch Press Highlight over Keyboard C..C */}
+          {/* Key Touch Press Highlight over Keyboard C..C (persists cleanly through Locked-In & Verdict!) */}
           {activeRound.keyTaps.map((kt, idx) => {
-            if (frame < kt.tapFrame || frame > kt.tapFrame + 48) return null;
+            const hideAt = nextRound ? nextRound.roundStartFrame - 4 : totalFrames;
+            if (frame < kt.tapFrame || frame > Math.min(hideAt, activeRound.verdictFrame + 65)) return null;
             const leftPct = 3.2 + kt.keyIndex * 11.95;
-            const col = kt.isCorrect === false ? '#f59e0b' : palette.accent;
-            const fade = interpolate(
-              frame - kt.tapFrame,
-              [0, 6, 36, 48],
-              [0.3, 1, 0.95, 0],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-            );
+            const isAfterV = frame >= activeRound.verdictFrame;
+            const col = !isAfterV ? '#fde68a' : kt.isCorrect === false ? '#f59e0b' : '#34d399';
+            const bg = !isAfterV
+              ? 'rgba(253, 230, 138, 0.28)'
+              : kt.isCorrect === false
+              ? 'rgba(245, 158, 11, 0.34)'
+              : 'rgba(52, 211, 153, 0.32)';
             return (
               <div
                 key={`kt-${activeRound.roundNumber}-${idx}`}
@@ -746,13 +778,9 @@ export const LiveGameplayPhoneStage: React.FC<{
                   width: '10.6%',
                   height: '5.7%',
                   borderRadius: 12,
-                  background:
-                    kt.isCorrect === false
-                      ? 'rgba(245, 158, 11, 0.34)'
-                      : 'rgba(52, 211, 153, 0.30)',
+                  background: bg,
                   border: `2.5px solid ${col}`,
-                  boxShadow: `0 0 20px ${col}`,
-                  opacity: fade,
+                  boxShadow: `0 0 22px ${col}`,
                   pointerEvents: 'none',
                   zIndex: 6,
                 }}
@@ -760,37 +788,88 @@ export const LiveGameplayPhoneStage: React.FC<{
             );
           })}
 
-          {/* Dynamic Prompt Pill Mask (100% opaque matching native UI) */}
+          {/* On Wrong Guess in Path 1, highlight the ACTUAL right key in bright Emerald so comparison is unmistakable */}
+          {afterVerdict && !activeRound.verdictCorrect && activeRound.actualKeyIndex !== undefined && (!nextRound || frame < nextRound.roundStartFrame - 4) && (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${3.2 + activeRound.actualKeyIndex * 11.95}%`,
+                top: '91.5%',
+                width: '10.6%',
+                height: '5.7%',
+                borderRadius: 12,
+                background: 'rgba(16, 185, 129, 0.26)',
+                border: '2.5px solid #34d399',
+                boxShadow: '0 0 24px rgba(52, 211, 153, 0.85)',
+                pointerEvents: 'none',
+                zIndex: 6,
+              }}
+            />
+          )}
+
+          {/* Smooth Animated Touch Finger Cursor */}
+          <TouchCursor
+            xPct={cursorX}
+            yPct={cursorY}
+            visible={cursorVisible}
+            pressed={cursorPressed}
+            accentColor={palette.accentSoft}
+          />
+
+          {/* Dynamic Prompt Pill Mask */}
           <div
             style={{
               position: 'absolute',
-              left: '15.5%',
-              top: theme === 'single' ? '86.8%' : '83.3%',
-              width: '69%',
+              left: '14%',
+              top: theme === 'single' ? '86.8%' : '83.2%',
+              width: '72%',
               height: '3.9%',
               borderRadius: 999,
               backgroundColor: '#0e1722',
-              border: `1.2px solid ${promptBorderColor}`,
+              border: `1.5px solid ${promptBorderColor}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 6,
+              zIndex: 7,
             }}
           >
-            <div
-              style={{
-                fontFamily: FONT_SANS,
-                fontSize: 14.5,
-                fontWeight: 600,
-                color: '#e2e8f0',
-                letterSpacing: '0.01em',
-              }}
-            >
+            <div style={{ fontFamily: FONT_SANS, fontSize: 14.5, fontWeight: 600, color: '#f8fafc', letterSpacing: '0.01em' }}>
               {promptPillText}
             </div>
           </div>
 
-          {/* Authentic Native-Style Verdict Toast Pill (Appears ONLY AFTER User Guess!) */}
+          {/* Dedicated LOCKED IN Card (Visible during 1.85s Decision Check Pause BEFORE Verdict!) */}
+          {lockInVisible && (
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: theme === 'single' ? '77.5%' : '74.5%',
+                transform: `translate(-50%, -50%) scale(${spring({
+                  frame: frame - lastTapFrame,
+                  fps,
+                  config: { damping: 20, stiffness: 140 },
+                })})`,
+                minWidth: '62%',
+                padding: '14px 26px',
+                borderRadius: 24,
+                background: 'rgba(12, 18, 28, 0.94)',
+                border: '1.8px solid rgba(253, 230, 138, 0.85)',
+                boxShadow: '0 16px 42px rgba(0,0,0,0.65), 0 0 28px rgba(253, 230, 138, 0.25)',
+                textAlign: 'center',
+                zIndex: 9,
+              }}
+            >
+              <div style={{ fontFamily: FONT_NUM, fontSize: 14, fontWeight: 700, letterSpacing: '0.18em', color: '#fde68a' }}>
+                {activeRound.lockInBanner || 'ANSWER LOCKED IN'}
+              </div>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 25, fontWeight: 700, color: '#f8fafc', marginTop: 4 }}>
+                Checking your answer...
+              </div>
+            </div>
+          )}
+
+          {/* Clear Right / Wrong Confirmation Banner (Reveals cleanly AFTER Lock-In Pause!) */}
           {verdictVisible && (
             <div
               style={{
@@ -802,39 +881,23 @@ export const LiveGameplayPhoneStage: React.FC<{
                   fps,
                   config: { damping: 18, stiffness: 135 },
                 })})`,
-                minWidth: '58%',
+                minWidth: '62%',
                 padding: '14px 26px',
                 borderRadius: 24,
-                background: activeRound.verdictCorrect
-                  ? 'rgba(6, 40, 32, 0.92)'
-                  : 'rgba(54, 24, 16, 0.92)',
+                background: activeRound.verdictCorrect ? 'rgba(6, 42, 32, 0.95)' : 'rgba(62, 22, 16, 0.95)',
                 border: activeRound.verdictCorrect
-                  ? '1.8px solid rgba(52, 211, 153, 0.85)'
-                  : '1.8px solid rgba(251, 191, 36, 0.88)',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+                  ? '2px solid rgba(52, 211, 153, 0.9)'
+                  : '2px solid rgba(251, 146, 60, 0.92)',
+                boxShadow: '0 16px 40px rgba(0,0,0,0.65)',
                 textAlign: 'center',
                 zIndex: 9,
               }}
             >
-              <div
-                style={{
-                  fontFamily: FONT_DISPLAY,
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: activeRound.verdictCorrect ? '#6ee7b7' : '#fde68a',
-                }}
-              >
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 29, fontWeight: 700, color: activeRound.verdictCorrect ? '#6ee7b7' : '#fdba74' }}>
+                {activeRound.verdictCorrect ? '✓ ' : '✕ '}
                 {activeRound.verdictTitle}
               </div>
-              <div
-                style={{
-                  fontFamily: FONT_SANS,
-                  fontSize: 17,
-                  fontWeight: 600,
-                  color: '#f8fafc',
-                  marginTop: 2,
-                }}
-              >
+              <div style={{ fontFamily: FONT_SANS, fontSize: 17, fontWeight: 600, color: '#f8fafc', marginTop: 3 }}>
                 {activeRound.verdictDetail}
               </div>
             </div>
@@ -842,27 +905,9 @@ export const LiveGameplayPhoneStage: React.FC<{
         </div>
       </div>
 
-      {/* Concise Lower Coaching Strip */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 44,
-          left: 68,
-          right: 68,
-          textAlign: 'center',
-          zIndex: 8,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_SANS,
-            fontSize: 27,
-            fontWeight: 500,
-            color: 'rgba(241,245,249,0.92)',
-            lineHeight: 1.38,
-            textShadow: '0 4px 18px rgba(0,0,0,0.8)',
-          }}
-        >
+      {/* Lower Coaching Strip */}
+      <div style={{ position: 'absolute', bottom: 44, left: 68, right: 68, textAlign: 'center', zIndex: 8 }}>
+        <div style={{ fontFamily: FONT_SANS, fontSize: 27, fontWeight: 500, color: 'rgba(241,245,249,0.92)', lineHeight: 1.38, textShadow: '0 4px 18px rgba(0,0,0,0.8)' }}>
           {activeCaption.bottomCoach}
         </div>
       </div>
@@ -872,8 +917,8 @@ export const LiveGameplayPhoneStage: React.FC<{
 
 /**
  * Large Live Gameplay Stage specifically for Path 3 Levers (LeverTrainingScreen)
- * showing neck levers rotating up/down, bottom C..C2 tile updates, Confirm scale tap,
- * Clear Feedback banner, and 8-note start-to-finish scale walk at real 550ms/note speed!
+ * showing clear Thinking -> Flipping Levers -> Pressing Confirm to Lock In -> 1.85s Checking beat ->
+ * Clear Right/Wrong diagnosis -> 8-note start-to-finish scale walk @ 550ms/note.
  */
 export const LiveLeverPhoneStage: React.FC<{
   textureSrc: string;
@@ -905,7 +950,6 @@ export const LiveLeverPhoneStage: React.FC<{
     captions.find((c) => frame >= c.startFrame && frame < c.endFrame) ||
     captions[captions.length - 1];
 
-  // Current up/down state for strings 1..8
   const leverStateUp = activeRound.initialLevers.map((initVal, idx) => {
     const stringNum = idx + 1;
     let cur = initVal;
@@ -918,36 +962,82 @@ export const LiveLeverPhoneStage: React.FC<{
   });
 
   const tilesLabels = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C²'];
-  const afterConfirm = frame >= activeRound.confirmTapFrame + 6;
+  const verdictAt = activeRound.verdictFrame ?? activeRound.confirmTapFrame + 48;
+  const decideStart = activeRound.decideStartFrame ?? activeRound.roundStartFrame + 95;
+  const lockPromptAt = activeRound.lockInPromptFrame ?? activeRound.confirmTapFrame - 35;
+
+  const inLockInBeat = frame >= activeRound.confirmTapFrame && frame < verdictAt;
+  const afterVerdict = frame >= verdictAt;
+
   const walkIdx = activeRound.walkNotes.findIndex((w, i) => {
     const nextF = activeRound.walkNotes[i + 1]?.frame ?? w.frame + 18;
     return frame >= w.frame && frame < nextF;
   });
 
+  // Animated TouchCursor path: visits each flipped tile in order, then glides down to Confirm scale!
+  let cursorVisible = false;
+  let cursorX = 50;
+  let cursorY = 74;
+  let cursorPressed = false;
+  if (frame >= decideStart - 6 && frame <= activeRound.confirmTapFrame + 14) {
+    cursorVisible = true;
+    const waypoints = [
+      ...activeRound.leverFlips.map((fl) => ({
+        x: 8.5 + (fl.stringNum - 1) * 11.85,
+        y: 86.2,
+        f: fl.flipFrame,
+      })),
+      { x: 50, y: 93.7, f: activeRound.confirmTapFrame },
+    ];
+    if (frame < waypoints[0].f + 5) {
+      const p = interpolate(frame, [decideStart - 4, waypoints[0].f - 5], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+      cursorX = interpolate(p, [0, 1], [50, waypoints[0].x]);
+      cursorY = interpolate(p, [0, 1], [72, waypoints[0].y]);
+      cursorPressed = frame >= waypoints[0].f - 2 && frame <= waypoints[0].f + 5;
+    } else {
+      let seg = 1;
+      for (let i = 1; i < waypoints.length; i++) {
+        if (frame >= waypoints[i - 1].f + 5) seg = i;
+      }
+      const prev = waypoints[seg - 1];
+      const cur = waypoints[seg];
+      const p = interpolate(frame, [prev.f + 5, cur.f - 5], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+      cursorX = interpolate(p, [0, 1], [prev.x, cur.x]);
+      cursorY = interpolate(p, [0, 1], [prev.y, cur.y]);
+      cursorPressed = frame >= cur.f - 2 && frame <= cur.f + 6;
+    }
+  }
+
+  let leverPromptText = `Think · Count clockwise steps from E♭ for ${activeRound.scaleName}`;
+  let leverPromptColor = 'rgba(253, 230, 138, 0.55)';
+  if (frame >= decideStart && frame < lockPromptAt) {
+    leverPromptText = 'Decide · Tap harp strings or tiles below to lift levers';
+    leverPromptColor = '#fde68a';
+  } else if (frame >= lockPromptAt && frame < activeRound.confirmTapFrame) {
+    leverPromptText = 'Ready · Press Confirm scale ↓ to lock in your setup';
+    leverPromptColor = '#fbbf24';
+  } else if (inLockInBeat) {
+    leverPromptText = 'Locked In · App checking all 8 levers...';
+    leverPromptColor = '#fde68a';
+  } else if (afterVerdict) {
+    leverPromptText = activeRound.verdictCorrect
+      ? 'Right Setup! · Walking full scale start to finish'
+      : 'Wrong Setup · Missed lever glows amber below';
+    leverPromptColor = activeRound.verdictCorrect ? '#34d399' : '#fb923c';
+  }
+
   return (
     <AbsoluteFill style={{ opacity: Math.min(entry, exit) }}>
       <SanctuaryBackdrop theme="levers" blurPx={18} photoOpacity={0.28} ringOpacity={0.14} />
 
-      <div
-        style={{
-          position: 'absolute',
-          top: 48,
-          left: 56,
-          right: 56,
-          textAlign: 'center',
-          zIndex: 8,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_NUM,
-            fontSize: 18,
-            fontWeight: 700,
-            letterSpacing: '0.26em',
-            color: palette.accentSoft,
-            marginBottom: 8,
-          }}
-        >
+      <div style={{ position: 'absolute', top: 48, left: 56, right: 56, textAlign: 'center', zIndex: 8 }}>
+        <div style={{ fontFamily: FONT_NUM, fontSize: 18, fontWeight: 700, letterSpacing: '0.26em', color: palette.accentSoft, marginBottom: 8 }}>
           {activeCaption.topTag}
         </div>
         <div style={{ fontFamily: FONT_DISPLAY, fontSize: 48, fontWeight: 700, color: '#f8fafc', lineHeight: 1.08 }}>
@@ -970,22 +1060,9 @@ export const LiveLeverPhoneStage: React.FC<{
           zIndex: 4,
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            borderRadius: 48,
-            overflow: 'hidden',
-            backgroundColor: '#0c0804',
-          }}
-        >
-          <Img
-            src={staticFile(textureSrc)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+        <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 48, overflow: 'hidden', backgroundColor: '#0c0804' }}>
+          <Img src={staticFile(textureSrc)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 
-          {/* Header Top-Right Round Label (100% opaque matching canyon dusk sky y=0.035..0.050) */}
           <div
             style={{
               position: 'absolute',
@@ -1007,7 +1084,6 @@ export const LiveLeverPhoneStage: React.FC<{
             {activeRound.roundLabel}
           </div>
 
-          {/* Target Scale Prompt Header Override (covers 0.078..0.128 cleanly above subtitle!) */}
           <div
             style={{
               position: 'absolute',
@@ -1027,14 +1103,12 @@ export const LiveLeverPhoneStage: React.FC<{
             </div>
           </div>
 
-          {/* Mechanical Lever Visual Badges on Neck + Subtle Scale-Walk Filaments */}
           <svg
             width={phoneWidth - 24}
             height={phoneHeight - 24}
             viewBox={`0 0 ${phoneWidth - 24} ${phoneHeight - 24}`}
             style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 4 }}
           >
-            {/* Dynamic Lever Neck Indicators (visualizes engaged ↑ vs open ↓ state right on the harp neck) */}
             {leverStateUp.map((isUp, idx) => {
               const sc = HARP_STRING_COORDS[idx + 1];
               const iw = phoneWidth - 24;
@@ -1044,21 +1118,27 @@ export const LiveLeverPhoneStage: React.FC<{
               const recentlyFlipped = activeRound.leverFlips.some(
                 (f) => f.stringNum === idx + 1 && frame >= f.flipFrame && frame <= f.flipFrame + 24
               );
+              const isMissedAfterVerdict = afterVerdict && activeRound.skippedStringNum === idx + 1;
               return (
                 <g key={`lev-neck-${idx}`}>
                   <circle
                     cx={px}
                     cy={py}
-                    r={recentlyFlipped ? 13 : 8}
-                    fill={isUp ? 'rgba(245, 184, 65, 0.9)' : 'rgba(20, 26, 34, 0.72)'}
-                    stroke={isUp ? '#fef3c7' : 'rgba(148,163,184,0.65)'}
-                    strokeWidth={recentlyFlipped ? 2.5 : 1.5}
+                    r={isMissedAfterVerdict ? 14 : recentlyFlipped ? 13 : 8}
+                    fill={
+                      isMissedAfterVerdict
+                        ? 'rgba(251, 146, 60, 0.95)'
+                        : isUp
+                        ? 'rgba(245, 184, 65, 0.9)'
+                        : 'rgba(20, 26, 34, 0.72)'
+                    }
+                    stroke={isMissedAfterVerdict ? '#fff7ed' : isUp ? '#fef3c7' : 'rgba(148,163,184,0.65)'}
+                    strokeWidth={isMissedAfterVerdict || recentlyFlipped ? 2.6 : 1.5}
                   />
                 </g>
               );
             })}
 
-            {/* Subtle String Illuminations during Scale Walkdown */}
             {activeRound.walkNotes.map((wn, idx) => {
               if (frame < wn.frame || frame > wn.frame + 26) return null;
               const dt = frame - wn.frame;
@@ -1080,34 +1160,50 @@ export const LiveLeverPhoneStage: React.FC<{
             })}
           </svg>
 
-          {/* Bottom 8 Lever Toggle Tiles C..C2 (100% opaque to prevent double glyph bleed) */}
+          {/* Opaque Lever Step Status Mask cleanly covering "Show Circle of Fifths" */}
           <div
             style={{
               position: 'absolute',
-              left: '2.7%',
-              top: '83.0%',
-              width: '94.6%',
-              height: '6.5%',
+              left: '14%',
+              top: '76.6%',
+              width: '72%',
+              height: '5.3%',
+              borderRadius: 999,
+              backgroundColor: '#191410',
+              border: `1.5px solid ${leverPromptColor}`,
               display: 'flex',
-              gap: 6,
-              zIndex: 5,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 7,
             }}
           >
+            <div style={{ fontFamily: FONT_SANS, fontSize: 14.5, fontWeight: 600, color: '#fef3c7' }}>
+              {leverPromptText}
+            </div>
+          </div>
+
+          {/* Bottom 8 Lever Toggle Tiles C..C2 */}
+          <div style={{ position: 'absolute', left: '2.7%', top: '83.0%', width: '94.6%', height: '6.5%', display: 'flex', gap: 6, zIndex: 5 }}>
             {tilesLabels.map((lbl, idx) => {
               const isUp = leverStateUp[idx];
               const isWalkActive = walkIdx === idx;
+              const isMissed = afterVerdict && activeRound.skippedStringNum === idx + 1;
               return (
                 <div
                   key={lbl}
                   style={{
                     flex: 1,
                     borderRadius: 12,
-                    backgroundColor: isWalkActive
+                    backgroundColor: isMissed
+                      ? '#5b2416'
+                      : isWalkActive
                       ? '#133a2c'
                       : isUp
                       ? '#3b2a10'
                       : '#13171b',
-                    border: isWalkActive
+                    border: isMissed
+                      ? '2.4px solid #fb923c'
+                      : isWalkActive
                       ? '2.2px solid #34d399'
                       : isUp
                       ? '1.6px solid #f5b841'
@@ -1118,35 +1214,19 @@ export const LiveLeverPhoneStage: React.FC<{
                     justifyContent: 'center',
                   }}
                 >
-                  <div
-                    style={{
-                      fontFamily: FONT_SANS,
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: isUp ? '#fde68a' : '#f1f5f9',
-                      lineHeight: 1.05,
-                    }}
-                  >
+                  <div style={{ fontFamily: FONT_SANS, fontSize: 18, fontWeight: 700, color: isMissed ? '#fed7aa' : isUp ? '#fde68a' : '#f1f5f9', lineHeight: 1.05 }}>
                     {lbl}
                   </div>
-                  <div
-                    style={{
-                      fontFamily: FONT_NUM,
-                      fontSize: 11.5,
-                      fontWeight: 700,
-                      color: isUp ? '#f5b841' : '#94a3b8',
-                      marginTop: 2,
-                    }}
-                  >
-                    {isUp ? '↑ UP' : '↓ DN'}
+                  <div style={{ fontFamily: FONT_NUM, fontSize: 11.5, fontWeight: 700, color: isMissed ? '#fb923c' : isUp ? '#f5b841' : '#94a3b8', marginTop: 2 }}>
+                    {isMissed ? 'NEED ↑' : isUp ? '↑ UP' : '↓ DN'}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Confirm Scale Button Press Pulse */}
-          {frame >= activeRound.confirmTapFrame - 4 && frame <= activeRound.confirmTapFrame + 16 && (
+          {/* Confirm Scale Button Highlight (Pre-tap ready cue + Lock-In pulse) */}
+          {frame >= lockPromptAt && frame < verdictAt && (
             <div
               style={{
                 position: 'absolute',
@@ -1155,15 +1235,24 @@ export const LiveLeverPhoneStage: React.FC<{
                 width: '93.6%',
                 height: '6.6%',
                 borderRadius: 18,
-                border: '2.5px solid #fde68a',
-                background: 'rgba(245, 184, 65, 0.22)',
+                border: inLockInBeat ? '3px solid #fde68a' : '2px solid rgba(245, 184, 65, 0.72)',
+                background: inLockInBeat ? 'rgba(245, 184, 65, 0.28)' : 'rgba(245, 184, 65, 0.10)',
                 zIndex: 6,
               }}
             />
           )}
 
-          {/* Genuine LeverTrainingScreen Feedback + 8-Note Walk Progress Overlay */}
-          {afterConfirm && (
+          {/* Smooth Animated Touch Finger Cursor */}
+          <TouchCursor
+            xPct={cursorX}
+            yPct={cursorY}
+            visible={cursorVisible}
+            pressed={cursorPressed}
+            accentColor={palette.accentSoft}
+          />
+
+          {/* LOCKED IN Card during 1.85s Check Beat */}
+          {inLockInBeat && (
             <div
               style={{
                 position: 'absolute',
@@ -1172,38 +1261,47 @@ export const LiveLeverPhoneStage: React.FC<{
                 width: '88%',
                 padding: '18px 22px',
                 borderRadius: 24,
-                background: 'rgba(14, 18, 16, 0.94)',
-                border: activeRound.verdictCorrect
-                  ? '1.8px solid rgba(52, 211, 153, 0.78)'
-                  : '1.8px solid rgba(245, 184, 65, 0.85)',
+                background: 'rgba(18, 15, 11, 0.94)',
+                border: '2px solid rgba(253, 230, 138, 0.88)',
                 boxShadow: '0 22px 54px rgba(0,0,0,0.72)',
                 textAlign: 'center',
                 zIndex: 9,
               }}
             >
-              <div
-                style={{
-                  fontFamily: FONT_DISPLAY,
-                  fontSize: 30,
-                  fontWeight: 700,
-                  color: activeRound.verdictCorrect ? '#6ee7b7' : '#fde68a',
-                }}
-              >
+              <div style={{ fontFamily: FONT_NUM, fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: '#fde68a' }}>
+                CONFIRM PRESSED · SETUP LOCKED IN
+              </div>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 28, fontWeight: 700, color: '#f8fafc', marginTop: 6 }}>
+                Checking all 8 levers...
+              </div>
+            </div>
+          )}
+
+          {/* Clear Right/Wrong Confirmation + 8-Note Walk Progress Overlay */}
+          {afterVerdict && (
+            <div
+              style={{
+                position: 'absolute',
+                left: '6%',
+                top: '57%',
+                width: '88%',
+                padding: '18px 22px',
+                borderRadius: 24,
+                background: activeRound.verdictCorrect ? 'rgba(8, 28, 22, 0.95)' : 'rgba(38, 18, 12, 0.95)',
+                border: activeRound.verdictCorrect ? '2px solid rgba(52, 211, 153, 0.88)' : '2px solid rgba(251, 146, 60, 0.90)',
+                boxShadow: '0 22px 54px rgba(0,0,0,0.72)',
+                textAlign: 'center',
+                zIndex: 9,
+              }}
+            >
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 30, fontWeight: 700, color: activeRound.verdictCorrect ? '#6ee7b7' : '#fdba74' }}>
+                {activeRound.verdictCorrect ? '✓ ' : '✕ '}
                 {activeRound.verdictHeadline}
               </div>
-              <div
-                style={{
-                  fontFamily: FONT_SANS,
-                  fontSize: 16.5,
-                  color: '#e2e8f0',
-                  marginTop: 4,
-                  marginBottom: 14,
-                }}
-              >
+              <div style={{ fontFamily: FONT_SANS, fontSize: 16.5, color: '#f8fafc', marginTop: 4, marginBottom: 14 }}>
                 {activeRound.verdictSubline}
               </div>
 
-              {/* 8 Sequential Scale Notes Start-to-Finish (matching real app!) */}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
                 {activeRound.walkNotes.map((wn, idx) => {
                   const isLit = walkIdx === idx;
@@ -1215,16 +1313,8 @@ export const LiveLeverPhoneStage: React.FC<{
                         flex: 1,
                         padding: '6px 0',
                         borderRadius: 8,
-                        background: isLit
-                          ? 'rgba(245, 184, 65, 0.28)'
-                          : done
-                          ? 'rgba(255,255,255,0.08)'
-                          : 'transparent',
-                        borderBottom: isLit
-                          ? '2.5px solid #fde68a'
-                          : done
-                          ? '2px solid #94a3b8'
-                          : '2px solid rgba(255,255,255,0.16)',
+                        background: isLit ? 'rgba(245, 184, 65, 0.28)' : done ? 'rgba(255,255,255,0.08)' : 'transparent',
+                        borderBottom: isLit ? '2.5px solid #fde68a' : done ? '2px solid #94a3b8' : '2px solid rgba(255,255,255,0.16)',
                         fontFamily: FONT_SANS,
                         fontSize: 14,
                         fontWeight: isLit ? 700 : 500,
@@ -1241,27 +1331,8 @@ export const LiveLeverPhoneStage: React.FC<{
         </div>
       </div>
 
-      {/* Bottom Coaching Text */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 44,
-          left: 68,
-          right: 68,
-          textAlign: 'center',
-          zIndex: 8,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_SANS,
-            fontSize: 27,
-            fontWeight: 500,
-            color: 'rgba(241,245,249,0.92)',
-            lineHeight: 1.38,
-            textShadow: '0 4px 18px rgba(0,0,0,0.8)',
-          }}
-        >
+      <div style={{ position: 'absolute', bottom: 44, left: 68, right: 68, textAlign: 'center', zIndex: 8 }}>
+        <div style={{ fontFamily: FONT_SANS, fontSize: 27, fontWeight: 500, color: 'rgba(241,245,249,0.92)', lineHeight: 1.38, textShadow: '0 4px 18px rgba(0,0,0,0.8)' }}>
           {activeCaption.bottomCoach}
         </div>
       </div>

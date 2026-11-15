@@ -27,12 +27,16 @@ export const Path3LeversV37: React.FC = () => {
     scaleName: r.scaleName,
     roundLabel: r.roundLabel,
     roundStartFrame: r.roundStartFrame - s.ingameStart,
+    decideStartFrame: r.decideStartFrame - s.ingameStart,
+    lockInPromptFrame: r.lockInPromptFrame - s.ingameStart,
     initialLevers: r.initialLevers,
     leverFlips: r.leverFlips.map((fl) => ({
       ...fl,
       flipFrame: fl.flipFrame - s.ingameStart,
     })),
+    skippedStringNum: 'skippedStringNum' in r ? r.skippedStringNum : undefined,
     confirmTapFrame: r.confirmTapFrame - s.ingameStart,
+    verdictFrame: r.verdictFrame - s.ingameStart,
     verdictCorrect: r.verdictCorrect,
     verdictHeadline: r.verdictHeadline,
     verdictSubline: r.verdictSubline,
@@ -44,35 +48,51 @@ export const Path3LeversV37: React.FC = () => {
 
   const r1 = leverRounds[0];
   const r2 = leverRounds[1];
+  const r1Verdict = r1.verdictFrame ?? r1.confirmTapFrame + 48;
+  const r2Verdict = r2.verdictFrame ?? r2.confirmTapFrame + 48;
 
   const captions = [
     {
       startFrame: 0,
-      endFrame: r1.confirmTapFrame,
-      topTag: 'ROUND 1 · F MAJOR (1 FLAT)',
-      topTitle: 'Raise Levers A & E Up',
-      bottomCoach: 'Touch strings on the neck OR use bottom tiles to lift A and E.',
+      endFrame: r1.decideStartFrame ?? 90,
+      topTag: 'ROUND 1 · STEP 1 · THINK',
+      topTitle: 'F Major · Two Clockwise Steps',
+      bottomCoach: 'Count two steps from home E-flat on the Circle: raise levers A and E.',
     },
     {
-      startFrame: r1.confirmTapFrame,
+      startFrame: r1.decideStartFrame ?? 90,
+      endFrame: r1Verdict,
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Lift A & E · Tap Confirm Scale',
+      bottomCoach: 'Flip the levers by touch or buttons, then tap Confirm scale to lock them in.',
+    },
+    {
+      startFrame: r1Verdict,
       endFrame: r2.roundStartFrame,
-      topTag: 'CONFIRM & FULL SCALE WALK · 550ms/NOTE',
-      topTitle: 'Correct · Complete F Major Scale',
-      bottomCoach: 'The app checks all eight levers, then walks F to F start to finish.',
+      topTag: 'STEP 3 · CONFIRMED RIGHT',
+      topTitle: 'Right Setup · Full F Major Walk',
+      bottomCoach: 'The app checks every lever, confirms it is right, and walks F to F start to finish.',
     },
     {
       startFrame: r2.roundStartFrame,
-      endFrame: r2.confirmTapFrame,
-      topTag: 'ROUND 2 · G MAJOR (1 SHARP)',
-      topTitle: 'Test & Verify Your Tuning',
-      bottomCoach: 'Notice what happens if you raise F but leave B down by mistake.',
+      endFrame: r2.decideStartFrame ?? r2.roundStartFrame + 90,
+      topTag: 'ROUND 2 · STEP 1 · THINK',
+      topTitle: 'G Major Needs A, E, B & F Up',
+      bottomCoach: 'Four steps clockwise from E-flat means four levers should stand up.',
     },
     {
-      startFrame: r2.confirmTapFrame,
+      startFrame: r2.decideStartFrame ?? r2.roundStartFrame + 90,
+      endFrame: r2Verdict,
+      topTag: 'STEP 2 · DECIDE & LOCK IN',
+      topTitle: 'Raise F · Miss B · Tap Confirm',
+      bottomCoach: 'See what happens when you accidentally skip B and press Confirm to lock in.',
+    },
+    {
+      startFrame: r2Verdict,
       endFrame: ingameDur + 30,
-      topTag: 'INSTANT DIAGNOSIS & SCALE AUDIT',
-      topTitle: 'Not Quite · Flagged Missing B',
-      bottomCoach: 'Mismatched levers glow right away as the true G major scale plays through.',
+      topTag: 'STEP 3 · CONFIRMED WRONG',
+      topTitle: 'Wrong Setup · Missed B Lights Up',
+      bottomCoach: 'The app marks it wrong, glows missing lever B, and plays true G major start to finish.',
     },
   ];
 
@@ -104,6 +124,8 @@ export const Path3LeversV37: React.FC = () => {
         <LeversConceptStage
           totalFrames={conceptDur}
           leverFlipFrame={s.conceptLeverFrame - s.conceptStart}
+          conceptOrderFrame={s.conceptOrderFrame - s.conceptStart}
+          circleStepFrames={s.circleStepFrames.map((f) => f - s.conceptStart)}
         />
       </Sequence>
 
