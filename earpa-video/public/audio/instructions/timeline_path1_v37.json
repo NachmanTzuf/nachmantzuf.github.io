@@ -1,0 +1,118 @@
+{
+  "fps": 30,
+  "durationSec": 90.801,
+  "totalFrames": 2724,
+  "scenes": {
+    "introStart": 0,
+    "introEnd": 223,
+    "conceptStart": 223,
+    "conceptEnd": 826,
+    "gravLowFrame": 235,
+    "gravHighFrame": 526,
+    "mapStart": 826,
+    "mapEnd": 949,
+    "mapTapPlay": 922,
+    "ingameStart": 949,
+    "ingameEnd": 2283,
+    "insightsStart": 2283,
+    "insightsEnd": 2562,
+    "insightsSplitFrame": 2447,
+    "outroStart": 2562
+  },
+  "rounds": [
+    {
+      "roundNumber": 1,
+      "roundStartFrame": 957,
+      "cadenceChordFrames": [
+        1054,
+        1083,
+        1111,
+        1140
+      ],
+      "mysteryPluckFrames": [
+        1195
+      ],
+      "mysteryStrings": [
+        4
+      ],
+      "humCueStartFrame": 1226,
+      "humCueEndFrame": 1360,
+      "keyTaps": [
+        {
+          "keyIndex": 3,
+          "tapFrame": 1364,
+          "isCorrect": true
+        }
+      ],
+      "verdictFrame": 1366,
+      "verdictCorrect": true,
+      "verdictTitle": "Spot On!",
+      "verdictDetail": "Note F \u00b7 Subdominant (4)",
+      "walkPlucks": [
+        {
+          "stringNum": 4,
+          "frame": 1515,
+          "noteLabel": "F"
+        },
+        {
+          "stringNum": 3,
+          "frame": 1543,
+          "noteLabel": "E"
+        },
+        {
+          "stringNum": 2,
+          "frame": 1572,
+          "noteLabel": "D"
+        },
+        {
+          "stringNum": 1,
+          "frame": 1600,
+          "noteLabel": "C"
+        }
+      ],
+      "walkEndFrame": 1641
+    },
+    {
+      "roundNumber": 2,
+      "roundStartFrame": 1641,
+      "cadenceChordFrames": [
+        1759,
+        1787,
+        1816,
+        1844
+      ],
+      "mysteryPluckFrames": [
+        1899
+      ],
+      "mysteryStrings": [
+        7
+      ],
+      "humCueStartFrame": 1922,
+      "humCueEndFrame": 2064,
+      "keyTaps": [
+        {
+          "keyIndex": 4,
+          "tapFrame": 2069,
+          "isCorrect": false
+        }
+      ],
+      "verdictFrame": 2071,
+      "verdictCorrect": false,
+      "verdictTitle": "Listen Closely...",
+      "verdictDetail": "Actual note: B (7) \u00b7 Not G",
+      "walkPlucks": [
+        {
+          "stringNum": 7,
+          "frame": 2202,
+          "noteLabel": "B"
+        },
+        {
+          "stringNum": 8,
+          "frame": 2230,
+          "noteLabel": "C\u2075"
+        }
+      ],
+      "walkEndFrame": 2283
+    }
+  ]
+}

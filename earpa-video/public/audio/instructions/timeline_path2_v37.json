@@ -1,0 +1,176 @@
+{
+  "fps": 30,
+  "durationSec": 85.553,
+  "totalFrames": 2567,
+  "scenes": {
+    "introStart": 0,
+    "introEnd": 219,
+    "conceptStart": 219,
+    "conceptEnd": 459,
+    "conceptNotes": [
+      361,
+      391,
+      421
+    ],
+    "mapStart": 459,
+    "mapEnd": 600,
+    "mapTapPlay": 566,
+    "ingameStart": 600,
+    "ingameEnd": 2219,
+    "insightsStart": 2219,
+    "insightsEnd": 2388,
+    "outroStart": 2388
+  },
+  "rounds": [
+    {
+      "roundNumber": 1,
+      "roundStartFrame": 608,
+      "cadenceChordFrames": [
+        737,
+        765,
+        794,
+        822
+      ],
+      "mysteryPluckFrames": [
+        878,
+        908,
+        938
+      ],
+      "mysteryStrings": [
+        1,
+        3,
+        5
+      ],
+      "humCueStartFrame": 957,
+      "humCueEndFrame": 1113,
+      "keyTaps": [
+        {
+          "keyIndex": 0,
+          "tapFrame": 1116,
+          "isCorrect": true
+        },
+        {
+          "keyIndex": 2,
+          "tapFrame": 1132,
+          "isCorrect": true
+        },
+        {
+          "keyIndex": 4,
+          "tapFrame": 1149,
+          "isCorrect": true
+        }
+      ],
+      "slotNotes": [
+        {
+          "note": "C",
+          "revealFrame": 1116
+        },
+        {
+          "note": "E",
+          "revealFrame": 1132
+        },
+        {
+          "note": "G",
+          "revealFrame": 1149
+        }
+      ],
+      "verdictFrame": 1151,
+      "verdictCorrect": true,
+      "verdictTitle": "Spot On!",
+      "verdictDetail": "Melody \u00b7 C \u00b7 E \u00b7 G",
+      "walkPlucks": [
+        {
+          "stringNum": 1,
+          "frame": 1324,
+          "noteLabel": "C"
+        },
+        {
+          "stringNum": 3,
+          "frame": 1354,
+          "noteLabel": "E"
+        },
+        {
+          "stringNum": 5,
+          "frame": 1384,
+          "noteLabel": "G"
+        }
+      ],
+      "walkEndFrame": 1427
+    },
+    {
+      "roundNumber": 2,
+      "roundStartFrame": 1427,
+      "cadenceChordFrames": [
+        1563,
+        1592,
+        1620,
+        1649
+      ],
+      "mysteryPluckFrames": [
+        1704,
+        1734,
+        1764
+      ],
+      "mysteryStrings": [
+        5,
+        3,
+        1
+      ],
+      "humCueStartFrame": 1784,
+      "humCueEndFrame": 1939,
+      "keyTaps": [
+        {
+          "keyIndex": 0,
+          "tapFrame": 1942,
+          "isCorrect": false
+        },
+        {
+          "keyIndex": 4,
+          "tapFrame": 1959,
+          "isCorrect": false
+        },
+        {
+          "keyIndex": 2,
+          "tapFrame": 1975,
+          "isCorrect": false
+        }
+      ],
+      "slotNotes": [
+        {
+          "note": "C",
+          "revealFrame": 1942
+        },
+        {
+          "note": "G",
+          "revealFrame": 1959
+        },
+        {
+          "note": "E",
+          "revealFrame": 1975
+        }
+      ],
+      "verdictFrame": 1978,
+      "verdictCorrect": false,
+      "verdictTitle": "Listen Closely...",
+      "verdictDetail": "Actual phrase: G \u00b7 E \u00b7 C",
+      "walkPlucks": [
+        {
+          "stringNum": 5,
+          "frame": 2112,
+          "noteLabel": "G"
+        },
+        {
+          "stringNum": 3,
+          "frame": 2142,
+          "noteLabel": "E"
+        },
+        {
+          "stringNum": 1,
+          "frame": 2172,
+          "noteLabel": "C"
+        }
+      ],
+      "walkEndFrame": 2219
+    }
+  ]
+}

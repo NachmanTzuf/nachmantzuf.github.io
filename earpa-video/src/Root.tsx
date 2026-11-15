@@ -5,6 +5,9 @@ import {MotionSuite} from './mission/MotionSuite';
 import { Path1SingleNotesVideo } from './instructions/Path1SingleNotesVideo';
 import { Path1SingleNotesOverlay } from './instructions/Path1SingleNotesOverlay';
 import { Path1MotionVideo } from './instructions/path1_v36/Path1MotionVideo';
+import { Path1SingleV37, PATH1_V37_TOTAL_FRAMES } from './instructions/v37_suite/Path1SingleV37';
+import { Path2MelodyV37, PATH2_V37_TOTAL_FRAMES } from './instructions/v37_suite/Path2MelodyV37';
+import { Path3LeversV37, PATH3_V37_TOTAL_FRAMES } from './instructions/v37_suite/Path3LeversV37';
 import { Path2MelodyPhrasingVideo } from './instructions/Path2MelodyPhrasingVideo';
 import { Path3CamacLeversVideo } from './instructions/Path3CamacLeversVideo';
 import React from 'react';
@@ -127,6 +130,30 @@ export const Root: React.FC = () => {
         id="EarpaPath3CamacLeversLesson"
         component={Path3CamacLeversVideo}
         durationInFrames={2900}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="EarpaPath1SingleNotesV37"
+        component={Path1SingleV37}
+        durationInFrames={PATH1_V37_TOTAL_FRAMES}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="EarpaPath2MelodicSequenceV37"
+        component={Path2MelodyV37}
+        durationInFrames={PATH2_V37_TOTAL_FRAMES}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="EarpaPath3CamacLeversV37"
+        component={Path3LeversV37}
+        durationInFrames={PATH3_V37_TOTAL_FRAMES}
         fps={30}
         width={1080}
         height={1920}

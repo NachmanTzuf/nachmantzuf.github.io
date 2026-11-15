@@ -1,0 +1,173 @@
+{
+  "fps": 30,
+  "durationSec": 78.413,
+  "totalFrames": 2352,
+  "scenes": {
+    "introStart": 0,
+    "introEnd": 212,
+    "conceptStart": 212,
+    "conceptEnd": 668,
+    "conceptLeverFrame": 337,
+    "circleStart": 668,
+    "circleEnd": 829,
+    "circleTapFrame": 796,
+    "ingameStart": 829,
+    "ingameEnd": 1980,
+    "completeStart": 1980,
+    "completeEnd": 2154,
+    "outroStart": 2154
+  },
+  "rounds": [
+    {
+      "scaleName": "F major",
+      "roundLabel": "Level 1 \u00b7 1 / 3",
+      "roundStartFrame": 829,
+      "initialLevers": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "leverFlips": [
+        {
+          "stringNum": 6,
+          "flipFrame": 947,
+          "targetUp": true
+        },
+        {
+          "stringNum": 3,
+          "flipFrame": 973,
+          "targetUp": true
+        }
+      ],
+      "confirmTapFrame": 1078,
+      "verdictCorrect": true,
+      "verdictHeadline": "Correct",
+      "verdictSubline": "8 of 8 levers correct \u00b7 A & E up for F major",
+      "walkNotes": [
+        {
+          "stringNum": 4,
+          "frame": 1248,
+          "noteLabel": "F"
+        },
+        {
+          "stringNum": 5,
+          "frame": 1265,
+          "noteLabel": "G"
+        },
+        {
+          "stringNum": 6,
+          "frame": 1281,
+          "noteLabel": "A"
+        },
+        {
+          "stringNum": 7,
+          "frame": 1298,
+          "noteLabel": "B\u266d"
+        },
+        {
+          "stringNum": 8,
+          "frame": 1314,
+          "noteLabel": "C"
+        },
+        {
+          "stringNum": 2,
+          "frame": 1331,
+          "noteLabel": "D"
+        },
+        {
+          "stringNum": 3,
+          "frame": 1347,
+          "noteLabel": "E"
+        },
+        {
+          "stringNum": 4,
+          "frame": 1364,
+          "noteLabel": "F"
+        }
+      ],
+      "walkEndFrame": 1404
+    },
+    {
+      "scaleName": "G major",
+      "roundLabel": "Level 1 \u00b7 2 / 3",
+      "roundStartFrame": 1404,
+      "initialLevers": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "leverFlips": [
+        {
+          "stringNum": 4,
+          "flipFrame": 1538,
+          "targetUp": true
+        }
+      ],
+      "confirmTapFrame": 1635,
+      "verdictCorrect": false,
+      "verdictHeadline": "Not quite",
+      "verdictSubline": "7 of 8 levers correct \u00b7 Raise B \u2191",
+      "walkNotes": [
+        {
+          "stringNum": 5,
+          "frame": 1821,
+          "noteLabel": "G",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 6,
+          "frame": 1838,
+          "noteLabel": "A",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 7,
+          "frame": 1854,
+          "noteLabel": "B",
+          "pitchGlowColor": "#fbbf24"
+        },
+        {
+          "stringNum": 8,
+          "frame": 1871,
+          "noteLabel": "C",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 2,
+          "frame": 1887,
+          "noteLabel": "D",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 3,
+          "frame": 1904,
+          "noteLabel": "E",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 4,
+          "frame": 1920,
+          "noteLabel": "F\u266f",
+          "pitchGlowColor": "#6ee7b7"
+        },
+        {
+          "stringNum": 5,
+          "frame": 1937,
+          "noteLabel": "G",
+          "pitchGlowColor": "#6ee7b7"
+        }
+      ],
+      "walkEndFrame": 1980
+    }
+  ]
+}

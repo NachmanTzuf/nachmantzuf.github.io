@@ -60,6 +60,8 @@ export interface Harp3DCanvasProps {
   tiltZ?: number;
   /** Optional vertical mid-air levitation bobbing offset in meters */
   floatY?: number;
+  /** Disable multi-axis pitch/roll wobble for clean luxury studio turntable motion */
+  steadyTurntable?: boolean;
 }
 
 interface StringRecord {
@@ -97,6 +99,7 @@ const InnerHarpScene: React.FC<Omit<Harp3DCanvasProps, 'width' | 'height'>> = ({
   tiltX = 0.0,
   tiltZ = 0.0,
   floatY = 0.0,
+  steadyTurntable = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -261,10 +264,12 @@ const InnerHarpScene: React.FC<Omit<Harp3DCanvasProps, 'width' | 'height'>> = ({
       camera.updateProjectionMatrix();
     }
 
-    // Subtle organic mid-air levitation & multi-directional tilt
-    const autoBobY = floatY + Math.sin(frame * 0.07) * 0.012;
-    const autoTiltX = tiltX + Math.sin(frame * 0.05) * 0.035;
-    const autoTiltZ = tiltZ + Math.cos(frame * 0.045) * 0.03;
+    // Subtle organic mid-air levitation & optional turntable lock (eliminates X/Z wobble when steadyTurntable=true)
+    const autoBobY = steadyTurntable
+      ? floatY + Math.sin(frame * 0.03) * 0.004
+      : floatY + Math.sin(frame * 0.07) * 0.012;
+    const autoTiltX = steadyTurntable ? tiltX : tiltX + Math.sin(frame * 0.05) * 0.035;
+    const autoTiltZ = steadyTurntable ? tiltZ : tiltZ + Math.cos(frame * 0.045) * 0.03;
 
     parsedModel.wrapper.position.set(0, autoBobY, 0);
     parsedModel.wrapper.rotation.set(autoTiltX, 0, autoTiltZ);
@@ -374,6 +379,7 @@ const InnerHarpScene: React.FC<Omit<Harp3DCanvasProps, 'width' | 'height'>> = ({
     theta,
     tiltX,
     tiltZ,
+    steadyTurntable,
   ]);
 
   return (
