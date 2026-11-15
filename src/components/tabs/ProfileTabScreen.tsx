@@ -33,8 +33,8 @@ const PRACTICE_VIDEOS = [
     title: 'Single Note',
     subtitle: 'Tonic Anchor',
     duration: '116s',
-    poster: '/videos/plus/SingleMotionPlus-poster.jpg?v=v38_20261115',
-    url: '/videos/mission/EarpaSingleNotesInstruction.mp4?v=v38_20261115',
+    poster: '/videos/plus/SingleMotionPlus-poster.jpg?v=v39_20261115',
+    url: '/videos/mission/EarpaSingleNotesInstruction.mp4?v=v39_20261115',
     accent: '#10b981',
   },
   {
@@ -42,8 +42,8 @@ const PRACTICE_VIDEOS = [
     title: 'Melody',
     subtitle: 'Melodic Sequence',
     duration: '106s',
-    poster: '/videos/plus/MelodyMotionPlus-poster.jpg?v=v38_20261115',
-    url: '/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v38_20261115',
+    poster: '/videos/plus/MelodyMotionPlus-poster.jpg?v=v39_20261115',
+    url: '/videos/mission/EarpaMelodyPhrasingInstruction.mp4?v=v39_20261115',
     accent: '#38bdf8',
   },
   {
@@ -51,8 +51,8 @@ const PRACTICE_VIDEOS = [
     title: 'Levers',
     subtitle: 'Camac Mechanics',
     duration: '140s',
-    poster: '/videos/plus/LeverMotionPlus-poster.jpg?v=v38_20261115',
-    url: '/videos/mission/EarpaCamacLeversInstruction.mp4?v=v38_20261115',
+    poster: '/videos/plus/LeverMotionPlus-poster.jpg?v=v39_20261115',
+    url: '/videos/mission/EarpaCamacLeversInstruction.mp4?v=v39_20261115',
     accent: '#fbbf24',
   },
 ] as const;

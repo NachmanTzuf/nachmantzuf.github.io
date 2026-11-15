@@ -756,18 +756,21 @@ export const LiveGameplayPhoneStage: React.FC<{
             </div>
           )}
 
-          {/* Key Touch Press Highlight over Keyboard C..C (persists cleanly through Locked-In & Verdict!) */}
+          {/* Key Touch Press Highlight over Keyboard C..C (matches exact app green/blue/crimson button states) */}
           {activeRound.keyTaps.map((kt, idx) => {
             const hideAt = nextRound ? nextRound.roundStartFrame - 4 : totalFrames;
-            if (frame < kt.tapFrame || frame > Math.min(hideAt, activeRound.verdictFrame + 65)) return null;
+            if (frame < kt.tapFrame || frame > hideAt) return null;
             const leftPct = 3.2 + kt.keyIndex * 11.95;
             const isAfterV = frame >= activeRound.verdictFrame;
-            const col = !isAfterV ? '#fde68a' : kt.isCorrect === false ? '#f59e0b' : '#34d399';
+            const rightColor = theme === 'single' ? '#059669' : '#0284c7';
+            const col = !isAfterV ? '#fde68a' : kt.isCorrect === false ? '#ef4444' : '#ffffff';
             const bg = !isAfterV
               ? 'rgba(253, 230, 138, 0.28)'
               : kt.isCorrect === false
-              ? 'rgba(245, 158, 11, 0.34)'
-              : 'rgba(52, 211, 153, 0.32)';
+              ? 'rgba(185, 28, 28, 0.88)'
+              : theme === 'single'
+              ? 'rgba(5, 150, 105, 0.88)'
+              : 'rgba(2, 132, 199, 0.88)';
             return (
               <div
                 key={`kt-${activeRound.roundNumber}-${idx}`}
@@ -780,15 +783,28 @@ export const LiveGameplayPhoneStage: React.FC<{
                   borderRadius: 12,
                   background: bg,
                   border: `2.5px solid ${col}`,
-                  boxShadow: `0 0 22px ${col}`,
+                  boxShadow: isAfterV
+                    ? kt.isCorrect === false
+                      ? '0 0 24px rgba(239, 68, 68, 0.75)'
+                      : `0 0 24px ${rightColor}`
+                    : '0 0 22px #fde68a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: FONT_SANS,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: '#ffffff',
                   pointerEvents: 'none',
                   zIndex: 6,
                 }}
-              />
+              >
+                {isAfterV && kt.label ? kt.label : null}
+              </div>
             );
           })}
 
-          {/* On Wrong Guess in Path 1, highlight the ACTUAL right key in bright Emerald so comparison is unmistakable */}
+          {/* On Wrong Guess in Path 1, also softly ring ACTUAL right key in Emerald */}
           {afterVerdict && !activeRound.verdictCorrect && activeRound.actualKeyIndex !== undefined && (!nextRound || frame < nextRound.roundStartFrame - 4) && (
             <div
               style={{
@@ -798,7 +814,7 @@ export const LiveGameplayPhoneStage: React.FC<{
                 width: '10.6%',
                 height: '5.7%',
                 borderRadius: 12,
-                background: 'rgba(16, 185, 129, 0.26)',
+                background: 'rgba(16, 185, 129, 0.32)',
                 border: '2.5px solid #34d399',
                 boxShadow: '0 0 24px rgba(52, 211, 153, 0.85)',
                 pointerEvents: 'none',
@@ -869,39 +885,157 @@ export const LiveGameplayPhoneStage: React.FC<{
             </div>
           )}
 
-          {/* Clear Right / Wrong Confirmation Banner (Reveals cleanly AFTER Lock-In Pause!) */}
-          {verdictVisible && (
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: theme === 'single' ? '77.5%' : '74.5%',
-                transform: `translate(-50%, -50%) scale(${spring({
-                  frame: frame - activeRound.verdictFrame,
-                  fps,
-                  config: { damping: 18, stiffness: 135 },
-                })})`,
-                minWidth: '62%',
-                padding: '14px 26px',
-                borderRadius: 24,
-                background: activeRound.verdictCorrect ? 'rgba(6, 42, 32, 0.95)' : 'rgba(62, 22, 16, 0.95)',
-                border: activeRound.verdictCorrect
-                  ? '2px solid rgba(52, 211, 153, 0.9)'
-                  : '2px solid rgba(251, 146, 60, 0.92)',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.65)',
-                textAlign: 'center',
-                zIndex: 9,
-              }}
-            >
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 29, fontWeight: 700, color: activeRound.verdictCorrect ? '#6ee7b7' : '#fdba74' }}>
-                {activeRound.verdictCorrect ? '✓ ' : '✕ '}
-                {activeRound.verdictTitle}
+          {/* Authentic Full-Screen App Answer Feedback Overlay (exact InGamePlayScreen.tsx Reveal + Frosted Blur) */}
+          {verdictVisible && (() => {
+            const rawReveal = interpolate(
+              frame - activeRound.verdictFrame,
+              [0, 13],
+              [0, 1],
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+            );
+            const revealEase = 1 - Math.pow(1 - rawReveal, 3);
+            const titlePulse =
+              0.72 + 0.28 * Math.abs(Math.cos(((frame - activeRound.verdictFrame) / 28) * Math.PI));
+            const nativeTitle = activeRound.verdictCorrect
+              ? theme === 'single'
+                ? 'Spot On!'
+                : 'Pure Resonance!'
+              : 'Listen Closely...';
+            const singleTargetNote =
+              activeRound.actualKeyIndex !== undefined
+                ? ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'][activeRound.actualKeyIndex]
+                : activeRound.keyTaps[0]?.label || 'F';
+            const melodyNotes = activeRound.walkPlucks;
+            const nativeInsight =
+              theme === 'single'
+                ? activeRound.verdictCorrect
+                  ? '"Fourth degree F settles calmly down through E and D toward home C."'
+                  : '"Leading tone B reaches powerfully a half step upward into C."'
+                : activeRound.verdictCorrect
+                ? '"Tonic C blooms cleanly upward through E and bright fifth G."'
+                : '"Starting high on fifth G, the phrase steps smoothly back home to C."';
+
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 9,
+                  backgroundColor: 'rgba(6, 12, 9, 0.44)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0 40px',
+                  opacity: revealEase,
+                  transform: `translateY(${interpolate(revealEase, [0, 1], [-28, 0])}px)`,
+                  pointerEvents: 'none',
+                }}
+              >
+                <div
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 34,
+                    paddingBottom: 42,
+                    textAlign: 'center',
+                  }}
+                >
+                  {/* Top Section: Natural App Verdict Title */}
+                  <div
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: 66,
+                      fontWeight: 900,
+                      letterSpacing: 1.5,
+                      lineHeight: 1.08,
+                      color: activeRound.verdictCorrect ? '#22c55e' : '#ef4444',
+                      opacity: titlePulse,
+                      textShadow: '0 4px 16px rgba(0, 0, 0, 0.8)',
+                    }}
+                  >
+                    {nativeTitle}
+                  </div>
+
+                  {/* Middle Section: Giant Gold Note Letter (Path 1) or Melody Glass Pills (Path 2) */}
+                  {theme === 'melody' ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 20,
+                      }}
+                    >
+                      {melodyNotes.map((mn, i) => {
+                        const isSounding = frame >= mn.frame && frame <= mn.frame + 28;
+                        return (
+                          <div
+                            key={`native-mel-${i}`}
+                            style={{
+                              minWidth: 96,
+                              padding: '22px 28px',
+                              borderRadius: 22,
+                              backgroundColor: isSounding
+                                ? 'rgba(254, 243, 199, 0.18)'
+                                : 'rgba(255, 255, 255, 0.09)',
+                              border: isSounding
+                                ? '1.8px solid rgba(254, 240, 138, 0.85)'
+                                : '1.5px solid rgba(255, 255, 255, 0.24)',
+                              boxShadow: isSounding
+                                ? '0 0 24px rgba(254, 240, 138, 0.35)'
+                                : 'none',
+                              fontFamily: FONT_DISPLAY,
+                              fontSize: 52,
+                              fontWeight: 700,
+                              color: '#fef3c7',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {mn.noteLabel}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontFamily: FONT_DISPLAY,
+                        fontSize: 132,
+                        fontWeight: 700,
+                        color: '#fef3c7',
+                        letterSpacing: 2,
+                        lineHeight: 1,
+                        textShadow: '0 5px 22px rgba(254, 240, 138, 0.48)',
+                      }}
+                    >
+                      {singleTargetNote}
+                    </div>
+                  )}
+
+                  {/* Bottom Section: Italic Musical Insight Quote */}
+                  <div
+                    style={{
+                      fontFamily: FONT_SANS,
+                      fontSize: 25,
+                      lineHeight: 1.48,
+                      fontStyle: 'italic',
+                      color: '#f8fafc',
+                      maxWidth: 500,
+                      textShadow: '0 2px 12px rgba(0, 0, 0, 0.82)',
+                    }}
+                  >
+                    {nativeInsight}
+                  </div>
+                </div>
               </div>
-              <div style={{ fontFamily: FONT_SANS, fontSize: 17, fontWeight: 600, color: '#f8fafc', marginTop: 3 }}>
-                {activeRound.verdictDetail}
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 
@@ -1277,57 +1411,121 @@ export const LiveLeverPhoneStage: React.FC<{
             </div>
           )}
 
-          {/* Clear Right/Wrong Confirmation + 8-Note Walk Progress Overlay */}
-          {afterVerdict && (
-            <div
-              style={{
-                position: 'absolute',
-                left: '6%',
-                top: '57%',
-                width: '88%',
-                padding: '18px 22px',
-                borderRadius: 24,
-                background: activeRound.verdictCorrect ? 'rgba(8, 28, 22, 0.95)' : 'rgba(38, 18, 12, 0.95)',
-                border: activeRound.verdictCorrect ? '2px solid rgba(52, 211, 153, 0.88)' : '2px solid rgba(251, 146, 60, 0.90)',
-                boxShadow: '0 22px 54px rgba(0,0,0,0.72)',
-                textAlign: 'center',
-                zIndex: 9,
-              }}
-            >
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 30, fontWeight: 700, color: activeRound.verdictCorrect ? '#6ee7b7' : '#fdba74' }}>
-                {activeRound.verdictCorrect ? '✓ ' : '✕ '}
-                {activeRound.verdictHeadline}
-              </div>
-              <div style={{ fontFamily: FONT_SANS, fontSize: 16.5, color: '#f8fafc', marginTop: 4, marginBottom: 14 }}>
-                {activeRound.verdictSubline}
-              </div>
+          {/* Authentic Full-Screen LeverTrainingScreen.tsx Reveal Feedback Overlay */}
+          {afterVerdict && (() => {
+            const rawReveal = interpolate(
+              frame - verdictAt,
+              [0, 13],
+              [0, 1],
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+            );
+            const revealEase = 1 - Math.pow(1 - rawReveal, 3);
+            const lastWalkFrame =
+              activeRound.walkNotes[activeRound.walkNotes.length - 1]?.frame ?? verdictAt;
+            const isPlayingScale = frame < lastWalkFrame + 18;
+            const mismatchLetter = activeRound.skippedStringNum
+              ? ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C upper'][activeRound.skippedStringNum - 1]
+              : 'B';
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-                {activeRound.walkNotes.map((wn, idx) => {
-                  const isLit = walkIdx === idx;
-                  const done = frame >= wn.frame;
-                  return (
-                    <div
-                      key={`walk-pill-${idx}`}
-                      style={{
-                        flex: 1,
-                        padding: '6px 0',
-                        borderRadius: 8,
-                        background: isLit ? 'rgba(245, 184, 65, 0.28)' : done ? 'rgba(255,255,255,0.08)' : 'transparent',
-                        borderBottom: isLit ? '2.5px solid #fde68a' : done ? '2px solid #94a3b8' : '2px solid rgba(255,255,255,0.16)',
-                        fontFamily: FONT_SANS,
-                        fontSize: 14,
-                        fontWeight: isLit ? 700 : 500,
-                        color: isLit ? '#fef3c7' : done ? '#f1f5f9' : '#64748b',
-                      }}
-                    >
-                      {wn.noteLabel}
-                    </div>
-                  );
-                })}
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 9,
+                  backgroundColor: 'rgba(29, 39, 29, 0.74)',
+                  backgroundImage:
+                    'linear-gradient(180deg, rgba(44,50,34,0.22), rgba(29,39,29,0.88), rgba(24,32,20,0.84))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '96px 44px 52px',
+                  gap: 32,
+                  opacity: revealEase,
+                  transform: `translateY(${interpolate(revealEase, [0, 1], [-28, 0])}px)`,
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                }}
+              >
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 58, fontWeight: 700, color: '#f0d9ab', lineHeight: 1.05 }}>
+                  {activeRound.verdictCorrect ? 'Correct' : 'Not quite'}
+                </div>
+
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 42, fontWeight: 700, color: '#f0d9ab', lineHeight: 1.1 }}>
+                  {activeRound.scaleName}
+                </div>
+
+                <div style={{ fontFamily: FONT_SANS, fontSize: 26, color: '#edddc0', lineHeight: 1.4 }}>
+                  {activeRound.verdictCorrect ? 'Every lever is in place.' : '7 of 8 levers correct'}
+                </div>
+
+                {!activeRound.verdictCorrect && (
+                  <div
+                    style={{
+                      fontFamily: FONT_SANS,
+                      fontSize: 25,
+                      fontWeight: 600,
+                      color: '#fde68a',
+                      textShadow: '0 0 18px rgba(251, 191, 36, 0.35)',
+                    }}
+                  >
+                    {mismatchLetter} ↑ raise
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: 10 }}>
+                  {activeRound.walkNotes.map((wn, idx) => {
+                    const isLit = walkIdx === idx;
+                    return (
+                      <div
+                        key={`walk-pill-${idx}`}
+                        style={{
+                          flex: 1,
+                          height: 68,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderBottom: isLit ? '3px solid #f4d499' : '2px solid #81765d',
+                          backgroundColor: isLit ? 'rgba(210, 183, 126, 0.26)' : 'transparent',
+                          fontFamily: FONT_SANS,
+                          fontSize: 21,
+                          fontWeight: isLit ? 700 : 500,
+                          color: '#edddc0',
+                        }}
+                      >
+                        {wn.noteLabel}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{ fontFamily: FONT_SANS, fontSize: 18, color: '#cdbd9e', marginTop: -8 }}>
+                  Listen to the correct scale · start to finish
+                </div>
+
+                <div
+                  style={{
+                    width: '100%',
+                    padding: '22px 24px',
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(54, 53, 35, 0.95)',
+                    border: '1.5px solid #c5a872',
+                    opacity: isPlayingScale ? 0.52 : 1,
+                    fontFamily: FONT_SANS,
+                    fontSize: 23,
+                    fontWeight: 600,
+                    color: '#edddc0',
+                    textAlign: 'center',
+                  }}
+                >
+                  {isPlayingScale ? 'Playing the scale…' : 'Next scale →'}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 
