@@ -44,7 +44,7 @@ export interface CelticHarpCanvasRef {
   applyTimberColor: (colorHex: string, roughness?: number, metalness?: number) => void;
   applyStringGlowColor: (colorHex: string) => void;
   applyLeverColor: (colorHex: string) => void;
-  applyRosetteInlay?: (colorHex: string, rosetteId?: string) => void;
+  applyRosetteInlay?: (colorHex: string, rosetteId?: string, activeInlays?: string[]) => void;
   rotateToAngle?: (angleRad: number) => void;
 }
 
@@ -568,38 +568,34 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
           }
         });
       },
-      applyRosetteInlay: (colorHex: string, rosetteId?: string) => {
-        const activeId = rosetteId || 'triskele_tara';
-        const newTex = createCelticRosetteTexture(activeId, colorHex);
-        const isDoubleStrand =
-          activeId === 'knotwork_vine' ||
-          activeId === 'claddagh_heart' ||
-          activeId === 'high_king_sunburst';
-        const meshes = rosetteMeshesRef.current.length > 0
-          ? rosetteMeshesRef.current
-          : (rosetteMeshRef.current ? [rosetteMeshRef.current] : []);
-        meshes.forEach((rMesh) => {
-          const mat = rMesh.material as THREE.MeshStandardMaterial;
-          mat.color.set('#ffffff');
-          mat.emissive.set(colorHex);
-          mat.emissiveIntensity = 0.22;
-          mat.map = newTex;
-          mat.bumpMap = newTex;
-          mat.bumpScale = 0.02;
-          mat.roughness = 0.22;
-          mat.metalness = 0.78;
-          mat.needsUpdate = true;
-        });
+      applyRosetteInlay: (colorHex: string, rosetteId?: string, activeInlays?: string[]) => {
+        const inlays = activeInlays ?? (rosetteId && rosetteId !== 'none' ? [rosetteId] : []);
+        const showSbA = inlays.includes('soundbox_vine') || inlays.includes('soundbox_braid');
+        const showSbB = inlays.includes('soundbox_braid');
+        const showFpA = inlays.includes('forepillar_vine') || inlays.includes('forepillar_braid');
+        const showFpB = inlays.includes('forepillar_braid');
+        const hasAny = inlays.length > 0;
+
         inlayMeshesRef.current.forEach((inlayMesh) => {
-          if (inlayMesh.name === 'Celtic_Vine_Strand_B') {
-            inlayMesh.visible = isDoubleStrand;
-          }
+          if (inlayMesh.name === 'Celtic_Soundbox_Vine_A') inlayMesh.visible = showSbA;
+          else if (inlayMesh.name === 'Celtic_Soundbox_Vine_B') inlayMesh.visible = showSbB;
+          else if (inlayMesh.name === 'Celtic_Forepillar_Vine_A') inlayMesh.visible = showFpA;
+          else if (inlayMesh.name === 'Celtic_Forepillar_Vine_B') inlayMesh.visible = showFpB;
+
           const mat = inlayMesh.material as THREE.MeshStandardMaterial;
-          mat.color.set(colorHex);
-          mat.emissive.set(colorHex);
-          mat.emissiveIntensity = 0.16;
-          mat.metalness = 0.78;
-          mat.roughness = 0.20;
+          if (hasAny) {
+            mat.color.set(colorHex);
+            mat.emissive.set(colorHex);
+            mat.emissiveIntensity = 0.16;
+            mat.metalness = 0.78;
+            mat.roughness = 0.20;
+          } else {
+            mat.color.set('#c9a66b');
+            mat.emissive.set('#000000');
+            mat.emissiveIntensity = 0;
+            mat.metalness = 0.35;
+            mat.roughness = 0.40;
+          }
           mat.needsUpdate = true;
         });
       },
@@ -839,35 +835,12 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                   inlayMeshesRef.current.push(child);
                 }
 
-                // Attach 1 small sleek Celtic symbol on upper knee shoulder + thin flowing vine inlays on soundbox sides & forepillar (both sides)
-                if (child.name === 'Harp_Harmonic_Frame' && rosetteMeshesRef.current.length === 0) {
+                // Attach thin flowing vine inlays on soundbox sides & forepillar (both sides, no shoulder symbol)
+                if (child.name === 'Harp_Harmonic_Frame' && !inlayMeshesRef.current.some((m) => m.name.startsWith('Celtic_'))) {
                   try {
                     const defaultHex = '#f5c76b';
-                    const defaultTex = createCelticRosetteTexture('triskele_tara', defaultHex);
 
-                    // 1. Small sleek Celtic symbol on upper shoulder knee (+X and -X sides)
-                    [-1, 1].forEach((side) => {
-                      const sGeo = new THREE.CylinderGeometry(0.026, 0.026, 0.003, 28);
-                      const sMat = new THREE.MeshStandardMaterial({
-                        color: '#ffffff',
-                        map: defaultTex,
-                        bumpMap: defaultTex,
-                        bumpScale: 0.02,
-                        emissive: new THREE.Color(defaultHex),
-                        emissiveIntensity: 0.22,
-                        roughness: 0.22,
-                        metalness: 0.78,
-                      });
-                      const sMesh = new THREE.Mesh(sGeo, sMat);
-                      sMesh.position.set(side * 0.0625, 0.995, -0.315);
-                      sMesh.rotation.z = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-                      sMesh.name = 'Celtic_Shoulder_Symbol';
-                      child.add(sMesh);
-                      rosetteMeshesRef.current.push(sMesh);
-                      if (!rosetteMeshRef.current) rosetteMeshRef.current = sMesh;
-                    });
-
-                    // 2. Helper to build ultra-thin flowing Celtic vine TubeGeometry inlays
+                    // Helper to build ultra-thin flowing Celtic vine TubeGeometry inlays
                     const buildVineTube = (
                       anchors: [number, number, number][],
                       side: number,
@@ -875,8 +848,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                       waveCycles: number,
                       phase: number,
                       radius: number,
-                      meshName: string,
-                      initiallyVisible: boolean
+                      meshName: string
                     ) => {
                       const baseCurve = new THREE.CatmullRomCurve3(
                         anchors.map(([ax, ay, az]) => new THREE.Vector3(side * (ax + 0.0022), ay, az))
@@ -901,7 +873,7 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                       });
                       const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
                       tubeMesh.name = meshName;
-                      tubeMesh.visible = initiallyVisible;
+                      tubeMesh.visible = false;
                       child.add(tubeMesh);
                       inlayMeshesRef.current.push(tubeMesh);
                     };
@@ -929,10 +901,10 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                     ];
 
                     [-1, 1].forEach((side) => {
-                      buildVineTube(soundboxAnchors, side, 0.013, 10, 0, 0.0025, 'Celtic_Vine_Strand_A', true);
-                      buildVineTube(soundboxAnchors, side, 0.013, 10, Math.PI, 0.0022, 'Celtic_Vine_Strand_B', false);
-                      buildVineTube(forepillarAnchors, side, 0.009, 12, 0, 0.0023, 'Celtic_Vine_Strand_A', true);
-                      buildVineTube(forepillarAnchors, side, 0.009, 12, Math.PI, 0.0020, 'Celtic_Vine_Strand_B', false);
+                      buildVineTube(soundboxAnchors, side, 0.013, 10, 0, 0.0025, 'Celtic_Soundbox_Vine_A');
+                      buildVineTube(soundboxAnchors, side, 0.013, 10, Math.PI, 0.0022, 'Celtic_Soundbox_Vine_B');
+                      buildVineTube(forepillarAnchors, side, 0.009, 12, 0, 0.0023, 'Celtic_Forepillar_Vine_A');
+                      buildVineTube(forepillarAnchors, side, 0.009, 12, Math.PI, 0.0020, 'Celtic_Forepillar_Vine_B');
                     });
                   } catch {}
                 }
@@ -1112,35 +1084,34 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                 });
               }
 
-              const rHex = engine.getEquippedInlayColor() || equipped.rosette?.colorHex || '#f5c76b';
-              const rId = equipped.rosette?.id || 'triskele_tara';
-              const isDoubleStrand =
-                rId === 'knotwork_vine' ||
-                rId === 'claddagh_heart' ||
-                rId === 'high_king_sunburst';
-              const rTex = createCelticRosetteTexture(rId, rHex);
-              rosetteMeshesRef.current.forEach((rMesh) => {
-                const mat = rMesh.material as THREE.MeshStandardMaterial;
-                mat.color.set('#ffffff');
-                mat.emissive.set(rHex);
-                mat.emissiveIntensity = 0.22;
-                mat.map = rTex;
-                mat.bumpMap = rTex;
-                mat.bumpScale = 0.02;
-                mat.roughness = 0.22;
-                mat.metalness = 0.78;
-                mat.needsUpdate = true;
-              });
+              const rHex = engine.getEquippedInlayColor() || '#f5c76b';
+              const inlays = engine.getEquippedInlays();
+              const showSbA = inlays.includes('soundbox_vine') || inlays.includes('soundbox_braid');
+              const showSbB = inlays.includes('soundbox_braid');
+              const showFpA = inlays.includes('forepillar_vine') || inlays.includes('forepillar_braid');
+              const showFpB = inlays.includes('forepillar_braid');
+              const hasAny = inlays.length > 0;
+
               inlayMeshesRef.current.forEach((inlayMesh) => {
-                if (inlayMesh.name === 'Celtic_Vine_Strand_B') {
-                  inlayMesh.visible = isDoubleStrand;
-                }
+                if (inlayMesh.name === 'Celtic_Soundbox_Vine_A') inlayMesh.visible = showSbA;
+                else if (inlayMesh.name === 'Celtic_Soundbox_Vine_B') inlayMesh.visible = showSbB;
+                else if (inlayMesh.name === 'Celtic_Forepillar_Vine_A') inlayMesh.visible = showFpA;
+                else if (inlayMesh.name === 'Celtic_Forepillar_Vine_B') inlayMesh.visible = showFpB;
+
                 const mat = inlayMesh.material as THREE.MeshStandardMaterial;
-                mat.color.set(rHex);
-                mat.emissive.set(rHex);
-                mat.emissiveIntensity = 0.16;
-                mat.metalness = 0.78;
-                mat.roughness = 0.20;
+                if (hasAny) {
+                  mat.color.set(rHex);
+                  mat.emissive.set(rHex);
+                  mat.emissiveIntensity = 0.16;
+                  mat.metalness = 0.78;
+                  mat.roughness = 0.20;
+                } else {
+                  mat.color.set('#c9a66b');
+                  mat.emissive.set('#000000');
+                  mat.emissiveIntensity = 0;
+                  mat.metalness = 0.35;
+                  mat.roughness = 0.40;
+                }
                 mat.needsUpdate = true;
               });
             } catch {

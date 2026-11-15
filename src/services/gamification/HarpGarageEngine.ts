@@ -33,7 +33,8 @@ export class HarpGarageEngine {
   private levers: Map<LeverFinishId, CosmeticItem<LeverFinishId>> = new Map();
 
   private equippedTimber: TimberFinishId = 'curly_maple';
-  private equippedRosette: SoundboardRosetteId = 'triskele_tara';
+  private equippedRosette: SoundboardRosetteId = 'none';
+  private equippedInlays: SoundboardRosetteId[] = [];
   private equippedStrings: ResonanceStringShaderId = 'solar_flare_brass';
   private equippedSound: SoundPackId = 'standard_celtic';
   private equippedLever: LeverFinishId = 'standard_brass';
@@ -110,67 +111,55 @@ export class HarpGarageEngine {
     ];
     timberList.forEach((t) => this.timbers.set(t.id, t));
 
-    // 2. ROSETTES (HAND-CARVED SOUNDBOARD DESIGNS)
+    // 2. SEPARATE VINE INLAYS (SOUNDBOX & FOREPIILLAR, EACH BOUGHT & EQUIPPED SEPARATELY)
     const rosetteList: CosmeticItem<SoundboardRosetteId>[] = [
       {
-        id: 'triskele_tara',
-        name: 'Triskele of Tara',
+        id: 'soundbox_vine',
+        name: 'Soundbox Flowing Vine',
         category: 'ROSETTE',
-        lore: 'Triple spiral Celtic motif in polished brass symbolizing earth, sea, and sky.',
-        unlockRequirement: 'Starter rosette · Default inlay',
-        isUnlocked: true,
-        shardCost: 0,
-        colorHex: '#d4af37',
+        lore: 'Sleek single flowing vine inlay along both outer flanks of the soundbox.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 150,
+        colorHex: '#f5c76b',
         roughness: 0.2,
-        metalness: 0.9,
-      },
-      {
-        id: 'knotwork_vine',
-        name: 'Knotwork Vine Carving',
-        category: 'ROSETTE',
-        lore: 'Continuous woven knotwork band carved into the soundboard perimeter.',
-        unlockRequirement: 'Artisan Luthier Workshop',
-        isUnlocked: false,
-        shardCost: 250,
-        colorHex: '#c59b27',
-        roughness: 0.3,
-        metalness: 0.8,
-      },
-      {
-        id: 'claddagh_heart',
-        name: 'Claddagh Heart & Crown',
-        category: 'ROSETTE',
-        lore: 'Hands embracing crowned heart symbolizing friendship, loyalty, and love of song.',
-        unlockRequirement: 'Artisan Luthier Workshop',
-        isUnlocked: false,
-        shardCost: 450,
-        colorHex: '#e5c07b',
-        roughness: 0.25,
         metalness: 0.85,
       },
       {
-        id: 'ogham_whisper',
-        name: 'Ogham Druidic Runes',
+        id: 'forepillar_vine',
+        name: 'Forepillar Flowing Vine',
         category: 'ROSETTE',
-        lore: 'Silver inlaid Ogham alphabet runes whispering ancient bardic tree secrets.',
+        lore: 'Ultra-thin flowing vine inlay tracing the curved forepillar from base to crown.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
-        shardCost: 700,
-        colorHex: '#e2e8f0',
-        roughness: 0.18,
-        metalness: 0.95,
+        shardCost: 150,
+        colorHex: '#f5c76b',
+        roughness: 0.2,
+        metalness: 0.85,
       },
       {
-        id: 'high_king_sunburst',
-        name: 'High King Sunburst',
+        id: 'soundbox_braid',
+        name: 'Soundbox Celtic Braid',
         category: 'ROSETTE',
-        lore: 'Pure gold leaf rays radiating outward from the central soundboard eye.',
+        lore: 'Double intertwined Celtic knot braid inlaid along both outer soundbox flanks.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 350,
+        colorHex: '#e2e8f0',
+        roughness: 0.18,
+        metalness: 0.90,
+      },
+      {
+        id: 'forepillar_braid',
+        name: 'Forepillar Celtic Braid',
+        category: 'ROSETTE',
+        lore: 'Double intertwined Celtic knot braid tracing both sides of the curved forepillar.',
         unlockRequirement: 'Grand Master Luthier Tier',
         isUnlocked: false,
-        shardCost: 1000,
-        colorHex: '#ffd700',
-        roughness: 0.12,
-        metalness: 0.98,
+        shardCost: 350,
+        colorHex: '#e2e8f0',
+        roughness: 0.18,
+        metalness: 0.90,
       },
     ];
     rosetteList.forEach((r) => this.rosettes.set(r.id, r));
@@ -354,7 +343,13 @@ export class HarpGarageEngine {
         if (equippedData) {
           const eq = JSON.parse(equippedData);
           if (eq.timber && this.timbers.has(eq.timber)) this.equippedTimber = eq.timber;
-          if (eq.rosette && this.rosettes.has(eq.rosette)) this.equippedRosette = eq.rosette;
+          if (Array.isArray(eq.inlays)) {
+            this.equippedInlays = eq.inlays.filter((id: SoundboardRosetteId) => this.rosettes.has(id));
+            this.equippedRosette = this.equippedInlays[0] || 'none';
+          } else if (eq.rosette && this.rosettes.has(eq.rosette)) {
+            this.equippedRosette = eq.rosette;
+            this.equippedInlays = [eq.rosette];
+          }
           if (eq.strings && this.strings.has(eq.strings)) this.equippedStrings = eq.strings;
           if (eq.sound && this.sounds.has(eq.sound)) this.equippedSound = eq.sound;
           if (eq.lever && this.levers.has(eq.lever)) this.equippedLever = eq.lever;
@@ -412,6 +407,7 @@ export class HarpGarageEngine {
           JSON.stringify({
             timber: this.equippedTimber,
             rosette: this.equippedRosette,
+            inlays: this.equippedInlays,
             strings: this.equippedStrings,
             sound: this.equippedSound,
             lever: this.equippedLever,
@@ -449,13 +445,33 @@ export class HarpGarageEngine {
     sound: CosmeticItem<SoundPackId>;
     lever: CosmeticItem<LeverFinishId>;
   } {
+    const noneRosette: CosmeticItem<SoundboardRosetteId> = {
+      id: 'none',
+      name: 'No Inlay',
+      category: 'ROSETTE',
+      lore: 'Pure uncarved natural wood.',
+      unlockRequirement: 'Default',
+      isUnlocked: true,
+      shardCost: 0,
+      colorHex: '#f5c76b',
+      roughness: 0.3,
+      metalness: 0.0,
+    };
     return {
       timber: this.timbers.get(this.equippedTimber) || this.timbers.get('curly_maple')!,
-      rosette: this.rosettes.get(this.equippedRosette) || this.rosettes.get('triskele_tara')!,
+      rosette: (this.equippedInlays[0] ? this.rosettes.get(this.equippedInlays[0]) : null) || noneRosette,
       strings: this.strings.get(this.equippedStrings) || this.strings.get('solar_flare_brass')!,
       sound: this.sounds.get(this.equippedSound) || this.sounds.get('standard_celtic')!,
       lever: this.levers.get(this.equippedLever) || this.levers.get('standard_brass')!,
     };
+  }
+
+  public getEquippedInlays(): SoundboardRosetteId[] {
+    return [...this.equippedInlays];
+  }
+
+  public isInlayEquipped(id: SoundboardRosetteId): boolean {
+    return this.equippedInlays.includes(id);
   }
 
   public equipTimber(id: TimberFinishId): boolean {
@@ -469,7 +485,7 @@ export class HarpGarageEngine {
   }
 
   public getEquippedInlayColor(): string {
-    return this.equippedInlayColor || this.getEquipped().rosette.colorHex || '#f5c76b';
+    return this.equippedInlayColor || '#f5c76b';
   }
 
   public setInlayColor(hex: string): void {
@@ -478,8 +494,17 @@ export class HarpGarageEngine {
   }
 
   public equipRosette(id: SoundboardRosetteId, inlayColorHex?: string): boolean {
+    if (id === 'none') {
+      this.clearAllInlays();
+      return true;
+    }
     const item = this.rosettes.get(id);
     if (item && item.isUnlocked) {
+      const zonePrefix = id.startsWith('soundbox_') ? 'soundbox_' : id.startsWith('forepillar_') ? 'forepillar_' : '';
+      const filtered = zonePrefix
+        ? this.equippedInlays.filter((existing) => !existing.startsWith(zonePrefix))
+        : [];
+      this.equippedInlays = [...filtered, id];
       this.equippedRosette = id;
       if (inlayColorHex) {
         this.equippedInlayColor = inlayColorHex;
@@ -488,6 +513,20 @@ export class HarpGarageEngine {
       return true;
     }
     return false;
+  }
+
+  public unequipRosette(id: SoundboardRosetteId): boolean {
+    if (!this.equippedInlays.includes(id)) return false;
+    this.equippedInlays = this.equippedInlays.filter((existing) => existing !== id);
+    this.equippedRosette = this.equippedInlays[0] || 'none';
+    this.savePersistence();
+    return true;
+  }
+
+  public clearAllInlays(): void {
+    this.equippedInlays = [];
+    this.equippedRosette = 'none';
+    this.savePersistence();
   }
 
   public equipStrings(id: ResonanceStringShaderId): boolean {

@@ -35,6 +35,11 @@ export type TimberFinishId =
   | 'skye_yew';
 
 export type SoundboardRosetteId =
+  | 'none'
+  | 'soundbox_vine'
+  | 'forepillar_vine'
+  | 'soundbox_braid'
+  | 'forepillar_braid'
   | 'triskele_tara'
   | 'knotwork_vine'
   | 'claddagh_heart'

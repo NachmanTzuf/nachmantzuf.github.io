@@ -87,7 +87,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     try {
       shopCanvasRef.current.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
       shopCanvasRef.current.applyLeverColor(eq.lever.colorHex);
-      shopCanvasRef.current.applyRosetteInlay?.(garageEngine.getEquippedInlayColor(), eq.rosette.id);
+      shopCanvasRef.current.applyRosetteInlay?.(
+        garageEngine.getEquippedInlayColor(),
+        eq.rosette.id,
+        garageEngine.getEquippedInlays()
+      );
     } catch {}
   };
 
@@ -97,13 +101,31 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     return 'celtic_nylon';
   };
 
+  const computePreviewInlays = (previewId: string): SoundboardRosetteId[] => {
+    if (previewId === 'none') return [];
+    const current = garageEngine.getEquippedInlays();
+    const zonePrefix = previewId.startsWith('soundbox_')
+      ? 'soundbox_'
+      : previewId.startsWith('forepillar_')
+        ? 'forepillar_'
+        : '';
+    const filtered = zonePrefix
+      ? current.filter((existing) => !existing.startsWith(zonePrefix))
+      : [];
+    return [...filtered, previewId as SoundboardRosetteId];
+  };
+
   const handlePreviewItem = (item: CosmeticItem<any>) => {
     setSelectedItem(item);
 
     if (activeCategory === 'TIMBER') {
       shopCanvasRef.current?.applyTimberColor(item.colorHex, item.roughness, item.metalness);
     } else if (activeCategory === 'ROSETTE') {
-      shopCanvasRef.current?.applyRosetteInlay?.(selectedInlayColor, item.id);
+      shopCanvasRef.current?.applyRosetteInlay?.(
+        selectedInlayColor,
+        item.id,
+        computePreviewInlays(item.id)
+      );
     } else if (activeCategory === 'LEVERS') {
       shopCanvasRef.current?.applyLeverColor(item.colorHex);
     } else if (activeCategory === 'SOUND') {
@@ -121,11 +143,44 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 
   const handleSelectInlayColor = (hex: string) => {
     setSelectedInlayColor(hex);
-    const rosetteId = selectedItem?.category === 'ROSETTE' ? selectedItem.id : equipped.rosette.id;
-    shopCanvasRef.current?.applyRosetteInlay?.(hex, rosetteId);
-    if (rosetteId === equipped.rosette.id) {
+    const activePreviewList =
+      selectedItem?.category === 'ROSETTE'
+        ? computePreviewInlays(selectedItem.id)
+        : garageEngine.getEquippedInlays();
+    shopCanvasRef.current?.applyRosetteInlay?.(hex, selectedItem?.id, activePreviewList);
+    if (garageEngine.getEquippedInlays().length > 0) {
       garageEngine.setInlayColor(hex);
-      onApplyCosmetic('rosette', hex, rosetteId);
+      onApplyCosmetic('rosette', hex, selectedItem?.id || 'soundbox_vine');
+      broadcastCosmeticsUpdate();
+    }
+  };
+
+  const handleClearAllInlays = () => {
+    garageEngine.clearAllInlays();
+    setSelectedItem({
+      id: 'none',
+      name: 'No Inlay',
+      category: 'ROSETTE',
+      lore: '',
+      unlockRequirement: '',
+      isUnlocked: true,
+      shardCost: 0,
+      colorHex: '#f5c76b',
+      roughness: 0.3,
+      metalness: 0,
+    });
+    shopCanvasRef.current?.applyRosetteInlay?.(selectedInlayColor, 'none', []);
+    onApplyCosmetic('rosette', selectedInlayColor, 'none');
+    setToastMessage('Removed all inlays');
+    broadcastCosmeticsUpdate();
+  };
+
+  const handleUnequipInlay = (item: CosmeticItem<any>) => {
+    if (garageEngine.unequipRosette(item.id as SoundboardRosetteId)) {
+      const remaining = garageEngine.getEquippedInlays();
+      shopCanvasRef.current?.applyRosetteInlay?.(selectedInlayColor, remaining[0] || 'none', remaining);
+      onApplyCosmetic('rosette', selectedInlayColor, remaining[0] || 'none');
+      setToastMessage(`Unequipped ${item.name}`);
       broadcastCosmeticsUpdate();
     }
   };
@@ -169,6 +224,10 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
   };
 
   const handleConfirmAction = (item: CosmeticItem<any>) => {
+    if (activeCategory === 'ROSETTE' && garageEngine.isInlayEquipped(item.id as SoundboardRosetteId)) {
+      handleUnequipInlay(item);
+      return;
+    }
     const eqId = getEquippedIdForActiveCategory();
     if (item.id === eqId) {
       setToastMessage(`${item.name} is fitted to your harp.`);
@@ -286,8 +345,10 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           )}
         </View>
 
-        {/* PREVIEW ACTION PILL: Confirm Equip or Unlock after previewing */}
-        {selectedItem && selectedItem.id !== currentEquippedId && (
+        {/* PREVIEW ACTION PILL: Confirm Equip, Unequip, or Unlock after previewing */}
+        {selectedItem &&
+          selectedItem.id !== 'none' &&
+          (activeCategory === 'ROSETTE' || selectedItem.id !== currentEquippedId) && (
           <View
             style={[
               styles.previewActionContainer,
@@ -297,9 +358,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel={
-                selectedItem.isUnlocked
-                  ? `Equip ${selectedItem.name}`
-                  : `Unlock ${selectedItem.name} for ${selectedItem.shardCost} shards`
+                activeCategory === 'ROSETTE' && garageEngine.isInlayEquipped(selectedItem.id)
+                  ? `Unequip ${selectedItem.name}`
+                  : selectedItem.isUnlocked
+                    ? `Equip ${selectedItem.name}`
+                    : `Unlock ${selectedItem.name} for ${selectedItem.shardCost} shards`
               }
               onPress={() => handleConfirmAction(selectedItem)}
               style={styles.previewActionPill}
@@ -307,9 +370,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             >
               {!selectedItem.isUnlocked && <GoldTorcIcon size={14} color="#fbbf24" />}
               <Text style={styles.previewActionText}>
-                {selectedItem.isUnlocked
-                  ? `Equip ${selectedItem.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac ', '')}`
-                  : `Unlock · ${selectedItem.shardCost}`}
+                {activeCategory === 'ROSETTE' && garageEngine.isInlayEquipped(selectedItem.id)
+                  ? `Unequip ${selectedItem.name}`
+                  : selectedItem.isUnlocked
+                    ? `Equip ${selectedItem.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac ', '')}`
+                    : `Unlock · ${selectedItem.shardCost}`}
               </Text>
             </TouchableOpacity>
           </View>
@@ -344,9 +409,34 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.itemSelectionScroll}
           >
+            {activeCategory === 'ROSETTE' && (
+              <TouchableOpacity
+                key="none_inlay"
+                accessibilityRole="button"
+                accessibilityLabel="Unequip all inlays"
+                onPress={handleClearAllInlays}
+                style={[
+                  styles.itemPill,
+                  garageEngine.getEquippedInlays().length === 0 && styles.itemPillEquipped,
+                  selectedItem?.id === 'none' && styles.itemPillSelected,
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.itemPillName}>None</Text>
+                {garageEngine.getEquippedInlays().length === 0 && (
+                  <View style={[styles.itemStatusBadge, styles.itemStatusBadgeEquipped]}>
+                    <Text style={[styles.itemStatusText, styles.itemStatusTextEquipped]}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
+
             {currentCategoryItems.map((item) => {
               const isSelected = selectedItem?.id === item.id;
-              const isEquipped = currentEquippedId === item.id;
+              const isEquipped =
+                activeCategory === 'ROSETTE'
+                  ? garageEngine.isInlayEquipped(item.id)
+                  : currentEquippedId === item.id;
 
               return (
                 <TouchableOpacity

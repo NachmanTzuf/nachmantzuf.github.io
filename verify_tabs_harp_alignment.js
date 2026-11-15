@@ -180,7 +180,7 @@ server.listen(PORT, async () => {
         await new Promise(r => setTimeout(r, 2000));
         const shopMetrics = await captureAndMeasure('ARTISAN WORKSHOP MODAL', 'verified_v34_artisan_shop_modal.png');
 
-        // 6. Switch to CARVES, select Knotwork Vine Carving & Sterling Silver inlay color
+        // 6. Switch to CARVES, select Forepillar Flowing Vine & Sterling Silver inlay color
         console.log('Switching to CARVES tab in Shop...');
         await send('Runtime.evaluate', {
           expression: `(() => {
@@ -193,7 +193,7 @@ server.listen(PORT, async () => {
         await send('Runtime.evaluate', {
           expression: `(() => {
             const els = Array.from(document.querySelectorAll('*'));
-            const itemBtn = els.find(el => el.textContent && el.textContent.includes('Knotwork Vine'));
+            const itemBtn = els.find(el => el.textContent && el.textContent.includes('Forepillar Flowing Vine'));
             if (itemBtn) {
               itemBtn.scrollIntoView({ inline: 'center' });
               itemBtn.click();
@@ -208,7 +208,7 @@ server.listen(PORT, async () => {
           })()`
         });
         await new Promise(r => setTimeout(r, 900));
-        await captureAndMeasure('ARTISAN WORKSHOP CARVES PREVIEW', 'verified_v35_shop_carves_preview.png');
+        await captureAndMeasure('ARTISAN WORKSHOP CARVES PREVIEW', 'verified_v37_shop_carves_preview.png');
 
         // Check deltas
         console.log('\n================ DELTA AUDIT ================');

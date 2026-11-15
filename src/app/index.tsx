@@ -662,7 +662,11 @@ export default function EarpaMasterScreen() {
               if (type === 'timber') {
                 canvasRef.current?.applyTimberColor(colorHex);
               } else if (type === 'rosette') {
-                canvasRef.current?.applyRosetteInlay?.(colorHex, itemId);
+                canvasRef.current?.applyRosetteInlay?.(
+                  colorHex,
+                  itemId,
+                  garageEngineRef.current.getEquippedInlays()
+                );
               } else if (type === 'lever') {
                 canvasRef.current?.applyLeverColor(colorHex);
               } else if (type === 'sound') {
