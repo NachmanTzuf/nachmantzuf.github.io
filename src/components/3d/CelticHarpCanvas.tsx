@@ -24,6 +24,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { DiatonicMode, PitchClass } from '../../services/theory/types';
 import { ModalShiftEngine } from '../../services/theory/ModalShiftEngine';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
+import { HarpGarageEngine, GARAGE_ITEMS } from '../../services/gamification/HarpGarageEngine';
 
 export type CameraPreset =
   | 'sanctuary_wide'
@@ -139,28 +140,34 @@ function createCelticRosetteTexture(motifId: string = 'royal_harp', colorHex: st
   ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
   ctx.shadowBlur = 10;
 
-  if (motifId === 'spiral_triskele') {
-    // Triple spiral Triskele
+  if (motifId === 'triskele_tara' || motifId === 'spiral_triskele') {
+    // Triple spiral Triskele of Tara
     for (let arm = 0; arm < 3; arm++) {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate((arm * 2 * Math.PI) / 3);
       ctx.beginPath();
-      for (let t = 0; t < 3.8 * Math.PI; t += 0.1) {
-        const spiralR = 6 + t * 9;
+      for (let t = 0; t < 4.0 * Math.PI; t += 0.08) {
+        const spiralR = 10 + t * 11;
         const x = spiralR * Math.cos(t);
         const y = spiralR * Math.sin(t);
         if (t === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
+      ctx.lineWidth = 14;
       ctx.stroke();
       ctx.restore();
     }
-  } else if (motifId === 'dara_knot') {
-    // Interlocking Dara Celtic Knotwork
-    const s = 68;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.fillStyle = colorHex;
+    ctx.fill();
+  } else if (motifId === 'knotwork_vine' || motifId === 'dara_knot') {
+    // Interlocking Knotwork Vine
+    const s = 82;
     ctx.save();
     ctx.translate(cx, cy);
+    ctx.lineWidth = 14;
     ctx.beginPath();
     ctx.rect(-s, -s, s * 2, s * 2);
     ctx.stroke();
@@ -176,39 +183,84 @@ function createCelticRosetteTexture(motifId: string = 'royal_harp', colorHex: st
     ctx.beginPath();
     ctx.arc(s, 0, s, Math.PI * 0.5, Math.PI * 1.5);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, 0, 26, 0, Math.PI * 2);
+    ctx.fillStyle = colorHex;
+    ctx.fill();
     ctx.restore();
-  } else if (motifId === 'sacred_shamrock') {
-    // Three-leaf Celtic clover triquetra
-    for (let i = 0; i < 3; i++) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate((i * 2 * Math.PI) / 3);
+  } else if (motifId === 'claddagh_heart' || motifId === 'sacred_shamrock') {
+    // Claddagh Heart & Crown Inlay
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.lineWidth = 14;
+    // Heart
+    ctx.beginPath();
+    ctx.moveTo(0, 95);
+    ctx.bezierCurveTo(-115, 20, -110, -75, -45, -75);
+    ctx.bezierCurveTo(-15, -75, 0, -45, 0, -30);
+    ctx.bezierCurveTo(0, -45, 15, -75, 45, -75);
+    ctx.bezierCurveTo(110, -75, 115, 20, 0, 95);
+    ctx.closePath();
+    ctx.stroke();
+    // Crown above heart
+    ctx.beginPath();
+    ctx.moveTo(-48, -92);
+    ctx.lineTo(-34, -142);
+    ctx.lineTo(0, -112);
+    ctx.lineTo(34, -142);
+    ctx.lineTo(48, -92);
+    ctx.closePath();
+    ctx.fillStyle = colorHex;
+    ctx.fill();
+    ctx.restore();
+  } else if (motifId === 'ogham_whisper' || motifId === 'brigid_cross') {
+    // Ogham Script & Brigid Cross
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.lineWidth = 13;
+    // Vertical Ogham stem
+    ctx.beginPath();
+    ctx.moveTo(0, -160);
+    ctx.lineTo(0, 160);
+    ctx.stroke();
+    // Ogham score notches
+    for (const yOff of [-110, -65, -20, 25, 70, 115]) {
       ctx.beginPath();
-      ctx.arc(0, -78, 48, 0, Math.PI * 2);
+      ctx.moveTo(-55, yOff);
+      ctx.lineTo(55, yOff);
+      ctx.stroke();
+    }
+    // Outer diamond
+    ctx.beginPath();
+    ctx.moveTo(0, -175);
+    ctx.lineTo(135, 0);
+    ctx.lineTo(0, 175);
+    ctx.lineTo(-135, 0);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  } else if (motifId === 'high_king_sunburst') {
+    // High King Gold Sunburst
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.lineWidth = 12;
+    const rays = 12;
+    for (let i = 0; i < rays; i++) {
+      ctx.save();
+      ctx.rotate((i * Math.PI * 2) / rays);
+      ctx.beginPath();
+      ctx.moveTo(0, -52);
+      ctx.lineTo(0, -165);
       ctx.stroke();
       ctx.restore();
     }
     ctx.beginPath();
-    ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+    ctx.arc(0, 0, 56, 0, Math.PI * 2);
     ctx.fillStyle = colorHex;
     ctx.fill();
-  } else if (motifId === 'brigid_cross') {
-    // Solar Brigid Cross
-    ctx.save();
-    ctx.translate(cx, cy);
-    for (let i = 0; i < 4; i++) {
-      ctx.rotate(Math.PI / 2);
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(125, -16);
-      ctx.lineTo(125, 16);
-      ctx.closePath();
-      ctx.stroke();
-    }
     ctx.beginPath();
-    ctx.rect(-30, -30, 60, 60);
-    ctx.fillStyle = colorHex;
-    ctx.fill();
+    ctx.arc(0, 0, 128, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   } else {
     // Royal Irish Harp Emblem (Default)
@@ -327,6 +379,8 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
     const keyLightRef = useRef<THREE.DirectionalLight | null>(null);
     const pulseIntensityRef = useRef<number>(0);
     const rosetteMeshRef = useRef<THREE.Mesh | null>(null);
+    const rosetteMeshesRef = useRef<THREE.Mesh[]>([]);
+    const inlayMeshesRef = useRef<THREE.Mesh[]>([]);
 
     const setCameraPresetInternal = (preset: CameraPreset) => {
       setActivePreset(preset);
@@ -515,17 +569,38 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         });
       },
       applyRosetteInlay: (colorHex: string, rosetteId?: string) => {
-        if (rosetteMeshRef.current) {
-          const mat = rosetteMeshRef.current.material as THREE.MeshStandardMaterial;
-          mat.color.set(colorHex);
-          const newTex = createCelticRosetteTexture(rosetteId || 'royal_harp', colorHex);
+        const newTex = createCelticRosetteTexture(rosetteId || 'triskele_tara', colorHex);
+        const meshes = rosetteMeshesRef.current.length > 0
+          ? rosetteMeshesRef.current
+          : (rosetteMeshRef.current ? [rosetteMeshRef.current] : []);
+        meshes.forEach((rMesh) => {
+          const mat = rMesh.material as THREE.MeshStandardMaterial;
+          mat.color.set('#ffffff');
+          mat.emissive.set(colorHex);
+          mat.emissiveIntensity = 0.28;
           mat.map = newTex;
           mat.bumpMap = newTex;
-          mat.bumpScale = 0.02;
+          mat.bumpScale = 0.03;
+          mat.roughness = 0.28;
+          mat.metalness = 0.65;
           mat.needsUpdate = true;
-        }
+        });
+        inlayMeshesRef.current.forEach((inlayMesh) => {
+          const mat = inlayMesh.material as THREE.MeshStandardMaterial;
+          mat.color.set(colorHex);
+          mat.emissive.set(colorHex);
+          mat.emissiveIntensity = 0.22;
+          mat.metalness = 0.65;
+          mat.roughness = 0.25;
+          mat.needsUpdate = true;
+        });
       },
       rotateToAngle: (angleRad: number) => {
+        if (orbitRef.current) {
+          orbitRef.current.theta = angleRad;
+          orbitRef.current.desiredTheta = angleRad;
+          orbitRef.current.autoOrbit = false;
+        }
         if (harpRootRef.current) {
           harpRootRef.current.rotation.y = angleRad;
         }
@@ -748,25 +823,44 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
                   child.material = child.material.clone();
                   child.material.color = new THREE.Color(0xd4a872);
                   child.material.roughness = 0.30;
-                  if (child.name.startsWith('Harp_Soundbox') && !rosetteMeshRef.current) {
-                    try {
-                      const rosetteTex = createCelticRosetteTexture('royal_harp', '#d4af37');
-                      const rosetteGeom = new THREE.CylinderGeometry(0.075, 0.075, 0.005, 32);
-                      const rosetteMat = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color(0xd4af37),
-                        map: rosetteTex,
-                        bumpMap: rosetteTex,
-                        bumpScale: 0.02,
-                        metalness: 0.85,
-                        roughness: 0.22,
+                }
+
+                // Collect purfling & soundhole rim inlays for live Rosette/Inlay coloring
+                if (child.name.startsWith('Harp_Diamond_Purfling') || child.name.startsWith('Harp_Rear_Soundhole_Rim')) {
+                  child.material = child.material.clone();
+                  inlayMeshesRef.current.push(child);
+                }
+
+                // Attach 3D Carved Celtic Rosette Medallions flush onto the real GLB soundboard face
+                if (child.name === 'Harp_Soundboard_Face' && rosetteMeshesRef.current.length === 0) {
+                  try {
+                    const defaultTex = createCelticRosetteTexture('triskele_tara', '#f5c76b');
+                    const makeRosetteMesh = (radius: number, pos: [number, number, number]) => {
+                      const rGeo = new THREE.CylinderGeometry(radius, radius, 0.008, 32);
+                      const rMat = new THREE.MeshStandardMaterial({
+                        color: '#ffffff',
+                        map: defaultTex,
+                        bumpMap: defaultTex,
+                        bumpScale: 0.03,
+                        emissive: new THREE.Color('#f5c76b'),
+                        emissiveIntensity: 0.25,
+                        roughness: 0.28,
+                        metalness: 0.65,
                       });
-                      const rMesh = new THREE.Mesh(rosetteGeom, rosetteMat);
-                      rMesh.rotation.x = Math.PI / 2;
-                      rMesh.position.set(0.065, 0.38, 0.098);
+                      const rMesh = new THREE.Mesh(rGeo, rMat);
+                      rMesh.position.set(pos[0], pos[1], pos[2]);
+                      rMesh.rotation.x = 1.128; // Flush with tilted front soundboard normal
+                      rMesh.name = 'Celtic_Carved_Rosette';
                       child.add(rMesh);
-                      rosetteMeshRef.current = rMesh;
-                    } catch {}
-                  }
+                      rosetteMeshesRef.current.push(rMesh);
+                      return rMesh;
+                    };
+                    // Twin upper-flank carved rosettes + central lower carved medallion
+                    const primary = makeRosetteMesh(0.046, [-0.068, 0.285, 0.048]);
+                    makeRosetteMesh(0.046, [0.068, 0.285, 0.048]);
+                    makeRosetteMesh(0.056, [0.0, 0.185, 0.095]);
+                    rosetteMeshRef.current = primary;
+                  } catch {}
                 }
               }
             }
@@ -911,6 +1005,74 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
               leverHitObjectsRef.current.push(child);
             }
           });
+
+          const applyEquippedCosmeticsFromEngine = () => {
+            try {
+              const engine = new HarpGarageEngine();
+              const equipped = engine.getEquipped();
+              const timberItem = GARAGE_ITEMS.find((i) => i.id === equipped.TIMBER);
+              const rosetteItem = GARAGE_ITEMS.find((i) => i.id === equipped.ROSETTE);
+              const leverItem = GARAGE_ITEMS.find((i) => i.id === equipped.LEVERS);
+
+              if (harpRootRef.current) {
+                const tColor = timberItem ? new THREE.Color(timberItem.previewHex) : new THREE.Color(0xd4a872);
+                const lColor = leverItem ? new THREE.Color(leverItem.previewHex) : null;
+                harpRootRef.current.traverse((c: any) => {
+                  if (!c.isMesh || !c.material) return;
+                  if (
+                    c.name.startsWith('Harp_Harmonic_Frame') ||
+                    c.name.startsWith('Harp_Forepillar') ||
+                    c.name.startsWith('Harp_Leg') ||
+                    c.name.startsWith('Harp_Soundbox')
+                  ) {
+                    c.material.color.copy(tColor);
+                    c.material.roughness = 0.28;
+                    c.material.metalness = 0.06;
+                    c.material.needsUpdate = true;
+                  }
+                  if (lColor && (c.name.startsWith('Lever_Handle_') || c.name.startsWith('Lever_Base_'))) {
+                    c.material.color.copy(lColor);
+                    c.material.metalness = 0.85;
+                    c.material.roughness = 0.2;
+                    c.material.needsUpdate = true;
+                  }
+                });
+              }
+
+              const rHex = rosetteItem?.previewHex || '#f5c76b';
+              const rId = rosetteItem?.id || 'triskele_tara';
+              const rTex = createCelticRosetteTexture(rId, rHex);
+              rosetteMeshesRef.current.forEach((rMesh) => {
+                const mat = rMesh.material as THREE.MeshStandardMaterial;
+                mat.color.set('#ffffff');
+                mat.emissive.set(rHex);
+                mat.emissiveIntensity = 0.28;
+                mat.map = rTex;
+                mat.bumpMap = rTex;
+                mat.bumpScale = 0.03;
+                mat.roughness = 0.28;
+                mat.metalness = 0.65;
+                mat.needsUpdate = true;
+              });
+              inlayMeshesRef.current.forEach((inlayMesh) => {
+                const mat = inlayMesh.material as THREE.MeshStandardMaterial;
+                mat.color.set(rHex);
+                mat.emissive.set(rHex);
+                mat.emissiveIntensity = 0.22;
+                mat.metalness = 0.65;
+                mat.roughness = 0.25;
+                mat.needsUpdate = true;
+              });
+            } catch {
+              // Ignore if storage unavailable
+            }
+          };
+
+          applyEquippedCosmeticsFromEngine();
+          if (typeof window !== 'undefined') {
+            (window as any).__earpa_syncCosmetics = applyEquippedCosmeticsFromEngine;
+            window.addEventListener('earpa:cosmetics-updated', applyEquippedCosmeticsFromEngine);
+          }
 
           onModelLoaded?.();
           if (typeof window !== 'undefined') {
@@ -1364,6 +1526,9 @@ export const CelticHarpCanvas = forwardRef<CelticHarpCanvasRef, CelticHarpCanvas
         window.removeEventListener('pointerup', onPointerUp);
         domElem.removeEventListener('wheel', onWheel);
         window.removeEventListener('resize', handleResize);
+        if (typeof window !== 'undefined' && (window as any).__earpa_syncCosmetics) {
+          window.removeEventListener('earpa:cosmetics-updated', (window as any).__earpa_syncCosmetics);
+        }
         resizeObserver?.disconnect();
         disposeScene(scene);
         scene.environment?.dispose();

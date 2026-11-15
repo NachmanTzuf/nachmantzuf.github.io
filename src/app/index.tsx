@@ -658,11 +658,11 @@ export default function EarpaMasterScreen() {
             visible={showGarageModal}
             onClose={() => setShowGarageModal(false)}
             garageEngine={garageEngineRef.current}
-            onApplyCosmetic={(type, colorHex) => {
+            onApplyCosmetic={(type, colorHex, itemId) => {
               if (type === 'timber') {
                 canvasRef.current?.applyTimberColor(colorHex);
               } else if (type === 'rosette') {
-                canvasRef.current?.applyRosetteInlay?.(colorHex);
+                canvasRef.current?.applyRosetteInlay?.(colorHex, itemId);
               } else if (type === 'lever') {
                 canvasRef.current?.applyLeverColor(colorHex);
               } else if (type === 'sound') {

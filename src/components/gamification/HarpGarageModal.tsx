@@ -31,12 +31,19 @@ import { UserAccountDatabase } from '../../services/account/UserAccountDatabase'
 import { CelticHarpCanvas, CelticHarpCanvasRef } from '../3d/CelticHarpCanvas';
 import { HarpSoundSynthesizer } from '../../services/audio/HarpSoundSynthesizer';
 import { TimbreType } from '../../services/audio/types';
+import {
+  GoldTorcIcon,
+  PurpleHeatherFlora,
+  TriquetraChordIcon,
+  CamacLeverIcon,
+  CelticLyreIcon,
+} from '../common/CelticIcons';
 
 interface HarpGarageModalProps {
   visible: boolean;
   onClose: () => void;
   garageEngine: HarpGarageEngine;
-  onApplyCosmetic: (type: 'timber' | 'rosette' | 'sound' | 'lever', colorHex: string) => void;
+  onApplyCosmetic: (type: 'timber' | 'rosette' | 'sound' | 'lever', colorHex: string, itemId?: string) => void;
 }
 
 type StoreCategory = 'TIMBER' | 'ROSETTE' | 'LEVERS' | 'SOUND';
@@ -88,28 +95,26 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     return 'celtic_nylon';
   };
 
-  const handleSelectItem = (item: CosmeticItem<any>) => {
+  const handlePreviewItem = (item: CosmeticItem<any>) => {
     setSelectedItem(item);
-
-    let noteFreq = 329.63; // E4 warm note
-    let soundTimbre = getTimbreForSoundId(garageEngine.getEquipped().sound.id);
 
     if (activeCategory === 'TIMBER') {
       shopCanvasRef.current?.applyTimberColor(item.colorHex, item.roughness, item.metalness);
-      noteFreq = 261.63; // Deep C4
     } else if (activeCategory === 'ROSETTE') {
       shopCanvasRef.current?.applyRosetteInlay?.(item.colorHex, item.id);
-      noteFreq = 392.00; // Resonant G4
     } else if (activeCategory === 'LEVERS') {
       shopCanvasRef.current?.applyLeverColor(item.colorHex);
-      noteFreq = 369.99; // F#4 semitone lever shift
     } else if (activeCategory === 'SOUND') {
-      soundTimbre = getTimbreForSoundId(item.id);
-      noteFreq = 349.23; // F4
+      // Only SOUND category triggers a single clear note of the selected timbre
+      const soundTimbre = getTimbreForSoundId(item.id);
+      HarpSoundSynthesizer.playWarmHarpChime(soundTimbre, 329.63);
     }
+  };
 
-    // Play soft, warm, satisfying Celtic pluck
-    HarpSoundSynthesizer.playWarmHarpChime(soundTimbre, noteFreq);
+  const broadcastCosmeticsUpdate = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('earpa:cosmetics-updated'));
+    }
   };
 
   const handleEquip = (item: CosmeticItem<any>) => {
@@ -120,17 +125,16 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     else if (activeCategory === 'SOUND') success = garageEngine.equipSound(item.id as SoundPackId);
 
     if (success) {
-      onApplyCosmetic(activeCategory.toLowerCase() as any, activeCategory === 'SOUND' ? item.id : item.colorHex);
+      onApplyCosmetic(
+        activeCategory.toLowerCase() as any,
+        activeCategory === 'SOUND' ? item.id : item.colorHex,
+        item.id
+      );
       setToastMessage(`Fitted ${item.name} ✓`);
+      broadcastCosmeticsUpdate();
 
       const eq = garageEngine.getEquipped();
       applyCurrentEquippedToCanvas(eq);
-
-      // Warm celebration chime
-      const timbre = getTimbreForSoundId(eq.sound.id);
-      HarpSoundSynthesizer.playWarmHarpChime(timbre, 261.63);
-      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 329.63), 100);
-      setTimeout(() => HarpSoundSynthesizer.playWarmHarpChime(timbre, 392.00), 200);
     }
   };
 
@@ -145,8 +149,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     }
   };
 
-  const handleTapItem = (item: CosmeticItem<any>) => {
-    handleSelectItem(item);
+  const handleConfirmAction = (item: CosmeticItem<any>) => {
     const eqId = getEquippedIdForActiveCategory();
     if (item.id === eqId) {
       setToastMessage(`${item.name} is fitted to your harp.`);
@@ -199,7 +202,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     if (cat === 'LEVERS') {
       shopCanvasRef.current?.rotateToAngle?.(2.65);
     } else {
-      shopCanvasRef.current?.rotateToAngle?.(0.0);
+      shopCanvasRef.current?.rotateToAngle?.(1.10);
     }
   };
 
@@ -235,7 +238,8 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           <Text style={styles.vaultTitle}>Artisan Shop</Text>
 
           <View style={styles.shardsBadgePill}>
-            <Text style={styles.shardsBadgeText}>{userShards} 🪙</Text>
+            <GoldTorcIcon size={15} color="#fbbf24" />
+            <Text style={styles.shardsBadgeText}>{userShards}</Text>
           </View>
         </View>
 
@@ -263,7 +267,31 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
           )}
         </View>
 
-        {/* 3. ITEM OPTIONS SELECTOR BAR (Exact same shape & space as navigation bar) */}
+        {/* PREVIEW ACTION PILL: Confirm Equip or Unlock after previewing */}
+        {selectedItem && selectedItem.id !== currentEquippedId && (
+          <View style={styles.previewActionContainer}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={
+                selectedItem.isUnlocked
+                  ? `Equip ${selectedItem.name}`
+                  : `Unlock ${selectedItem.name} for ${selectedItem.shardCost} shards`
+              }
+              onPress={() => handleConfirmAction(selectedItem)}
+              style={styles.previewActionPill}
+              activeOpacity={0.85}
+            >
+              {!selectedItem.isUnlocked && <GoldTorcIcon size={14} color="#fbbf24" />}
+              <Text style={styles.previewActionText}>
+                {selectedItem.isUnlocked
+                  ? `Equip ${selectedItem.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac ', '')}`
+                  : `Unlock · ${selectedItem.shardCost}`}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 3. ITEM OPTIONS SELECTOR BAR (Minimal liquid glass matching navigation bar) */}
         <View style={styles.itemSelectionBar}>
           <ScrollView
             horizontal
@@ -277,7 +305,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
               return (
                 <TouchableOpacity
                   key={item.id}
-                  onPress={() => handleTapItem(item)}
+                  onPress={() => handlePreviewItem(item)}
                   style={[
                     styles.itemPill,
                     isSelected && styles.itemPillSelected,
@@ -292,7 +320,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                     ]}
                   />
                   <Text style={styles.itemPillName} numberOfLines={1}>
-                    {item.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac', '')}
+                    {item.name.replace('Fiddleback ', '').replace('Connemara ', '').replace('Camac ', '')}
                   </Text>
                   <View
                     style={[
@@ -301,6 +329,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                       item.isUnlocked && !isEquipped && styles.itemStatusBadgeUnlocked,
                     ]}
                   >
+                    {!isEquipped && !item.isUnlocked && <GoldTorcIcon size={11} color="#fef08a" />}
                     <Text
                       style={[
                         styles.itemStatusText,
@@ -308,7 +337,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                         item.isUnlocked && !isEquipped && styles.itemStatusTextUnlocked,
                       ]}
                     >
-                      {isEquipped ? '✓' : item.isUnlocked ? 'Equip' : `${item.shardCost} 🪙`}
+                      {isEquipped ? '✓' : item.isUnlocked ? 'Owned' : `${item.shardCost}`}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -324,10 +353,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             style={[styles.categoryNavTab, activeCategory === 'TIMBER' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
-            <Text style={styles.categoryNavIcon}>🌲</Text>
+            <PurpleHeatherFlora size={19} color={activeCategory === 'TIMBER' ? '#e2e8f0' : '#94a3b8'} />
             <Text style={[styles.categoryNavLabel, activeCategory === 'TIMBER' && styles.categoryNavLabelActive]}>
-              Woods
+              WOODS
             </Text>
+            {activeCategory === 'TIMBER' && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -335,10 +365,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             style={[styles.categoryNavTab, activeCategory === 'ROSETTE' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
-            <Text style={styles.categoryNavIcon}>⚜️</Text>
+            <TriquetraChordIcon size={19} color={activeCategory === 'ROSETTE' ? '#e2e8f0' : '#94a3b8'} />
             <Text style={[styles.categoryNavLabel, activeCategory === 'ROSETTE' && styles.categoryNavLabelActive]}>
-              Carves
+              CARVES
             </Text>
+            {activeCategory === 'ROSETTE' && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -346,10 +377,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             style={[styles.categoryNavTab, activeCategory === 'LEVERS' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
-            <Text style={styles.categoryNavIcon}>🔧</Text>
+            <CamacLeverIcon size={19} color={activeCategory === 'LEVERS' ? '#e2e8f0' : '#94a3b8'} />
             <Text style={[styles.categoryNavLabel, activeCategory === 'LEVERS' && styles.categoryNavLabelActive]}>
-              Levers
+              LEVERS
             </Text>
+            {activeCategory === 'LEVERS' && <View style={styles.activeDot} />}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -357,10 +389,11 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
             style={[styles.categoryNavTab, activeCategory === 'SOUND' && styles.categoryNavTabActive]}
             activeOpacity={0.75}
           >
-            <Text style={styles.categoryNavIcon}>🎵</Text>
+            <CelticLyreIcon size={19} color={activeCategory === 'SOUND' ? '#e2e8f0' : '#94a3b8'} />
             <Text style={[styles.categoryNavLabel, activeCategory === 'SOUND' && styles.categoryNavLabelActive]}>
-              Sound
+              SOUND
             </Text>
+            {activeCategory === 'SOUND' && <View style={styles.activeDot} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -390,37 +423,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'web' ? 14 : 48,
     paddingBottom: 10,
+    backgroundColor: 'rgba(25, 39, 30, 0.72)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.25)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.14)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        } as any)
+      : {}),
     zIndex: 30,
   },
   exitBtn: {
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(220, 198, 154, 0.35)',
+    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
   exitBtnText: {
-    color: '#fae8c2',
-    fontSize: 13,
+    color: '#e2e8f0',
+    fontSize: 12.5,
     fontWeight: '700',
   },
   vaultTitle: {
     fontFamily: 'Cinzel-Bold',
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: '800',
     letterSpacing: 0.8,
-    color: '#fef08a',
+    color: '#f8fafc',
   },
   shardsBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: 'rgba(212, 175, 55, 0.18)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: '#f59e0b',
+    borderColor: 'rgba(255, 255, 255, 0.20)',
   },
   shardsBadgeText: {
     color: '#fef08a',
@@ -429,7 +472,7 @@ const styles = StyleSheet.create({
   },
   middleHarpCanvasContainer: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 194 : 202,
+    top: Platform.OS === 'web' ? 158 : 154,
     left: 0,
     right: 0,
     bottom: 0,
@@ -455,24 +498,56 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '800',
   },
+  previewActionContainer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'web' ? 150 : 162,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 35,
+  },
+  previewActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 20,
+    backgroundColor: 'rgba(25, 39, 30, 0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.55)',
+    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+        } as any)
+      : {}),
+  } as any,
+  previewActionText: {
+    color: '#fef08a',
+    fontSize: 12.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
   itemSelectionBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'web' ? 82 : 94,
+    bottom: Platform.OS === 'web' ? 84 : 96,
     left: 14,
     right: 14,
     height: 58,
     backgroundColor: 'rgba(25, 39, 30, 0.92)',
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderColor: 'rgba(255, 255, 255, 0.24)',
     paddingHorizontal: 6,
     paddingVertical: 4,
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.22)',
     justifyContent: 'center',
     ...(Platform.OS === 'web'
       ? ({
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backdropFilter: 'blur(28px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
         } as any)
       : {}),
     zIndex: 30,
@@ -514,12 +589,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   itemStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    backgroundColor: 'rgba(245, 158, 11, 0.20)',
     borderWidth: 0.8,
-    borderColor: 'rgba(245, 158, 11, 0.55)',
+    borderColor: 'rgba(245, 158, 11, 0.45)',
   },
   itemStatusBadgeEquipped: {
     backgroundColor: 'rgba(52, 211, 153, 0.22)',
@@ -548,17 +626,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: 58,
+    height: 62,
     backgroundColor: 'rgba(25, 39, 30, 0.92)',
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderColor: 'rgba(255, 255, 255, 0.24)',
     paddingHorizontal: 6,
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.22)',
     ...(Platform.OS === 'web'
       ? ({
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backdropFilter: 'blur(28px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(200%)',
         } as any)
       : {}),
     zIndex: 30,
@@ -567,26 +645,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: 7,
+    borderRadius: 18,
+    position: 'relative',
   },
   categoryNavTabActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(254, 240, 138, 0.45)',
-  },
-  categoryNavIcon: {
-    fontSize: 16,
-    marginBottom: 2,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
   },
   categoryNavLabel: {
     color: '#94a3b8',
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontWeight: '700',
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
+    marginTop: 4,
   },
   categoryNavLabelActive: {
-    color: '#fef08a',
+    color: '#e2e8f0',
     fontWeight: '800',
+  },
+  activeDot: {
+    position: 'absolute',
+    bottom: 2,
+    width: 14,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#d97706',
   },
 });

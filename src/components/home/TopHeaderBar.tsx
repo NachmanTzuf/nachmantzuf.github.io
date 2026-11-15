@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   containerHeroLocked: {
-    height: Platform.OS === 'web' ? 194 : 202,
+    height: Platform.OS === 'web' ? 158 : 154,
     overflow: 'visible',
   },
   topStatusRow: {
