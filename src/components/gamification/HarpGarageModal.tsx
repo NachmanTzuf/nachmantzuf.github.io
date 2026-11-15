@@ -19,7 +19,7 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
+import { HarpGarageEngine, INLAY_COLOR_PALETTE } from '../../services/gamification/HarpGarageEngine';
 import {
   TimberFinishId,
   SoundboardRosetteId,
@@ -63,6 +63,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 
   const equipped = garageEngine.getEquipped();
   const [selectedItem, setSelectedItem] = useState<CosmeticItem<any>>(equipped.timber);
+  const [selectedInlayColor, setSelectedInlayColor] = useState<string>(garageEngine.getEquippedInlayColor());
 
   // Synchronize on modal visibility change
   useEffect(() => {
@@ -71,6 +72,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
       setToastMessage('');
       const eq = garageEngine.getEquipped();
       setSelectedItem(eq.timber);
+      setSelectedInlayColor(garageEngine.getEquippedInlayColor());
       setActiveCategory('TIMBER');
 
       // Sync 3D canvas with equipped state
@@ -85,7 +87,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     try {
       shopCanvasRef.current.applyTimberColor(eq.timber.colorHex, eq.timber.roughness, eq.timber.metalness);
       shopCanvasRef.current.applyLeverColor(eq.lever.colorHex);
-      shopCanvasRef.current.applyRosetteInlay?.(eq.rosette.colorHex, eq.rosette.id);
+      shopCanvasRef.current.applyRosetteInlay?.(garageEngine.getEquippedInlayColor(), eq.rosette.id);
     } catch {}
   };
 
@@ -101,7 +103,7 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     if (activeCategory === 'TIMBER') {
       shopCanvasRef.current?.applyTimberColor(item.colorHex, item.roughness, item.metalness);
     } else if (activeCategory === 'ROSETTE') {
-      shopCanvasRef.current?.applyRosetteInlay?.(item.colorHex, item.id);
+      shopCanvasRef.current?.applyRosetteInlay?.(selectedInlayColor, item.id);
     } else if (activeCategory === 'LEVERS') {
       shopCanvasRef.current?.applyLeverColor(item.colorHex);
     } else if (activeCategory === 'SOUND') {
@@ -117,17 +119,34 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
     }
   };
 
+  const handleSelectInlayColor = (hex: string) => {
+    setSelectedInlayColor(hex);
+    const rosetteId = selectedItem?.category === 'ROSETTE' ? selectedItem.id : equipped.rosette.id;
+    shopCanvasRef.current?.applyRosetteInlay?.(hex, rosetteId);
+    if (rosetteId === equipped.rosette.id) {
+      garageEngine.setInlayColor(hex);
+      onApplyCosmetic('rosette', hex, rosetteId);
+      broadcastCosmeticsUpdate();
+    }
+  };
+
   const handleEquip = (item: CosmeticItem<any>) => {
     let success = false;
     if (activeCategory === 'TIMBER') success = garageEngine.equipTimber(item.id as TimberFinishId);
-    else if (activeCategory === 'ROSETTE') success = garageEngine.equipRosette(item.id as SoundboardRosetteId);
+    else if (activeCategory === 'ROSETTE') success = garageEngine.equipRosette(item.id as SoundboardRosetteId, selectedInlayColor);
     else if (activeCategory === 'LEVERS') success = garageEngine.equipLever(item.id as LeverFinishId);
     else if (activeCategory === 'SOUND') success = garageEngine.equipSound(item.id as SoundPackId);
 
     if (success) {
+      const appliedValue =
+        activeCategory === 'SOUND'
+          ? item.id
+          : activeCategory === 'ROSETTE'
+            ? selectedInlayColor
+            : item.colorHex;
       onApplyCosmetic(
         activeCategory.toLowerCase() as any,
-        activeCategory === 'SOUND' ? item.id : item.colorHex,
+        appliedValue,
         item.id
       );
       setToastMessage(`Fitted ${item.name} ✓`);
@@ -269,7 +288,12 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
 
         {/* PREVIEW ACTION PILL: Confirm Equip or Unlock after previewing */}
         {selectedItem && selectedItem.id !== currentEquippedId && (
-          <View style={styles.previewActionContainer}>
+          <View
+            style={[
+              styles.previewActionContainer,
+              activeCategory === 'ROSETTE' && { bottom: Platform.OS === 'web' ? 196 : 208 },
+            ]}
+          >
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel={
@@ -288,6 +312,28 @@ export const HarpGarageModal: React.FC<HarpGarageModalProps> = ({
                   : `Unlock · ${selectedItem.shardCost}`}
               </Text>
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* INLAY COLOR SWATCHES: Switch inlay finish color for any Carve design */}
+        {activeCategory === 'ROSETTE' && (
+          <View style={styles.inlayColorBar}>
+            <Text style={styles.inlayColorLabel}>INLAY</Text>
+            {INLAY_COLOR_PALETTE.map((c) => {
+              const isActive = selectedInlayColor.toLowerCase() === c.hex.toLowerCase();
+              return (
+                <TouchableOpacity
+                  key={c.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${c.name} inlay color`}
+                  onPress={() => handleSelectInlayColor(c.hex)}
+                  style={[styles.inlayColorDotBtn, isActive && styles.inlayColorDotBtnActive]}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.inlayColorDot, { backgroundColor: c.hex }]} />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
 
@@ -529,6 +575,55 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '800',
     letterSpacing: 0.3,
+  },
+  inlayColorBar: {
+    position: 'absolute',
+    bottom: Platform.OS === 'web' ? 148 : 160,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: 'rgba(25, 39, 30, 0.90)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.28)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+        } as any)
+      : {}),
+    zIndex: 32,
+  } as any,
+  inlayColorLabel: {
+    color: '#94a3b8',
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.9,
+    marginRight: 2,
+  },
+  inlayColorDotBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  inlayColorDotBtnActive: {
+    borderColor: '#fef08a',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  inlayColorDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
   },
   itemSelectionBar: {
     position: 'absolute',

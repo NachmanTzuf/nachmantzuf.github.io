@@ -180,7 +180,7 @@ server.listen(PORT, async () => {
         await new Promise(r => setTimeout(r, 2000));
         const shopMetrics = await captureAndMeasure('ARTISAN WORKSHOP MODAL', 'verified_v34_artisan_shop_modal.png');
 
-        // 6. Switch to CARVES and preview Claddagh Heart & Crown (or Knotwork Vine)
+        // 6. Switch to CARVES, select Knotwork Vine Carving & Sterling Silver inlay color
         console.log('Switching to CARVES tab in Shop...');
         await send('Runtime.evaluate', {
           expression: `(() => {
@@ -200,8 +200,15 @@ server.listen(PORT, async () => {
             }
           })()`
         });
-        await new Promise(r => setTimeout(r, 1000));
-        await captureAndMeasure('ARTISAN WORKSHOP CARVES PREVIEW', 'verified_v34_shop_carves_preview.png');
+        await new Promise(r => setTimeout(r, 600));
+        await send('Runtime.evaluate', {
+          expression: `(() => {
+            const btn = document.querySelector('[aria-label*="Sterling Silver"], [accessibilitylabel*="Sterling Silver"]');
+            if (btn) btn.click();
+          })()`
+        });
+        await new Promise(r => setTimeout(r, 900));
+        await captureAndMeasure('ARTISAN WORKSHOP CARVES PREVIEW', 'verified_v35_shop_carves_preview.png');
 
         // Check deltas
         console.log('\n================ DELTA AUDIT ================');

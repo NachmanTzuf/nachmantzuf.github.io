@@ -17,6 +17,14 @@ import { UserAccountDatabase } from '../account/UserAccountDatabase';
 const STORAGE_KEY_UNLOCKED = 'earpa_unlocked_cosmetics_v1';
 const STORAGE_KEY_EQUIPPED = 'earpa_equipped_cosmetics_v1';
 
+export const INLAY_COLOR_PALETTE = [
+  { id: 'gold', name: 'Sovereign Gold', hex: '#f5c76b' },
+  { id: 'silver', name: 'Sterling Silver', hex: '#e2e8f0' },
+  { id: 'ivory', name: 'Celtic Ivory', hex: '#faf5e8' },
+  { id: 'emerald', name: 'Emerald Jade', hex: '#34d399' },
+  { id: 'copper', name: 'Copper Bronze', hex: '#d97706' },
+];
+
 export class HarpGarageEngine {
   private timbers: Map<TimberFinishId, CosmeticItem<TimberFinishId>> = new Map();
   private rosettes: Map<SoundboardRosetteId, CosmeticItem<SoundboardRosetteId>> = new Map();
@@ -29,6 +37,7 @@ export class HarpGarageEngine {
   private equippedStrings: ResonanceStringShaderId = 'solar_flare_brass';
   private equippedSound: SoundPackId = 'standard_celtic';
   private equippedLever: LeverFinishId = 'standard_brass';
+  private equippedInlayColor: string = '#f5c76b';
 
   constructor() {
     this.initializeCosmeticCatalog();
@@ -349,6 +358,9 @@ export class HarpGarageEngine {
           if (eq.strings && this.strings.has(eq.strings)) this.equippedStrings = eq.strings;
           if (eq.sound && this.sounds.has(eq.sound)) this.equippedSound = eq.sound;
           if (eq.lever && this.levers.has(eq.lever)) this.equippedLever = eq.lever;
+          if (typeof eq.inlayColor === 'string' && eq.inlayColor.startsWith('#')) {
+            this.equippedInlayColor = eq.inlayColor;
+          }
         }
 
         const isFounder =
@@ -403,6 +415,7 @@ export class HarpGarageEngine {
             strings: this.equippedStrings,
             sound: this.equippedSound,
             lever: this.equippedLever,
+            inlayColor: this.equippedInlayColor,
           })
         );
       }
@@ -455,10 +468,22 @@ export class HarpGarageEngine {
     return false;
   }
 
-  public equipRosette(id: SoundboardRosetteId): boolean {
+  public getEquippedInlayColor(): string {
+    return this.equippedInlayColor || this.getEquipped().rosette.colorHex || '#f5c76b';
+  }
+
+  public setInlayColor(hex: string): void {
+    this.equippedInlayColor = hex;
+    this.savePersistence();
+  }
+
+  public equipRosette(id: SoundboardRosetteId, inlayColorHex?: string): boolean {
     const item = this.rosettes.get(id);
     if (item && item.isUnlocked) {
       this.equippedRosette = id;
+      if (inlayColorHex) {
+        this.equippedInlayColor = inlayColorHex;
+      }
       this.savePersistence();
       return true;
     }
