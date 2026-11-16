@@ -43,6 +43,7 @@ export const HARP_REMINDER_PROMPTS = [
 export class PracticeReminderService {
   private static key = 'earpa_practice_reminders';
   private static sending = false;
+  private static exactTimer: ReturnType<typeof setTimeout> | null = null;
   private static listeners: Set<NotificationCallback> = new Set();
 
   static subscribe(cb: NotificationCallback): () => void {
@@ -82,6 +83,118 @@ export class PracticeReminderService {
       localStorage.setItem(this.key, JSON.stringify(config));
     } catch {
       throw new Error('Reminder preferences could not be saved on this device.');
+    }
+    this.scheduleExactLocalTimer();
+    this.syncConfigToServiceWorker(config);
+  }
+
+  private static getNextTriggerMs(time: string, alreadyNotifiedToday: boolean): number {
+    const [h, m] = time.split(':').map(Number);
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+    if (alreadyNotifiedToday || target.getTime() <= now.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+    return target.getTime();
+  }
+
+  static scheduleExactLocalTimer() {
+    if (typeof window === 'undefined') return;
+    if (this.exactTimer) {
+      clearTimeout(this.exactTimer);
+      this.exactTimer = null;
+    }
+    const config = this.getConfig();
+    if (!config.enabled || !validTime(config.time)) return;
+
+    const alreadyToday = config.lastNotifiedDate === localDay(new Date());
+    const nextMs = this.getNextTriggerMs(config.time, alreadyToday);
+    const delayMs = Math.max(1000, Math.min(nextMs - Date.now() + 250, 2147483647));
+
+    this.exactTimer = setTimeout(async () => {
+      await this.checkAndDispatchDailyReminder();
+      this.scheduleExactLocalTimer();
+    }, delayMs);
+  }
+
+  static async syncConfigToServiceWorker(config: ReminderConfig): Promise<void> {
+    if (typeof window === 'undefined') return;
+    try {
+      if ('caches' in window) {
+        const cache = await caches.open('earpa-meta-v1');
+        await cache.put(
+          '/earpa-reminder-config.json',
+          new Response(JSON.stringify({ ...config, prompts: HARP_REMINDER_PROMPTS }), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      }
+    } catch {}
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const target = reg?.active || navigator.serviceWorker.controller;
+        target?.postMessage({ type: 'EARPA_SYNC_REMINDER', config });
+      }
+    } catch {}
+  }
+
+  private static async registerBackgroundTriggers(
+    reg: ServiceWorkerRegistration | null,
+    config: ReminderConfig
+  ): Promise<void> {
+    if (!reg) return;
+    try {
+      if ('periodicSync' in reg && (reg as any).periodicSync) {
+        if (config.enabled) {
+          await (reg as any).periodicSync.register('earpa-daily-reminder', {
+            minInterval: 60 * 60 * 1000,
+          });
+        } else {
+          await (reg as any).periodicSync.unregister('earpa-daily-reminder');
+        }
+      }
+    } catch {}
+
+    try {
+      if (
+        typeof window !== 'undefined' &&
+        'Notification' in window &&
+        'showTrigger' in Notification.prototype &&
+        typeof (window as any).TimestampTrigger === 'function' &&
+        Notification.permission === 'granted'
+      ) {
+        const existing = await (reg as any).getNotifications({ includeTriggered: true });
+        for (const n of existing || []) {
+          if (n.tag === 'earpa-daily-practice-scheduled') n.close();
+        }
+        if (config.enabled && validTime(config.time)) {
+          const alreadyToday = config.lastNotifiedDate === localDay(new Date());
+          const nextMs = this.getNextTriggerMs(config.time, alreadyToday);
+          const prompt = this.getRandomPrompt();
+          const TriggerCtor = (window as any).TimestampTrigger;
+          await reg.showNotification(prompt.title, {
+            body: prompt.body,
+            icon: '/images/icons/earpa_icon_192.png',
+            badge: '/images/icons/earpa_icon_192.png',
+            tag: 'earpa-daily-practice-scheduled',
+            data: { url: '/' },
+            showTrigger: new TriggerCtor(nextMs),
+          } as any);
+        }
+      }
+    } catch {}
+  }
+
+  static async initBackgroundScheduler(): Promise<void> {
+    const config = this.getConfig();
+    this.scheduleExactLocalTimer();
+    await this.syncConfigToServiceWorker(config);
+    if (config.enabled) {
+      const reg = await this.registration();
+      await this.registerBackgroundTriggers(reg, config);
+      await this.checkAndDispatchDailyReminder();
     }
   }
 
@@ -154,8 +267,11 @@ export class PracticeReminderService {
     } catch {}
 
     const vapid = process.env.EXPO_PUBLIC_WEB_PUSH_KEY;
+    const reg = await this.registration();
     if (!cloud || !vapid || perm !== 'granted') {
-      this.saveConfig({ ...this.getConfig(), enabled: true, time, background: false });
+      const nextCfg = { ...this.getConfig(), enabled: true, time, background: false };
+      this.saveConfig(nextCfg);
+      await this.registerBackgroundTriggers(reg, nextCfg);
       return `Daily practice reminders set for ${time}! Active on this device.`;
     }
 
@@ -187,10 +303,14 @@ export class PracticeReminderService {
         },
         { onConflict: 'endpoint' }
       );
-      this.saveConfig({ ...this.getConfig(), enabled: true, time, background: true });
+      const nextCfg = { ...this.getConfig(), enabled: true, time, background: true };
+      this.saveConfig(nextCfg);
+      await this.registerBackgroundTriggers(reg, nextCfg);
       return `Cloud & local reminders scheduled for ${time}!`;
     } catch {
-      this.saveConfig({ ...this.getConfig(), enabled: true, time, background: false });
+      const nextCfg = { ...this.getConfig(), enabled: true, time, background: false };
+      this.saveConfig(nextCfg);
+      await this.registerBackgroundTriggers(reg, nextCfg);
       return `Daily practice reminders set for ${time}! Active on this device.`;
     }
   }

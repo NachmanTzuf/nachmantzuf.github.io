@@ -69,6 +69,7 @@ import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
 import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
 import { InAppNotificationBanner } from '../components/notifications/InAppNotificationBanner';
 import { PracticeReminderService } from '../services/notifications/PracticeReminderService';
+import { PwaInstallModal } from '../components/pwa/PwaInstallModal';
 import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
 import {
   LevelDefinition,
@@ -129,9 +130,9 @@ export default function EarpaMasterScreen() {
     return false;
   });
 
-  // Periodic check for Daily Practice Reminder (guaranteed on mount, interval, visibilitychange, and focus)
+  // Periodic & exact-time Daily Practice Reminder scheduler (mount, timer, visibilitychange, focus, & SW sync)
   useEffect(() => {
-    PracticeReminderService.checkAndDispatchDailyReminder();
+    PracticeReminderService.initBackgroundScheduler();
     const reminderInterval = setInterval(() => {
       PracticeReminderService.checkAndDispatchDailyReminder();
     }, 30000);
@@ -689,6 +690,9 @@ export default function EarpaMasterScreen() {
 
           {/* In-App Guaranteed Practice Reminder Toast Banner */}
           <InAppNotificationBanner />
+
+          {/* Automatic First-Time PWA Install Pop-Up (never shown once installed) */}
+          <PwaInstallModal isAppReady={!isAppLoading} />
 
           {/* Smooth Zero-Black-Screen Cold Boot Loading Overlay */}
           {isAppLoading && (

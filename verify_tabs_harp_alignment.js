@@ -116,7 +116,29 @@ server.listen(PORT, async () => {
           }
         }
 
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 2500));
+
+        // Capture automatic first-time PWA Install Pop-Up before dismissing it
+        const pwaCheck = await send('Runtime.evaluate', {
+          expression: `(() => ({
+            hasInstallBtn: !!document.getElementById('pwa-install-primary-btn'),
+            installed: localStorage.getItem('earpa_pwa_installed'),
+            dismissed: localStorage.getItem('earpa_pwa_install_dismissed_at'),
+            standalone: window.matchMedia('(display-mode: standalone)').matches
+          }))()`,
+          returnByValue: true
+        });
+        console.log('PWA Install Popup Check:', JSON.stringify(pwaCheck?.result?.value));
+        const installShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v38_pwa_install_popup.png'), Buffer.from(installShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v38_pwa_install_popup.png');
+        await send('Runtime.evaluate', {
+          expression: `(() => {
+            const btn = document.querySelector('[aria-label="Continue in Browser"], [accessibilitylabel="Continue in Browser"], [aria-label="Close install prompt"]');
+            if (btn) btn.click();
+          })()`
+        });
+        await new Promise(r => setTimeout(r, 600));
 
         const captureAndMeasure = async (name, shotFileName) => {
           const metrics = await send('Runtime.evaluate', {
