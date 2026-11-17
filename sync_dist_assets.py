@@ -27,7 +27,7 @@ def main():
             content = f.read()
 
         # Add PWA head links, high-res DOM icons, and immediate Service Worker registration
-        pwa_head = """    <link rel="manifest" href="/manifest.json" />
+        pwa_head = r"""    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/earpa_icon_192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/images/icons/earpa_icon_512.png" />
@@ -42,6 +42,14 @@ def main():
     <meta name="apple-mobile-web-app-title" content="Earpa" />
     <meta name="application-name" content="Earpa" />
     <script>
+      (function() {
+        try {
+          var p = window.location.pathname || '/';
+          if (p !== '/' && !/\.(html|js|css|png|jpg|jpeg|svg|ico|glb|mp4|json|webmanifest)$/i.test(p)) {
+            window.history.replaceState(null, '', '/' + (window.location.search || '') + (window.location.hash || ''));
+          }
+        } catch (e) {}
+      })();
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(function(reg) {

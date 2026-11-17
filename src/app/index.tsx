@@ -69,7 +69,7 @@ import { InGamePlayScreen } from '../components/game/InGamePlayScreen';
 import { PracticeReminderModal } from '../components/notifications/PracticeReminderModal';
 import { InAppNotificationBanner } from '../components/notifications/InAppNotificationBanner';
 import { PracticeReminderService } from '../services/notifications/PracticeReminderService';
-import { PwaInstallModal } from '../components/pwa/PwaInstallModal';
+import { PwaInstallModal, shouldShowFirstTimeDownloadGate } from '../components/pwa/PwaInstallModal';
 import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
 import {
   LevelDefinition,
@@ -443,6 +443,29 @@ export default function EarpaMasterScreen() {
   const accuracyPct = totalTrials > 0 ? Math.round((correctCount / totalTrials) * 100) : 100;
   const progression = journeyEngineRef.current.getUserProgression();
   const modalDef = ModalShiftEngine.getModalDefinition(activeRootPc, activeMode);
+
+  const [showDownloadGate, setShowDownloadGate] = useState<boolean>(() =>
+    shouldShowFirstTimeDownloadGate()
+  );
+
+  // =========================================================================
+  // VIEW 0: FIRST-TIME BROWSER LINK VISIT -> DOWNLOAD APP GATE (Before Sign-Up)
+  // =========================================================================
+  if (showDownloadGate) {
+    return (
+      <DeviceFramePreview>
+        <SafeAreaView style={styles.hubSafeRoot}>
+          <PwaInstallModal
+            isAppReady={true}
+            onDismiss={() => {
+              setShowDownloadGate(false);
+              setIsAppLoading(false);
+            }}
+          />
+        </SafeAreaView>
+      </DeviceFramePreview>
+    );
+  }
 
   // =========================================================================
   // VIEW 1: MASTER OUT-OF-GAME MOBILE HUB (With Hybrid Tab Bar & Hero 3D Harp)

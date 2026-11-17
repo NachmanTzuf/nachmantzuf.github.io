@@ -337,7 +337,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
     } catch {}
   };
 
-  const totalRounds = 15;
+  const totalRounds = activeLevel.levelNumber <= 10 ? 3 : 15;
   const melodyLength = activeLevel.isHarmonicDyad ? 2 : activeLevel.melodyLength || 1;
   const isSequenceMode = melodyLength > 1;
 

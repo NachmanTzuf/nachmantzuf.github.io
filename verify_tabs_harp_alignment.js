@@ -76,19 +76,50 @@ server.listen(PORT, async () => {
           mobile: true
         });
 
-        // Simulate Nachman's Level 13 state on Single Note (so Single Note has no LessonLibrary, while Melody/Levers are Level 1 with LessonLibrary)
+        // STEP A: Brand-new first-time link visitor (zero localStorage) -> Must see Download Earpa Gate BEFORE Sign-Up
         await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` });
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 800));
+        await send('Runtime.evaluate', { expression: `localStorage.clear()` });
+        await send('Page.reload');
+        await new Promise(r => setTimeout(r, 2200));
+
+        const pwaCheck = await send('Runtime.evaluate', {
+          expression: `(() => ({
+            hasDownloadBtn: !!document.getElementById('pwa-install-primary-btn'),
+            bodyText: document.body.innerText.slice(0, 200)
+          }))()`,
+          returnByValue: true
+        });
+        console.log('First-Time Download Gate Check:', JSON.stringify(pwaCheck?.result?.value));
+        const installShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v40_first_time_download_gate.png'), Buffer.from(installShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v40_first_time_download_gate.png');
+
+        // STEP B: Dismiss Download Gate (or simulate opening installed app ?source=pwa) -> Must see "What's your name?"
+        await send('Runtime.evaluate', {
+          expression: `(() => {
+            const btn = document.querySelector('[aria-label="Continue in Browser"], [accessibilitylabel="Continue in Browser"], [aria-label="Close install prompt"]');
+            if (btn) btn.click();
+          })()`
+        });
+        await new Promise(r => setTimeout(r, 1200));
+        const signupShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v40_signup_whats_your_name.png'), Buffer.from(signupShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v40_signup_whats_your_name.png');
+
+        // STEP C: Simulate installed app with Nachman's profile to verify all tabs & Levers in-game screens
         await send('Runtime.evaluate', {
           expression: `(() => {
             try {
-              const raw = localStorage.getItem('earpa_user_account_db_v1');
+              localStorage.setItem('earpa_pwa_installed', 'true');
+              const raw = localStorage.getItem('earpa_user_profiles_v1');
               if (raw) {
                 const parsed = JSON.parse(raw);
-                if (parsed.profiles && parsed.profiles[0]) {
-                  parsed.profiles[0].displayName = 'Nachman';
-                  parsed.profiles[0].progress = { single: 13, melody: 1, levers: 1 };
-                  localStorage.setItem('earpa_user_account_db_v1', JSON.stringify(parsed));
+                if (Array.isArray(parsed) && parsed[0]) {
+                  parsed[0].displayName = 'Nachman';
+                  parsed[0].onboardingComplete = true;
+                  parsed[0].progress = { single: 13, melody: 1, levers: 1 };
+                  localStorage.setItem('earpa_user_profiles_v1', JSON.stringify(parsed));
                 }
               }
             } catch (e) {}
@@ -116,29 +147,7 @@ server.listen(PORT, async () => {
           }
         }
 
-        await new Promise(r => setTimeout(r, 2500));
-
-        // Capture automatic first-time PWA Install Pop-Up before dismissing it
-        const pwaCheck = await send('Runtime.evaluate', {
-          expression: `(() => ({
-            hasInstallBtn: !!document.getElementById('pwa-install-primary-btn'),
-            installed: localStorage.getItem('earpa_pwa_installed'),
-            dismissed: localStorage.getItem('earpa_pwa_install_dismissed_at'),
-            standalone: window.matchMedia('(display-mode: standalone)').matches
-          }))()`,
-          returnByValue: true
-        });
-        console.log('PWA Install Popup Check:', JSON.stringify(pwaCheck?.result?.value));
-        const installShot = await send('Page.captureScreenshot', { format: 'png' });
-        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v38_pwa_install_popup.png'), Buffer.from(installShot.data, 'base64'));
-        console.log('Saved screenshot: verified_v38_pwa_install_popup.png');
-        await send('Runtime.evaluate', {
-          expression: `(() => {
-            const btn = document.querySelector('[aria-label="Continue in Browser"], [accessibilitylabel="Continue in Browser"], [aria-label="Close install prompt"]');
-            if (btn) btn.click();
-          })()`
-        });
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 1500));
 
         const captureAndMeasure = async (name, shotFileName) => {
           const metrics = await send('Runtime.evaluate', {
@@ -184,6 +193,30 @@ server.listen(PORT, async () => {
         await send('Runtime.evaluate', { expression: `document.querySelector('#tab-btn-levers').click()` });
         await new Promise(r => setTimeout(r, 1500));
         const leversMetrics = await captureAndMeasure('LEVERS TAB (LVL 1)', 'verified_v34_levers_tab.png');
+
+        // 3B. Enter Levers In-Game Experience -> Capture Single-Screen Circle of Fifths Overview & Active Gameplay
+        console.log('Entering Levers In-Game Experience...');
+        await send('Runtime.evaluate', { expression: `document.querySelector('#liquid-gold-play-btn').click()` });
+        await new Promise(r => setTimeout(r, 1800));
+        const circleShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v40_levers_circle_overview.png'), Buffer.from(circleShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v40_levers_circle_overview.png');
+
+        await send('Runtime.evaluate', { expression: `document.querySelector('#lever-overview-play-btn')?.click()` });
+        await new Promise(r => setTimeout(r, 1200));
+        const leverPlayShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v40_levers_gameplay_clean.png'), Buffer.from(leverPlayShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v40_levers_gameplay_clean.png');
+
+        // Return to Home Hub
+        await send('Runtime.evaluate', {
+          expression: `(() => {
+            const els = Array.from(document.querySelectorAll('*'));
+            const homeBtn = els.find(el => el.textContent && el.textContent.trim() === '‹ Home');
+            if (homeBtn) homeBtn.click();
+          })()`
+        });
+        await new Promise(r => setTimeout(r, 1000));
 
         // 4. Journey Tab TOP (verifying zero header gap & unclipped avatar)
         console.log('Switching to Journey Tab...');

@@ -233,7 +233,7 @@ export function WelcomeProfile({ onDone }: { onDone: () => void }) {
           <Text style={s.title}>
             {
               [
-                'What shall we call you?',
+                "What's your name?",
                 'Make it yours',
                 'Your harp’s native tuning',
                 'How do you name notes?',

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v38';
+const CACHE_NAME = 'earpa-pwa-v40';
 const ASSETS_TO_CACHE = [
   '/',
   '/?source=pwa',
@@ -100,17 +100,62 @@ self.addEventListener('push', (event) => {
   }));
 });
 
+async function checkAndFireStoredReminder() {
+  try {
+    const cache = await caches.open('earpa-meta-v1');
+    const res = await cache.match('/earpa-reminder-config.json');
+    if (!res) return false;
+    const cfg = await res.json();
+    if (!cfg || !cfg.enabled || !/^([01]\d|2[0-3]):[0-5]\d$/.test(cfg.time || '')) {
+      return false;
+    }
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (cfg.lastNotifiedDate === today) return false;
+
+    const [h, m] = cfg.time.split(':').map(Number);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    if (nowMinutes < h * 60 + m) return false;
+
+    const prompts = Array.isArray(cfg.prompts) && cfg.prompts.length > 0
+      ? cfg.prompts
+      : [{ title: 'Earpa · Daily Practice Reminder', body: 'Your Celtic harp misses your fingers! Take 10 relaxing minutes to find your tonic.' }];
+    const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+    await self.registration.showNotification(prompt.title, {
+      body: prompt.body,
+      icon: '/images/icons/earpa_icon_192.png',
+      badge: '/images/icons/earpa_icon_192.png',
+      tag: 'earpa-daily-practice',
+      data: { url: '/' },
+    });
+
+    cfg.lastNotifiedDate = today;
+    await cache.put(
+      '/earpa-reminder-config.json',
+      new Response(JSON.stringify(cfg), { headers: { 'Content-Type': 'application/json' } })
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'earpa-daily-reminder') {
-    event.waitUntil(
-      self.registration.showNotification('Earpa · Daily Practice Reminder', {
-        body: 'Your Celtic harp misses your fingers! Take 10 relaxing minutes to find your tonic.',
-        icon: '/images/icons/earpa_icon_192.png',
-        badge: '/images/icons/earpa_icon_192.png',
-        tag: 'earpa-daily-practice',
-        data: { url: '/' },
-      })
-    );
+    event.waitUntil(checkAndFireStoredReminder());
+  }
+});
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'earpa-daily-reminder-sync') {
+    event.waitUntil(checkAndFireStoredReminder());
+  }
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'EARPA_CHECK_REMINDER') {
+    event.waitUntil(checkAndFireStoredReminder());
   }
 });
 

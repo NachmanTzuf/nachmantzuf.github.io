@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Modal,
   TouchableOpacity,
   StyleSheet,
   Platform,
@@ -18,6 +17,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e: any) => {
     e.preventDefault();
     (window as any).__earpaDeferredInstallPrompt = e;
+    (window as any).__pwaInstallPrompt = e;
     window.dispatchEvent(new Event('earpa:install-prompt-ready'));
   });
   window.addEventListener('appinstalled', () => {
@@ -25,6 +25,7 @@ if (typeof window !== 'undefined') {
       localStorage.setItem(KEY_INSTALLED, 'true');
     } catch {}
     (window as any).__earpaDeferredInstallPrompt = null;
+    (window as any).__pwaInstallPrompt = null;
     window.dispatchEvent(new Event('earpa:pwa-installed'));
   });
 }
@@ -38,8 +39,9 @@ export function isRunningAsInstalledPwa(): boolean {
       window.matchMedia?.('(display-mode: minimal-ui)')?.matches;
     const iosStandalone = (window.navigator as any)?.standalone === true;
     const androidTwa = document.referrer?.startsWith('android-app://');
+    const fromPwaStartUrl = window.location?.search?.includes('source=pwa');
     const markedInstalled = localStorage.getItem(KEY_INSTALLED) === 'true';
-    if (standaloneMatch || iosStandalone || androidTwa) {
+    if (standaloneMatch || iosStandalone || androidTwa || fromPwaStartUrl) {
       localStorage.setItem(KEY_INSTALLED, 'true');
       return true;
     }
@@ -47,6 +49,16 @@ export function isRunningAsInstalledPwa(): boolean {
   } catch {
     return false;
   }
+}
+
+export function shouldShowFirstTimeDownloadGate(): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  if (isRunningAsInstalledPwa()) return false;
+  try {
+    const dismissedAt = localStorage.getItem(KEY_DISMISSED_AT);
+    if (dismissedAt) return false;
+  } catch {}
+  return true;
 }
 
 function isAppleDevice(): boolean {
@@ -59,21 +71,24 @@ function isAppleDevice(): boolean {
 }
 
 interface PwaInstallModalProps {
-  isAppReady: boolean;
+  isAppReady?: boolean;
+  onDismiss?: () => void;
 }
 
-export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ isAppReady }) => {
-  const [visible, setVisible] = useState(false);
+export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ onDismiss }) => {
+  const [visible, setVisible] = useState<boolean>(() => shouldShowFirstTimeDownloadGate());
   const [hasNativePrompt, setHasNativePrompt] = useState<boolean>(
-    typeof window !== 'undefined' && !!(window as any).__earpaDeferredInstallPrompt
+    typeof window !== 'undefined' &&
+      !!((window as any).__earpaDeferredInstallPrompt || (window as any).__pwaInstallPrompt)
   );
-  const [showManualSteps, setShowManualSteps] = useState(false);
   const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    (window as any).__earpa_harpReady = true;
     if (isRunningAsInstalledPwa()) {
       setVisible(false);
+      onDismiss?.();
       return;
     }
 
@@ -82,45 +97,32 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ isAppReady }) 
     };
     const onInstalled = () => {
       setVisible(false);
+      onDismiss?.();
     };
 
     window.addEventListener('earpa:install-prompt-ready', onPromptReady);
+    window.addEventListener('earpa:can-install', onPromptReady);
     window.addEventListener('earpa:pwa-installed', onInstalled);
 
     return () => {
       window.removeEventListener('earpa:install-prompt-ready', onPromptReady);
+      window.removeEventListener('earpa:can-install', onPromptReady);
       window.removeEventListener('earpa:pwa-installed', onInstalled);
     };
   }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-    if (isRunningAsInstalledPwa()) return;
-
-    try {
-      const dismissedAt = localStorage.getItem(KEY_DISMISSED_AT);
-      if (dismissedAt) return;
-    } catch {}
-
-    const delay = isAppReady ? 300 : 1800;
-    const timer = setTimeout(() => {
-      if (!isRunningAsInstalledPwa()) {
-        setVisible(true);
-      }
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [isAppReady]);
 
   const handleDismiss = () => {
     try {
       localStorage.setItem(KEY_DISMISSED_AT, String(Date.now()));
     } catch {}
     setVisible(false);
+    onDismiss?.();
   };
 
-  const handleInstallPress = async () => {
+  const handleDownloadPress = async () => {
     if (typeof window === 'undefined') return;
-    const deferred = (window as any).__earpaDeferredInstallPrompt;
+    const deferred =
+      (window as any).__earpaDeferredInstallPrompt || (window as any).__pwaInstallPrompt;
     if (deferred && typeof deferred.prompt === 'function') {
       setInstalling(true);
       try {
@@ -131,140 +133,143 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({ isAppReady }) 
             localStorage.setItem(KEY_INSTALLED, 'true');
           } catch {}
           (window as any).__earpaDeferredInstallPrompt = null;
+          (window as any).__pwaInstallPrompt = null;
           setVisible(false);
+          onDismiss?.();
           return;
         }
       } catch {
-        setShowManualSteps(true);
+        // Keep manual steps visible below
       } finally {
         setInstalling(false);
       }
-      return;
     }
-    // Apple iOS Safari or browser without native beforeinstallprompt
-    setShowManualSteps(true);
   };
 
-  if (!visible) return null;
+  if (!visible || Platform.OS !== 'web') return null;
 
   const isApple = isAppleDevice();
 
-  const content = (
-    <View style={styles.backdrop}>
-      <View style={styles.card}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Close install prompt"
-          onPress={handleDismiss}
-          style={styles.closeBtn}
-          activeOpacity={0.75}
-        >
-          <Text style={styles.closeBtnText}>✕</Text>
-        </TouchableOpacity>
+  return (
+    <View style={styles.fullScreenRoot}>
+      <Image
+        source={{ uri: '/images/earpa_sanctuary_bg.jpg' }}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+      />
+      <View style={styles.backdrop}>
+        <View style={styles.card}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Close install prompt"
+            onPress={handleDismiss}
+            style={styles.closeBtn}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.closeBtnText}>✕</Text>
+          </TouchableOpacity>
 
-        <View style={styles.iconFrame}>
-          <Image
-            source={{ uri: '/images/icons/earpa_icon_192.png' }}
-            style={styles.appIcon}
-            resizeMode="cover"
-          />
-        </View>
+          <View style={styles.iconFrame}>
+            <Image
+              source={{ uri: '/images/icons/earpa_icon_192.png' }}
+              style={styles.appIcon}
+              resizeMode="cover"
+            />
+          </View>
 
-        <View style={styles.badgeRow}>
-          <CelticLyreIcon size={14} color="#f5c76b" />
-          <Text style={styles.badgeText}>EARPA SANCTUARY APP</Text>
-        </View>
+          <View style={styles.badgeRow}>
+            <CelticLyreIcon size={14} color="#f5c76b" />
+            <Text style={styles.badgeText}>EARPA SANCTUARY APP</Text>
+          </View>
 
-        <Text style={styles.title}>Install Earpa</Text>
-        <Text style={styles.subtitle}>
-          Add Earpa to your home screen for full-screen Celtic harp training, offline practice, and daily reminders.
-        </Text>
-
-        <TouchableOpacity
-          nativeID="pwa-install-primary-btn"
-          accessibilityRole="button"
-          accessibilityLabel="Install Earpa App"
-          onPress={handleInstallPress}
-          disabled={installing}
-          style={styles.installBtn}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.installBtnText}>
-            {installing ? 'Opening Installer...' : 'Install'}
+          <Text style={styles.title}>Download Earpa</Text>
+          <Text style={styles.subtitle}>
+            Download the Earpa app to your phone for the full-screen 3D Celtic harp experience. Once installed, open Earpa from your home screen.
           </Text>
-        </TouchableOpacity>
 
-        {(showManualSteps || (!hasNativePrompt && isApple)) && (
+          <TouchableOpacity
+            nativeID="pwa-install-primary-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Download Earpa App"
+            onPress={handleDownloadPress}
+            disabled={installing}
+            style={styles.installBtn}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.installBtnText}>
+              {installing ? 'Downloading...' : 'Download'}
+            </Text>
+          </TouchableOpacity>
+
           <View style={styles.stepsBox}>
             {isApple ? (
               <>
-                <Text style={styles.stepsHeader}>Apple iPhone / iPad</Text>
-                <Text style={styles.stepLine}>1. Tap the Share icon (□↑) in Safari.</Text>
-                <Text style={styles.stepLine}>2. Scroll and tap "Add to Home Screen".</Text>
-                <Text style={styles.stepLine}>3. Tap "Add" at the top right.</Text>
+                <Text style={styles.stepsHeader}>How to Download on iPhone / iPad</Text>
+                <Text style={styles.stepLine}>1. Tap the Share button (□↑) in Safari.</Text>
+                <Text style={styles.stepLine}>2. Scroll down and tap "Add to Home Screen".</Text>
+                <Text style={styles.stepLine}>3. Tap "Add" — then open Earpa from your Home Screen.</Text>
               </>
             ) : (
               <>
-                <Text style={styles.stepsHeader}>Quick Browser Install</Text>
-                <Text style={styles.stepLine}>1. Open your browser menu (⋮).</Text>
-                <Text style={styles.stepLine}>2. Tap "Install app" or "Add to Home screen".</Text>
+                <Text style={styles.stepsHeader}>
+                  {hasNativePrompt
+                    ? 'Tap "Download" above to install instantly'
+                    : 'How to Download on Android / Browser'}
+                </Text>
+                <Text style={styles.stepLine}>
+                  1. Tap "Download" above (or tap ⋮ Browser Menu).
+                </Text>
+                <Text style={styles.stepLine}>
+                  2. Tap "Install app" or "Add to Home screen".
+                </Text>
+                <Text style={styles.stepLine}>
+                  3. Open Earpa directly from your phone Home Screen.
+                </Text>
               </>
             )}
           </View>
-        )}
 
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Continue in Browser"
-          onPress={handleDismiss}
-          style={styles.dismissLinkBtn}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.dismissLinkText}>Continue in Browser</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Continue in Browser"
+            onPress={handleDismiss}
+            style={styles.dismissLinkBtn}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.dismissLinkText}>Continue in Browser</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
-  );
-
-  if (Platform.OS === 'web') {
-    return content;
-  }
-
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={handleDismiss}
-    >
-      {content}
-    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  backdrop: {
+  fullScreenRoot: {
     position: Platform.OS === 'web' ? ('fixed' as any) : 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     zIndex: 99999,
-    backgroundColor: 'rgba(4, 10, 8, 0.72)',
+    backgroundColor: '#060c09',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(4, 10, 8, 0.76)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 22,
   },
   card: {
     width: '100%',
-    maxWidth: 360,
+    maxWidth: 365,
     backgroundColor: 'rgba(25, 39, 30, 0.94)',
     borderRadius: 26,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.24)',
-    paddingTop: 28,
-    paddingBottom: 22,
+    paddingTop: 26,
+    paddingBottom: 20,
     paddingHorizontal: 22,
     alignItems: 'center',
     boxShadow: '0 20px 50px rgba(0, 0, 0, 0.55)',
@@ -300,7 +305,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: 'rgba(245, 199, 107, 0.55)',
-    marginBottom: 14,
+    marginBottom: 12,
     backgroundColor: '#0f1c14',
   },
   appIcon: {
@@ -322,17 +327,17 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Cinzel-Bold',
     color: '#f8fafc',
-    fontSize: 23,
+    fontSize: 24,
     fontWeight: '800',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     color: '#cbd5e1',
-    fontSize: 13.5,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   installBtn: {
     width: '100%',
@@ -342,13 +347,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0 8px 24px rgba(245, 199, 107, 0.35)',
-    marginBottom: 12,
+    marginBottom: 14,
   } as any,
   installBtnText: {
     color: '#0f1c14',
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   stepsBox: {
     width: '100%',
@@ -368,8 +373,8 @@ const styles = StyleSheet.create({
   },
   stepLine: {
     color: '#e2e8f0',
-    fontSize: 12.5,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 18,
   },
   dismissLinkBtn: {
     paddingVertical: 6,

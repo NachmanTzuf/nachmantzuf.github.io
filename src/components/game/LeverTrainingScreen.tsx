@@ -1,358 +1,770 @@
-import {MechanicalFifths} from './MechanicalFifths';
-import {leverLessons,scaleNotes,solveLevers,signatureOf} from '../../services/curriculum/LeverLessonEngine';
-import {Reveal} from '../common/Reveal';
-import {HarpSoundSynthesizer} from '../../services/audio/HarpSoundSynthesizer';
-import {TUNING_STRING_BASELINES} from '../../services/curriculum/TuningMatrixEngine';
-import React, {useRef, useState, useEffect} from 'react';
-import {View, Text, Image, TouchableOpacity, StyleSheet, ScrollView} from 'react-native';
-import {CelticHarpCanvas, CelticHarpCanvasRef} from '../3d/CelticHarpCanvas';
-import {ErrorBoundary} from '../common/ErrorBoundary';
-import {TuningMatrixEngine, PLAYABLE_MAJOR_KEYS, StringLetter} from '../../services/curriculum/TuningMatrixEngine';
-import {UserAccountDatabase} from '../../services/account/UserAccountDatabase';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import { MechanicalFifths } from './MechanicalFifths';
+import {
+  leverLessons,
+  scaleNotes,
+  solveLevers,
+  signatureOf,
+} from '../../services/curriculum/LeverLessonEngine';
+import { Reveal } from '../common/Reveal';
+import { HarpSoundSynthesizer } from '../../services/audio/HarpSoundSynthesizer';
+import {
+  TUNING_STRING_BASELINES,
+  TuningMatrixEngine,
+  PLAYABLE_MAJOR_KEYS,
+  StringLetter,
+} from '../../services/curriculum/TuningMatrixEngine';
+import { CelticHarpCanvas, CelticHarpCanvasRef } from '../3d/CelticHarpCanvas';
+import { ErrorBoundary } from '../common/ErrorBoundary';
+import {
+  UserAccountDatabase,
+  SessionLogEntry,
+} from '../../services/account/UserAccountDatabase';
+import { SessionInsightsModal } from './SessionInsightsModal';
+import { LevelDefinition } from '../../services/curriculum/curriculumData';
 
-const orders = {Eb_Major_Native: 'AEBFCGD', C_Major_Native: 'FCGDAEB', Bb_Major_Native: 'EBFCGDA'};
+const orders = {
+  Eb_Major_Native: 'AEBFCGD',
+  C_Major_Native: 'FCGDAEB',
+  Bb_Major_Native: 'EBFCGDA',
+};
 const letters = [...'CDEFGABC'] as StringLetter[];
-export function LeverTrainingScreen({onBackToHome, initialStage}: {onBackToHome: () => void; initialStage?:number}) {
+
+export function LeverTrainingScreen({
+  onBackToHome,
+  initialStage,
+}: {
+  onBackToHome: () => void;
+  initialStage?: number;
+}) {
   const db = UserAccountDatabase.getInstance();
   const tuning = TuningMatrixEngine.getActiveTuning();
   const keys = PLAYABLE_MAJOR_KEYS[tuning];
-  const lessons=leverLessons(tuning);
+  const lessons = leverLessons(tuning);
   const canvas = useRef<CelticHarpCanvasRef>(null);
-  const synth=useRef(new HarpSoundSynthesizer('celtic_nylon'));
-  const timers=useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(()=>()=>{timers.current.forEach(clearTimeout);synth.current.dispose();},[]);
-  const later=(fn:()=>void,ms:number)=>{timers.current.push(setTimeout(fn,ms));};
-  const [intro,setIntro]=useState((initialStage ?? db.getActiveProfile().leverStage ?? 0)===0 ? 0 : 5);
-  const [playing,setPlaying]=useState(false),[playingNote,setPlayingNote]=useState(-1);
-  const [stage, setStage] = useState(Math.min(lessons.length-1,initialStage ?? db.getActiveProfile().leverStage ?? 0));
-  const totalRounds = stage === 0 ? 3 : stage === 1 ? 4 : 5;
+  const synth = useRef(new HarpSoundSynthesizer('celtic_nylon'));
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      synth.current.dispose();
+    },
+    []
+  );
+
+  const later = (fn: () => void, ms: number) => {
+    timers.current.push(setTimeout(fn, ms));
+  };
+
+  const [playing, setPlaying] = useState(false);
+  const [playingNote, setPlayingNote] = useState(-1);
+  const [stage, setStage] = useState(
+    Math.min(
+      lessons.length - 1,
+      initialStage ?? db.getActiveProfile().leverStage ?? 0
+    )
+  );
+  // First 10 levels have 3 rounds inside a level; later levels have 5 rounds
+  const totalRounds = stage < 10 ? 3 : 5;
   const [round, setRound] = useState(0);
-  const [targetIndex, setTargetIndex] = useState(Math.min(lessons.length-1,initialStage ?? db.getActiveProfile().leverStage ?? 0));
-  const [exploreKey,setExploreKey]=useState<string|null>(null);
-  const [states, setStates] = useState(Array(8).fill(false));
-  const [submittedStates,setSubmittedStates]=useState<boolean[]|null>(null);
-  
+  const [targetIndex, setTargetIndex] = useState(
+    Math.min(
+      lessons.length - 1,
+      initialStage ?? db.getActiveProfile().leverStage ?? 0
+    )
+  );
+  const [exploreKey, setExploreKey] = useState<string | null>(null);
+  const [states, setStates] = useState<boolean[]>(Array(8).fill(false));
+  const [submittedStates, setSubmittedStates] = useState<boolean[] | null>(null);
+
   const [practice, setPractice] = useState(false);
   const [result, setResult] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
+  const [sessionLog, setSessionLog] = useState<SessionLogEntry | null>(null);
+  const [showVictoryModal, setShowVictoryModal] = useState(false);
+
   const locked = useRef(false);
   const started = useRef(Date.now());
   const sessionId = useRef(`levers_${Date.now()}`);
-  const lesson=lessons[targetIndex];
-  const target=lesson.root;
-  const signature=signatureOf(lesson.parent);
-  const config=solveLevers(tuning,target,lesson.mode)!;
-  const notes=scaleNotes(target,lesson.mode);
-  const up=[...orders[tuning]].filter(l=>config[l as StringLetter]);
-  const down=[...'CDEFGAB'].filter(l=>!config[l as StringLetter]);
+
+  const lesson = lessons[targetIndex];
+  const target = lesson.root;
+  const signature = signatureOf(lesson.parent);
+  const config = solveLevers(tuning, target, lesson.mode)!;
+  const notes = scaleNotes(target, lesson.mode);
+  const up = [...orders[tuning]].filter((l) => config[l as StringLetter]);
+  const pretty = (v: string) => v.replace(/b/g, '♭').replace(/#/g, '♯');
+
   const setLever = (i: number, value: boolean) => {
     if (locked.current) return;
-    setStates(prev => {const next = [...prev]; next[i] = value; return next;});
+    setStates((prev) => {
+      const next = [...prev];
+      next[i] = value;
+      return next;
+    });
     canvas.current?.setLeverState(i + 1, value);
   };
+
   const check = () => {
     if (locked.current) return;
     locked.current = true;
-    const correct = letters.every((l,i) => states[i] === !!config[l]);
+    const correct = letters.every((l, i) => states[i] === !!config[l]);
     setResult(correct);
     setSubmittedStates([...states]);
-    const correctStates=letters.map(l=>!!config[l]);
-    correctStates.forEach((value,i)=>canvas.current?.setLeverState(i+1,value));
+
+    const correctStates = letters.map((l) => !!config[l]);
+    correctStates.forEach((value, i) => canvas.current?.setLeverState(i + 1, value));
     setStates(correctStates);
-    setPlaying(true);synth.current.initAudio();synth.current.unlockSynchronously();
-    notes.forEach((note,i)=>later(()=>{
-      setPlayingNote(i);
-      const visibleString=letters.findIndex((l,j)=>TUNING_STRING_BASELINES[tuning][l].openMidi+config[l]+(j===7?12:0)===note.midi);
-      if(visibleString>=0)canvas.current?.triggerLightStrike(visibleString+1);
-      synth.current.playPluck(440*Math.pow(2,(note.midi-69)/12),1100,.9);
-    },i*550+180));
-    later(()=>{setPlaying(false);setPlayingNote(-1);},8*550+180);
-    setScore(n => n + (correct ? 1 : 0));
-    db.recordTrial({sessionId: sessionId.current, levelId: `lever_stage_${stage + 1}`, track: 'levers', tonicKey: lesson.title,
-      stimulusDegree: up.join('') || 'all down', guessedDegree: letters.filter((_,i) => states[i]).join('') || 'all down',
-      isCorrect: correct, latencyMs: Date.now() - started.current, roundIndex: round + 1});
-    if (round === totalRounds - 1) {
-      const finalScore = score + (correct ? 1 : 0);
-      const trials = db.getUserTrials(db.getActiveProfile().id).filter(t=>t.sessionId===sessionId.current);
-      db.recordSession({trialSessionId:sessionId.current,levelId:`lever_stage_${stage+1}`,levelCode:`L${stage+1}`,track:'levers',
-        durationSeconds:(Date.now()-Number(sessionId.current.split('_')[1]))/1000,totalRounds,correctRounds:finalScore,
-        accuracyPct:Math.round(finalScore/totalRounds*100),passed:finalScore/totalRounds>=.8,averageLatencyMs:trials.reduce((n,t)=>n+t.latencyMs,0)/trials.length,
-        fastestLatencyMs:Math.min(...trials.map(t=>t.latencyMs))});
-      db.updateActiveProfile({leverStage:Math.max(db.getActiveProfile().leverStage||0,Math.min(lessons.length-1,stage+1))});
-    }
-  };
-  const [guidedFlipped, setGuidedFlipped] = useState(false);
-  const [octaveFlipped, setOctaveFlipped] = useState(false);
 
-  const guidedLetter = orders[tuning][0] as StringLetter;
-  const guidedStrIdx = letters.indexOf(guidedLetter);
-
-  const playOpenHarpArpeggio = () => {
+    setPlaying(true);
     synth.current.initAudio();
     synth.current.unlockSynchronously();
-    const root = TuningMatrixEngine.getRootMidiForKey(keys[0], 4);
-    [0, 4, 7, 12].forEach((interval, i) => later(() => {
-      const letter=scaleNotes(keys[0],'major')[[0,2,4,7][i]].letter;
-      canvas.current?.triggerLightStrike(letter==='C'&&i>0?8:'CDEFGAB'.indexOf(letter)+1);
-      synth.current.playPluck(440 * Math.pow(2, (root + interval - 69) / 12), 1200, 0.88);
-    }, i * 220));
-  };
 
-  const playGuidedSemitone = () => {
-    synth.current.initAudio();
-    synth.current.unlockSynchronously();
-    const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
-    const sNum = guidedStrIdx + 1;
+    notes.forEach((note, i) =>
+      later(() => {
+        setPlayingNote(i);
+        const visibleString = letters.findIndex(
+          (l, j) =>
+            TUNING_STRING_BASELINES[tuning][l].openMidi +
+              config[l] +
+              (j === 7 ? 12 : 0) ===
+            note.midi
+        );
+        if (visibleString >= 0) canvas.current?.triggerLightStrike(visibleString + 1);
+        synth.current.playPluck(
+          440 * Math.pow(2, (note.midi - 69) / 12),
+          1100,
+          0.9
+        );
+      }, i * 520 + 180)
+    );
 
-    // 1. Play open pitch
-    canvas.current?.triggerLightStrike(sNum);
-    synth.current.playPluck(440 * Math.pow(2, (midi - 69) / 12), 700, 0.85);
+    const newScore = score + (correct ? 1 : 0);
+    setScore(newScore);
 
-    // 2. Play raised pitch (+1 semitone) after 420ms
+    db.recordTrial({
+      sessionId: sessionId.current,
+      levelId: `lever_stage_${stage + 1}`,
+      track: 'levers',
+      tonicKey: lesson.title,
+      stimulusDegree: up.join('') || 'all down',
+      guessedDegree: letters.filter((_, i) => states[i]).join('') || 'all down',
+      isCorrect: correct,
+      latencyMs: Date.now() - started.current,
+      roundIndex: round + 1,
+    });
+
+    const walkDurationMs = 8 * 520 + 600;
     later(() => {
-      canvas.current?.triggerLightStrike(sNum);
-      synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
-      setGuidedFlipped(true);
-    }, 420);
+      setPlaying(false);
+      setPlayingNote(-1);
+      if (round === totalRounds - 1) {
+        const trials = db
+          .getUserTrials(db.getActiveProfile().id)
+          .filter((t) => t.sessionId === sessionId.current);
+        const avgLat =
+          trials.length > 0
+            ? Math.round(
+                trials.reduce((n, t) => n + t.latencyMs, 0) / trials.length
+              )
+            : 1200;
+        const fastLat =
+          trials.length > 0
+            ? Math.min(...trials.map((t) => t.latencyMs))
+            : 900;
+        const sLog = db.recordSession({
+          trialSessionId: sessionId.current,
+          levelId: `lever_stage_${stage + 1}`,
+          levelCode: `L${stage + 1}`,
+          track: 'levers',
+          durationSeconds: Math.max(
+            1,
+            Math.round(
+              (Date.now() - Number(sessionId.current.split('_')[1])) / 1000
+            )
+          ),
+          totalRounds,
+          correctRounds: newScore,
+          accuracyPct: Math.round((newScore / totalRounds) * 100),
+          passed: newScore / totalRounds >= 0.8,
+          averageLatencyMs: avgLat,
+          fastestLatencyMs: fastLat,
+        });
+        db.updateActiveProfile({
+          leverStage: Math.max(
+            db.getActiveProfile().leverStage || 0,
+            Math.min(lessons.length - 1, stage + 1)
+          ),
+        });
+        setSessionLog(sLog);
+        setShowVictoryModal(true);
+      } else {
+        // Automatically advance to next round after verdict & scale walk
+        advanceRound();
+      }
+    }, walkDurationMs);
   };
 
-  const playOctavePair = () => {
-    synth.current.initAudio();
-    synth.current.unlockSynchronously();
-    setLever(0, true);
-    setLever(7, true);
-    setOctaveFlipped(true);
-    const rootMidi = TuningMatrixEngine.getRootMidiForKey('C', 4);
-    canvas.current?.triggerLightStrike(1);
-    canvas.current?.triggerLightStrike(8);
-    synth.current.playPluck(440 * Math.pow(2, (rootMidi + 1 - 69) / 12), 1200, 0.88);
-    later(() => {
-      canvas.current?.triggerLightStrike(8);
-      synth.current.playPluck(440 * Math.pow(2, (rootMidi + 13 - 69) / 12), 1400, 0.88);
-    }, 180);
-  };
-
-  const next = () => {
-    if (!locked.current || playing) return;
+  const advanceRound = () => {
     locked.current = false;
-    if(round===totalRounds-1&&stage===lessons.length-1){onBackToHome();return;}
-    if (round === totalRounds - 1) {
-      setStage(Math.min(lessons.length-1, stage+1));
-      setRound(0); setScore(0); sessionId.current = `levers_${Date.now()}`;
-    } else setRound(n => n+1);
-    // Introduce each available scale before random mixed practice.
-    const nextStage=round===totalRounds-1?Math.min(lessons.length-1,stage+1):stage;
-    const nextIndex=round===totalRounds-1?nextStage:Math.max(0,nextStage-((round+1)%Math.min(nextStage+1,3)));
+    const nextRound = round + 1;
+    setRound(nextRound);
+    const nextIndex = Math.max(
+      0,
+      stage - (nextRound % Math.min(stage + 1, 3))
+    );
     setExploreKey(null);
-    setTargetIndex(nextIndex); setPractice(round !== totalRounds-1); setResult(null); setSubmittedStates(null); started.current = Date.now();
+    setTargetIndex(nextIndex);
+    setResult(null);
+    setSubmittedStates(null);
+    started.current = Date.now();
   };
-  const pretty=(v:string)=>v.replace(/b/g,'♭').replace(/#/g,'♯');
-  const mismatch=letters.map((l,i)=>({l,i,wanted:!!config[l]})).filter(x=>(submittedStates??states)[x.i]!==x.wanted);
-  const lessonTitles=[
-    'Your harp at rest',
-    'Action · One lever, one semitone',
-    'Around the circle of fifths',
-    'The lever math formula',
-    'Two C strings · Octave rule'
-  ];
-  const circleView=<View><MechanicalFifths tuning={tuning} selected={exploreKey??lesson.parent} onSelect={setExploreKey}/>{exploreKey&&exploreKey!==lesson.parent&&<TouchableOpacity onPress={()=>setExploreKey(null)}><Text style={styles.small}>Exploring {exploreKey} major · Return to {lesson.title} lesson</Text></TouchableOpacity>}</View>;
 
+  const handleNextLevel = () => {
+    const nextStage = Math.min(lessons.length - 1, stage + 1);
+    locked.current = false;
+    setStage(nextStage);
+    setTargetIndex(nextStage);
+    setRound(0);
+    setScore(0);
+    setResult(null);
+    setSubmittedStates(null);
+    setShowVictoryModal(false);
+    setSessionLog(null);
+    setPractice(false);
+    sessionId.current = `levers_${Date.now()}`;
+    started.current = Date.now();
+  };
 
-  return <View style={{flex:1,backgroundColor:'#483b2a'}}>
-    <Image source={{uri:'/images/ingame_bg_levers.jpg'}} style={StyleSheet.absoluteFillObject}/>
-    <View style={styles.fixedHarpContainer} pointerEvents="box-none">
-      <ErrorBoundary componentName="LeverHarpCanvas">
-        <CelticHarpCanvas
-          ref={canvas}
-          initialLeverStates={states}
-          onLeverToggled={(i,v)=>{
-            setLever(i-1,v);
-            if (intro === 1 && letters[i-1] === guidedLetter && v) {
-              setGuidedFlipped(true);
-              synth.current.initAudio();
-              synth.current.unlockSynchronously();
-              const midi = TUNING_STRING_BASELINES[tuning][guidedLetter].openMidi;
-              synth.current.playPluck(440 * Math.pow(2, (midi + 1 - 69) / 12), 1100, 0.92);
-            }
-            if (intro === 4 && (i === 1 || i === 8)) {
-              if (states[i === 1 ? 7 : 0]) setOctaveFlipped(true);
-            }
-          }}
-          interactiveControls={true}
-          fixedInGameAngle={true}
-          customAngle={-0.95}
-          customScale={0.938}
-          targetY={0.590}
-          minimalHeroMode={true}
-          style={[styles.harpCanvas, { pointerEvents: 'auto' } as any]}
-        />
-      </ErrorBoundary>
-    </View>
-    <View style={styles.top}><TouchableOpacity onPress={onBackToHome}><Text style={styles.text}>‹ Home</Text></TouchableOpacity><Text style={styles.text}>Level {stage+1} · {round+1} / {totalRounds}</Text></View>
-    {practice&&result===null&&<>
-      <View pointerEvents="none" style={{position:'absolute',top:65,left:20,right:20,zIndex:50}}>
-        <Text style={styles.title}>{pretty(lesson.title)}</Text>
-        <Text style={styles.text}>Set levers on the harp or tap buttons below</Text>
+  const handleReplayLevel = () => {
+    locked.current = false;
+    setRound(0);
+    setScore(0);
+    setTargetIndex(stage);
+    setResult(null);
+    setSubmittedStates(null);
+    setShowVictoryModal(false);
+    setSessionLog(null);
+    setPractice(true);
+    sessionId.current = `levers_${Date.now()}`;
+    started.current = Date.now();
+  };
+
+  const mismatch = letters
+    .map((l, i) => ({ l, i, wanted: !!config[l] }))
+    .filter((x) => (submittedStates ?? states)[x.i] !== x.wanted);
+
+  const syntheticLevelDef: LevelDefinition = {
+    id: `lever_stage_${stage + 1}`,
+    code: `L${stage + 1}`,
+    levelNumber: stage + 1,
+    track: 'levers',
+    title: pretty(lesson.title),
+    subtitle: 'Camac Lever Mastery',
+    activeNotesMask: [true, true, true, true, true, true, true, true],
+    isChromatic: false,
+    rounds: totalRounds,
+  };
+
+  return (
+    <View style={styles.screenRoot}>
+      <Image
+        source={{ uri: '/images/ingame_bg_levers.jpg' }}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+      />
+
+      {/* 3D Celtic Harp: Positioned cleanly in the center with top & bottom clearance */}
+      <View style={styles.fixedHarpContainer} pointerEvents="box-none">
+        <ErrorBoundary componentName="LeverHarpCanvas">
+          <CelticHarpCanvas
+            ref={canvas}
+            initialLeverStates={states}
+            onLeverToggled={(i, v) => setLever(i - 1, v)}
+            interactiveControls={true}
+            fixedInGameAngle={true}
+            customAngle={-0.95}
+            customScale={0.86}
+            targetY={0.60}
+            minimalHeroMode={true}
+            style={[styles.harpCanvas, { pointerEvents: 'auto' } as any]}
+          />
+        </ErrorBoundary>
       </View>
-      <View style={styles.controls} pointerEvents="box-none">
+
+      {/* Top HUD Bar: Compact & high so it never touches the 3D harp */}
+      <View style={styles.topHud} pointerEvents="box-none">
         <TouchableOpacity
-          style={styles.circleToggle}
-          onPress={()=>{setPractice(false);setIntro(5);}}
+          onPress={onBackToHome}
+          style={styles.hudBtn}
+          activeOpacity={0.75}
         >
-          <Text style={styles.circleToggleText}>Show Circle of Fifths</Text>
+          <Text style={styles.hudBtnText}>‹ Home</Text>
         </TouchableOpacity>
-        <View style={styles.leverRow}>
-          {letters.map((l,i)=>{
-            const isUp = states[i];
-            const isRed = l === 'C';
-            const isBlue = l === 'F';
-            const borderCol = isUp ? '#fbbf24' : isRed ? '#ef4444' : isBlue ? '#38bdf8' : '#786e58';
-            const textCol = isUp ? '#fbbf24' : isRed ? '#fca5a5' : isBlue ? '#93c5fd' : '#edddc0';
-            return (
-              <TouchableOpacity
-                key={i}
-                accessibilityLabel={`${l}${i===7?' upper':''} lever ${isUp?'up':'down'}`}
-                onPress={()=>setLever(i,!isUp)}
-                style={[
-                  styles.lever,
-                  {
-                    borderColor: borderCol,
-                    backgroundColor: isUp ? 'rgba(251, 191, 36, 0.25)' : 'rgba(30, 24, 18, 0.90)',
-                    borderWidth: isUp ? 1.5 : 1,
-                  }
-                ]}
-              >
-                <Text style={[styles.leverLetter, { color: textCol }]}>
-                  {l}{i === 7 ? '²' : ''}
-                </Text>
-                <Text style={[styles.leverState, { color: isUp ? '#fbbf24' : '#9ca3af' }]}>
-                  {isUp ? '↑ UP' : '↓ DN'}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <TouchableOpacity style={styles.button} onPress={check}>
-          <Text style={[styles.text, { fontWeight: '700', fontSize: 16 }]}>Confirm scale →</Text>
-        </TouchableOpacity>
-      </View>
-    </>}
-    {!practice&&<Reveal key={`${intro}-${target}`} style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:28,paddingTop:76,paddingBottom:36,gap:16}}>
-      <Text style={styles.small}>{intro<5?`INTERACTIVE LEVER METHOD · ${intro+1} / 5`:'LEARN THE SCALE'}</Text>
-      <Text style={styles.title}>{intro<5?lessonTitles[intro]:`${pretty(lesson.title)}`}</Text>
 
-      {/* Step 0: Open Harp at Rest */}
-      {intro === 0 && (
-        <View style={{gap:14,alignItems:'center'}}>
-          <Text style={styles.explanation}>
-            With every lever down, your Celtic harp rests in {pretty(keys[0])} major. This is your foundation with zero raised groups.
-          </Text>
-          <TouchableOpacity style={[styles.button,{minWidth:220}]} onPress={playOpenHarpArpeggio}>
-            <Text style={styles.text}>♫ Hear harp at rest</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Step 1: Guided Action - Flip Lever & Hear Semitone */}
-      {intro === 1 && (
-        <View style={{gap:14,alignItems:'center'}}>
-          <Text style={styles.explanation}>
-            Engaging a lever physically stops the string at a bridge pin, raising its pitch by exactly one semitone.
-          </Text>
-          <Text style={[styles.text,{color:'#ead7a9'}]}>
-            First group to raise in {pretty(keys[0])} native: {guidedLetter}
-          </Text>
-          <TouchableOpacity style={[styles.button,{minWidth:240,borderColor:guidedFlipped?'#a3e635':'#c5a872'}]} onPress={() => {
-            setLever(guidedStrIdx, true);
-            playGuidedSemitone();
-          }}>
-            <Text style={styles.text}>{guidedFlipped ? `✓ ${guidedLetter} lever raised (+1 semitone)` : `Flip ${guidedLetter} lever & listen`}</Text>
-          </TouchableOpacity>
-          {guidedFlipped && (
-            <Text style={[styles.small,{color:'#a3e635'}]}>
-              Notice the pitch shift: open pitch → raised half step.
+        {practice && result === null ? (
+          <View style={styles.hudCenterPill} pointerEvents="none">
+            <Text style={styles.hudLevelCode}>
+              L{stage + 1} · ROUND {round + 1}/{totalRounds}
             </Text>
-          )}
-        </View>
-      )}
-
-      {/* Step 2: Around the Circle */}
-      {intro === 2 && (
-        <View style={{gap:12}}>
-          {circleView}
-          <Text style={styles.explanation}>
-            Each clockwise step moves up a perfect fifth (seven semitones). Each new major scale requires raising one additional letter group in order: {[...orders[tuning]].join(' → ')}.
-          </Text>
-        </View>
-      )}
-
-      {/* Step 3: Mathematical Formula */}
-      {intro === 3 && (
-        <View style={{gap:14,alignItems:'center'}}>
-          <View style={{padding:16,borderRadius:12,backgroundColor:'rgba(210,183,126,0.12)',borderWidth:1,borderColor:'#ac986d',width:'100%'}}>
-            <Text style={[styles.title,{fontSize:20,marginBottom:6}]}>Mathematical Relationship</Text>
-            <Text style={[styles.text,{fontSize:15,lineHeight:22}]}>
-              • 1 Clockwise Step = 1 Group Raised{'\n'}
-              • Key Signature = { ({Eb_Major_Native: '-3 (3 flats)', C_Major_Native: '0 (neutral)', Bb_Major_Native: '-2 (2 flats)'} as Record<string,string>)[tuning] } + Raised Groups{'\n'}
-              • Negative = flats · Positive = sharps
+            <Text style={styles.hudTargetScale}>{pretty(lesson.title)}</Text>
+            <Text style={styles.hudSubInstruction}>
+              Set levers on harp or buttons below
             </Text>
           </View>
-          <Text style={styles.explanation}>
-            For {pretty(keys[1])} Major (1 step clockwise from {pretty(keys[0])}): raise {orders[tuning][0]}. Key signature = { ({Eb_Major_Native: '-2', C_Major_Native: '+1', Bb_Major_Native: '-1'} as Record<string,string>)[tuning] } ({pretty(keys[1])}).
-          </Text>
-        </View>
-      )}
+        ) : (
+          <View style={styles.hudCenterPill} pointerEvents="none">
+            <Text style={styles.hudLevelCode}>
+              LEVEL {stage + 1} · {totalRounds} ROUNDS
+            </Text>
+          </View>
+        )}
 
-      {/* Step 4: Two C Strings Octave Rule */}
-      {intro === 4 && (
-        <View style={{gap:14,alignItems:'center'}}>
-          <Text style={styles.explanation}>
-            Every string sharing that letter must change together. This harp has two C strings: C4 (String 1) and C5 (String 8).
-          </Text>
-          <TouchableOpacity style={[styles.button,{minWidth:240,borderColor:octaveFlipped?'#a3e635':'#c5a872'}]} onPress={playOctavePair}>
-            <Text style={styles.text}>{octaveFlipped ? '✓ Both C levers raised (C4 & C5)' : 'Flip both C levers together'}</Text>
+        {practice && result === null ? (
+          <TouchableOpacity
+            onPress={() => setPractice(false)}
+            style={styles.hudBtn}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.hudBtnText}>◎ Circle</Text>
           </TouchableOpacity>
-          <Text style={styles.small}>
-            Always change both C levers together when modulating keys involving C.
-          </Text>
+        ) : (
+          <View style={{ width: 68 }} />
+        )}
+      </View>
+
+      {/* Active Gameplay Bottom Controls: Positioned low so they never touch the 3D harp */}
+      {practice && result === null && (
+        <View style={styles.controls} pointerEvents="box-none">
+          <View style={styles.leverRow}>
+            {letters.map((l, i) => {
+              const isUp = states[i];
+              const isRed = l === 'C';
+              const isBlue = l === 'F';
+              // Unified box border color across all 8 buttons; only inner C & F letters are colored
+              const borderCol = isUp ? '#fbbf24' : 'rgba(255, 255, 255, 0.24)';
+              const letterColor = isRed
+                ? '#ef4444'
+                : isBlue
+                  ? '#38bdf8'
+                  : isUp
+                    ? '#fef08a'
+                    : '#f8fafc';
+
+              return (
+                <TouchableOpacity
+                  key={i}
+                  accessibilityLabel={`${l}${i === 7 ? ' upper' : ''} lever ${isUp ? 'up' : 'down'}`}
+                  onPress={() => setLever(i, !isUp)}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.leverBtn,
+                    {
+                      borderColor: borderCol,
+                      backgroundColor: isUp
+                        ? 'rgba(251, 191, 36, 0.22)'
+                        : 'rgba(18, 28, 22, 0.90)',
+                      borderWidth: isUp ? 1.5 : 1,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.leverLetter, { color: letterColor }]}>
+                    {l}
+                    {i === 7 ? '²' : ''}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.leverState,
+                      { color: isUp ? '#fbbf24' : '#94a3b8' },
+                    ]}
+                  >
+                    {isUp ? '↑ UP' : '↓ DN'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <TouchableOpacity
+            style={styles.confirmBtn}
+            onPress={check}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.confirmBtnText}>Confirm Scale →</Text>
+          </TouchableOpacity>
         </View>
       )}
 
-      {/* Independent Trial Overview */}
-      {intro >= 5 && (
-        <>
-          {circleView}
-          {lesson.mode!=='major'&&<Text style={styles.explanation}>Use {pretty(lesson.parent)} major levers, but hear {pretty(target)} as home. Same pitches, a different tonic.</Text>}
-          <Text style={styles.explanation}>{signature === 0 ? 'No sharps or flats' : `${Math.abs(signature)} ${signature < 0 ? (Math.abs(signature) === 1 ? 'flat' : 'flats') : (Math.abs(signature) === 1 ? 'sharp' : 'sharps')}`} · {up.length} raised groups from {pretty(keys[0])}</Text>
-          <Text style={styles.explanation}>Raise {up.join(' · ')||'none'}<Text>{'\n'}Lower {down.join(' · ')||'none'}</Text></Text>
-          <Text style={styles.small}>{up.map(l=>`${pretty(TUNING_STRING_BASELINES[tuning][l as StringLetter].open)} → ${pretty(TUNING_STRING_BASELINES[tuning][l as StringLetter].engaged)}`).join('   ·   ')||'All strings stay at their open pitch.'}</Text>
-        </>
+      {/* Pre-Play Single-Screen Minimalist Circle of Fifths Overview (Zero Scrolling) */}
+      {!practice && !showVictoryModal && (
+        <Reveal key={`overview-${target}`} style={styles.overviewOverlay}>
+          <View style={styles.overviewContent}>
+            <View style={styles.overviewHeader}>
+              <Text style={styles.overviewEyebrow}>
+                CAMAC LEVER CIRCLE · {pretty(keys[0])} TUNING
+              </Text>
+              <Text style={styles.overviewTitle}>{pretty(lesson.title)}</Text>
+              <Text style={styles.overviewSubtitle}>
+                {signature === 0
+                  ? 'Natural scale · Raise ' + (up.join(' · ') || 'none')
+                  : `Raise ${up.join(' · ') || 'none — all levers down'}`}
+              </Text>
+            </View>
+
+            <MechanicalFifths
+              tuning={tuning}
+              selected={exploreKey ?? lesson.parent}
+              onSelect={setExploreKey}
+            />
+
+            <TouchableOpacity
+              nativeID="lever-overview-play-btn"
+              style={styles.playBtn}
+              activeOpacity={0.85}
+              onPress={() => {
+                timers.current.forEach(clearTimeout);
+                timers.current = [];
+                setExploreKey(null);
+                setPractice(true);
+                started.current = Date.now();
+              }}
+            >
+              <Text style={styles.playBtnText}>Play</Text>
+            </TouchableOpacity>
+          </View>
+        </Reveal>
       )}
 
-      <TouchableOpacity disabled={(intro===1&&!guidedFlipped)||(intro===4&&!octaveFlipped)} style={[styles.button,{opacity:(intro===1&&!guidedFlipped)||(intro===4&&!octaveFlipped)?.5:1}]} onPress={()=>{if(intro<5)setIntro(intro+1);else{timers.current.forEach(clearTimeout);timers.current=[];setPractice(true);started.current=Date.now();}}}>
-        <Text style={styles.text}>{intro<5?'Continue at your pace →':`Begin ${totalRounds}-round level →`}</Text>
-      </TouchableOpacity>
-      {intro>0&&intro<5&&<TouchableOpacity onPress={()=>setIntro(intro-1)}><Text style={styles.small}>‹ Previous step</Text></TouchableOpacity>}
-    </ScrollView></Reveal>}
-    {result!==null&&<Reveal style={styles.overlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',padding:26,paddingTop:76,paddingBottom:36,gap:22}}><Text style={[styles.title,{fontSize:40}]}>{round===totalRounds-1&&!playing?'Level complete':result?'Correct':'Not quite'}</Text>{round===totalRounds-1&&!playing&&<View style={{alignItems:'center',gap:12}}><Text style={{fontSize:54,color:'#ead7a9'}}>{score} / {totalRounds}</Text><Text style={styles.explanation}>{score===totalRounds?'Every scale matched.':`${score} ${score===1?'scale':'scales'} matched. Listen for the changed note as you move on.`}</Text></View>}<Text style={styles.title}>{pretty(lesson.title)}</Text><Text style={styles.explanation}>{result?'Every lever is in place.':`${8-mismatch.length} of 8 levers correct`}</Text>{!!mismatch.length&&<Text style={styles.explanation}>{mismatch.map(x=>`${x.l}${x.i===7?' upper':''} ${x.wanted?'↑ raise':'↓ lower'}`).join(' · ')}</Text>}<View style={{flexDirection:'row',justifyContent:'space-between'}}>{[1,2,3,4,5,6,7,8].map((n,i)=><View key={n} style={{width:30,height:42,alignItems:'center',justifyContent:'center',borderBottomWidth:2,borderColor:playingNote===i?'#f4d499':'#81765d',backgroundColor:playingNote===i?'rgba(210,183,126,.25)':'transparent'}}><Text style={[styles.text,{fontSize:13}]}>{pretty(notes[i].label)}</Text></View>)}</View><Text style={styles.small}>Listen to the correct scale · start to finish</Text><TouchableOpacity disabled={playing} style={[styles.button,{opacity:playing ? .5 : 1}]} onPress={next}><Text style={styles.text}>{playing?'Playing the scale…':round===totalRounds-1?`${score} / ${totalRounds} · ${stage===lessons.length-1?'Finish journey':'Next level'} →`:'Next scale →'}</Text></TouchableOpacity></ScrollView></Reveal>}
-  </View>;
-}
-const styles=StyleSheet.create({
-  top:{position:'absolute',top:22,left:18,right:18,flexDirection:'row',justifyContent:'space-between',zIndex:100},
-  title:{fontFamily:'Cinzel-Bold',fontSize:30,color:'#f0d9ab',textAlign:'center'},
-  text:{color:'#edddc0',fontSize:16,textAlign:'center',lineHeight:25},
-  explanation:{color:'#edddc0',fontSize:18,lineHeight:29,textAlign:'center'},
-  small:{color:'#cdbd9e',fontSize:12,lineHeight:20,textAlign:'center',padding:4},
-  fixedHarpContainer:{position:'absolute',top:0,left:0,right:0,bottom:0,pointerEvents:'box-none'},
-  harpCanvas:{width:'100%',height:'100%'},
-  controls:{position:'absolute',bottom:24,left:14,right:14,zIndex:60},
-  circleToggle:{alignSelf:'center',marginBottom:10,paddingVertical:6,paddingHorizontal:14,borderRadius:16,backgroundColor:'rgba(24,20,14,.75)',borderWidth:1,borderColor:'#786e58'},
-  circleToggleText:{color:'#cdbd9e',fontSize:12,fontWeight:'600'},
-  leverRow:{flexDirection:'row',gap:5,justifyContent:'center',marginBottom:10},
-  lever:{flex:1,paddingVertical:8,alignItems:'center',justifyContent:'center',borderRadius:8},
-  leverLetter:{fontSize:13,fontWeight:'700'},
-  leverState:{fontSize:10,fontWeight:'600',marginTop:2},
-  button:{padding:15,borderRadius:14,backgroundColor:'rgba(54,53,35,.95)',borderWidth:1,borderColor:'#c5a872',alignItems:'center'},
-  overlay:{...StyleSheet.absoluteFillObject,zIndex:90,backgroundColor:'rgba(29,39,29,.7)',backgroundImage:'linear-gradient(180deg,rgba(44,50,34,.12),rgba(36,47,31,.75),rgba(44,50,34,.12))'} as any
-});
+      {/* Unified Round Verdict Overlay (Same Animation & Insight Layout as Single/Melody) */}
+      {result !== null && !showVictoryModal && (
+        <Reveal style={styles.answerOverlay}>
+          <View style={styles.feedbackContentBox}>
+            <View style={styles.feedbackTopSection}>
+              <Text
+                style={[
+                  styles.unifiedAnswerTitle,
+                  { color: result ? '#22c55e' : '#dc2626' },
+                ]}
+              >
+                {result ? 'Spot On!' : 'Listen Closely...'}
+              </Text>
+            </View>
 
+            <View style={styles.feedbackMiddleSection}>
+              <Text style={styles.unifiedAnswerNote}>
+                {pretty(lesson.title.replace(' Major', ''))}
+              </Text>
+              <View style={styles.scaleWalkRow}>
+                {notes.map((n, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.scaleWalkPill,
+                      playingNote === i && styles.scaleWalkPillActive,
+                    ]}
+                  >
+                    <Text style={styles.scaleWalkText}>{pretty(n.label)}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.feedbackBottomSection}>
+              <Text style={styles.unifiedInsightText}>
+                {result
+                  ? `"Every lever is in place — ${up.length ? `raised ${up.join(' · ')}` : 'all levers resting down'}."`
+                  : `"${8 - mismatch.length} of 8 levers matched. Needed: ${
+                      mismatch
+                        .map((x) => `${x.l}${x.i === 7 ? '²' : ''} ${x.wanted ? '↑' : '↓'}`)
+                        .join(' · ') || 'none'
+                    }."`}
+              </Text>
+            </View>
+          </View>
+        </Reveal>
+      )}
+
+      {/* Unified End-of-Level Session Insights Modal (Same as Single & Melody Paths) */}
+      <SessionInsightsModal
+        realm="levers"
+        visible={showVictoryModal}
+        level={syntheticLevelDef}
+        sessionLog={sessionLog}
+        onNextLevel={handleNextLevel}
+        onReplay={handleReplayLevel}
+        onBackToSanctuary={onBackToHome}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screenRoot: {
+    flex: 1,
+    backgroundColor: '#0d1511',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  fixedHarpContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'box-none',
+  },
+  harpCanvas: {
+    width: '100%',
+    height: '100%',
+  },
+  topHud: {
+    position: 'absolute',
+    top: Platform.OS === 'web' ? 12 : 40,
+    left: 14,
+    right: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    zIndex: 100,
+  },
+  hudBtn: {
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(18, 29, 22, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
+  },
+  hudBtnText: {
+    color: '#e2e8f0',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  hudCenterPill: {
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 18,
+    backgroundColor: 'rgba(18, 29, 22, 0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  hudLevelCode: {
+    color: '#f5c76b',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
+  hudTargetScale: {
+    fontFamily: 'Cinzel-Bold',
+    color: '#f8fafc',
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 1,
+  },
+  hudSubInstruction: {
+    color: '#cbd5e1',
+    fontSize: 10.5,
+    marginTop: 1,
+  },
+  controls: {
+    position: 'absolute',
+    bottom: Platform.OS === 'web' ? 10 : 20,
+    left: 12,
+    right: 12,
+    zIndex: 60,
+    gap: 8,
+  },
+  leverRow: {
+    flexDirection: 'row',
+    gap: 5,
+    justifyContent: 'center',
+  },
+  leverBtn: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
+  leverLetter: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  leverState: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  confirmBtn: {
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(25, 39, 30, 0.94)',
+    borderWidth: 1,
+    borderColor: '#f5c76b',
+    alignItems: 'center',
+  },
+  confirmBtnText: {
+    color: '#fef08a',
+    fontWeight: '800',
+    fontSize: 15,
+    letterSpacing: 0.4,
+  },
+  overviewOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 90,
+    backgroundColor: 'rgba(11, 20, 15, 0.88)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(18px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+        } as any)
+      : {}),
+  },
+  overviewContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'web' ? 58 : 84,
+    paddingBottom: Platform.OS === 'web' ? 22 : 34,
+    paddingHorizontal: 18,
+  },
+  overviewHeader: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  overviewEyebrow: {
+    color: '#f5c76b',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.4,
+  },
+  overviewTitle: {
+    fontFamily: 'Cinzel-Bold',
+    color: '#f8fafc',
+    fontSize: 26,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  overviewSubtitle: {
+    color: '#cbd5e1',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  playBtn: {
+    width: '100%',
+    maxWidth: 340,
+    paddingVertical: 15,
+    borderRadius: 20,
+    backgroundColor: '#f5c76b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 8px 24px rgba(245, 199, 107, 0.35)',
+  } as any,
+  playBtnText: {
+    color: '#0f1c14',
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  answerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 95,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(6, 12, 9, 0.48)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+        } as any)
+      : {}),
+  },
+  feedbackContentBox: {
+    width: '100%',
+    maxWidth: 440,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
+    paddingVertical: 18,
+  },
+  feedbackTopSection: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  feedbackMiddleSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 14,
+  },
+  feedbackBottomSection: {
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 12,
+  },
+  unifiedAnswerTitle: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 46,
+    fontWeight: '900',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
+  },
+  unifiedAnswerNote: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 64,
+    color: '#fef3c7',
+    textAlign: 'center',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(254, 240, 138, 0.45)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 14,
+  },
+  scaleWalkRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  scaleWalkPill: {
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+  },
+  scaleWalkPillActive: {
+    backgroundColor: 'rgba(245, 199, 107, 0.28)',
+    borderColor: '#f5c76b',
+  },
+  scaleWalkText: {
+    color: '#fef3c7',
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  unifiedInsightText: {
+    fontFamily: 'Inter',
+    fontSize: 17,
+    lineHeight: 26,
+    color: '#f8fafc',
+    textAlign: 'center',
+    maxWidth: 360,
+    fontStyle: 'italic',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
+  },
+});
