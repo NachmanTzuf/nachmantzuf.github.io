@@ -30,6 +30,7 @@ import {
 } from '../../services/account/UserAccountDatabase';
 import { SessionInsightsModal } from './SessionInsightsModal';
 import { LevelDefinition } from '../../services/curriculum/curriculumData';
+import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
 
 const orders = {
   Eb_Major_Native: 'AEBFCGD',
@@ -53,13 +54,22 @@ export function LeverTrainingScreen({
   const synth = useRef(new HarpSoundSynthesizer('celtic_nylon'));
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    try {
+      const eq = new HarpGarageEngine().getEquipped();
+      const timbre =
+        eq.sound.id === 'gut_string_warmth'
+          ? 'gut_string_warmth'
+          : eq.sound.id === 'subtle_cathedral_reverb'
+            ? 'subtle_cathedral_reverb'
+            : 'celtic_nylon';
+      synth.current.setTimbre(timbre);
+    } catch {}
+    return () => {
       timers.current.forEach(clearTimeout);
       synth.current.dispose();
-    },
-    []
-  );
+    };
+  }, []);
 
   const later = (fn: () => void, ms: number) => {
     timers.current.push(setTimeout(fn, ms));

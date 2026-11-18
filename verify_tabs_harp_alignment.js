@@ -21,6 +21,8 @@ const server = http.createServer((req, res) => {
     else if (filePath.endsWith('.png')) contentType = 'image/png';
     else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) contentType = 'image/jpeg';
     else if (filePath.endsWith('.glb')) contentType = 'model/gltf-binary';
+    else if (filePath.endsWith('.mp3')) contentType = 'audio/mpeg';
+    else if (filePath.endsWith('.wav')) contentType = 'audio/wav';
     else if (filePath.endsWith('.svg')) contentType = 'image/svg+xml';
     res.writeHead(200, { 'Content-Type': contentType });
     fs.createReadStream(filePath).pipe(res);

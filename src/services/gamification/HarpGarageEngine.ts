@@ -233,9 +233,9 @@ export class HarpGarageEngine {
     const soundList: CosmeticItem<SoundPackId>[] = [
       {
         id: 'standard_celtic',
-        name: 'Standard Celtic Harp',
+        name: 'Natural Gut Celtic Harp',
         category: 'SOUND',
-        lore: 'Traditional bright, bell-like bronze string acoustic timbre.',
+        lore: 'Smooth, warm hand-strung natural gut Celtic harp over a resonant Sitka spruce soundboard.',
         unlockRequirement: 'Starter sound · Default',
         isUnlocked: true,
         shardCost: 0,
@@ -245,9 +245,9 @@ export class HarpGarageEngine {
       },
       {
         id: 'gut_string_warmth',
-        name: 'Gut String Warmth',
+        name: 'Aged Velvet Gut',
         category: 'SOUND',
-        lore: 'Organic hand-spun gut resonance with mellow woody body and singing fundamental.',
+        lore: 'Extra-mellow thumb-plucked vintage gut strings with deep woody body and singing fundamental.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
         shardCost: 400,
@@ -257,9 +257,9 @@ export class HarpGarageEngine {
       },
       {
         id: 'subtle_cathedral_reverb',
-        name: 'Subtle Cathedral Reverb',
+        name: 'Celtic Stone Sanctuary',
         category: 'SOUND',
-        lore: 'Refined, small tight acoustic sanctuary space. Subtle 0.8s tail, clean and never muddy.',
+        lore: 'Warm natural gut harp in an intimate acoustic stone chamber with a silky, clear bloom.',
         unlockRequirement: 'Artisan Luthier Workshop',
         isUnlocked: false,
         shardCost: 600,

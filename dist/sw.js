@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earpa-pwa-v40';
+const CACHE_NAME = 'earpa-pwa-v41';
 const ASSETS_TO_CACHE = [
   '/',
   '/?source=pwa',
@@ -15,7 +15,20 @@ const ASSETS_TO_CACHE = [
   '/images/earpa_master_loading_bg.jpg',
   '/images/earpa_journey_bg.jpg',
   '/images/tri_realm_sanctuary.jpg',
-  '/images/artisan_workshop_dual_harp.jpg'
+  '/images/artisan_workshop_dual_harp.jpg',
+  '/audio/harp/A2.mp3',
+  '/audio/harp/C3.mp3',
+  '/audio/harp/E3.mp3',
+  '/audio/harp/G3.mp3',
+  '/audio/harp/B3.mp3',
+  '/audio/harp/D4.mp3',
+  '/audio/harp/F4.mp3',
+  '/audio/harp/A4.mp3',
+  '/audio/harp/C5.mp3',
+  '/audio/harp/E5.mp3',
+  '/audio/harp/G5.mp3',
+  '/audio/harp/B5.mp3',
+  '/audio/harp/D6.mp3'
 ];
 
 self.addEventListener('install', (event) => {
