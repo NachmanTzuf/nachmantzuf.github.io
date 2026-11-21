@@ -106,8 +106,35 @@ server.listen(PORT, async () => {
         });
         await new Promise(r => setTimeout(r, 1200));
         const signupShot = await send('Page.captureScreenshot', { format: 'png' });
-        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v40_signup_whats_your_name.png'), Buffer.from(signupShot.data, 'base64'));
-        console.log('Saved screenshot: verified_v40_signup_whats_your_name.png');
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v43_signup_with_guest_btn.png'), Buffer.from(signupShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v43_signup_with_guest_btn.png');
+
+        // STEP B2: Tap "Continue as Guest" once -> Must skip registration completely and enter playable 3D harp app
+        const guestClickResult = await send('Runtime.evaluate', {
+          expression: `(() => {
+            const btn = document.getElementById('continue-as-guest-btn');
+            if (!btn) return { found: false };
+            const rect = btn.getBoundingClientRect();
+            btn.click();
+            return { found: true, text: btn.innerText, top: Math.round(rect.top), height: Math.round(rect.height), width: Math.round(rect.width) };
+          })()`,
+          returnByValue: true
+        });
+        console.log('Guest Button Click Check:', JSON.stringify(guestClickResult?.result?.value));
+        await new Promise(r => setTimeout(r, 2200));
+        const guestEntryCheck = await send('Runtime.evaluate', {
+          expression: `(() => ({
+            hasCanvas: !!document.querySelector('canvas'),
+            hasPlayBtn: !!document.getElementById('liquid-gold-play-btn'),
+            hasGuestName: document.body.innerText.includes('Guest'),
+            stillOnSignup: document.body.innerText.includes("What's your name?")
+          }))()`,
+          returnByValue: true
+        });
+        console.log('Guest One-Press App Entry Check:', JSON.stringify(guestEntryCheck?.result?.value));
+        const guestShot = await send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(ARTIFACTS_DIR, 'verified_v43_guest_instant_entry.png'), Buffer.from(guestShot.data, 'base64'));
+        console.log('Saved screenshot: verified_v43_guest_instant_entry.png');
 
         // STEP C: Simulate installed app with Nachman's profile to verify all tabs & Levers in-game screens
         await send('Runtime.evaluate', {
@@ -122,6 +149,7 @@ server.listen(PORT, async () => {
                   parsed[0].onboardingComplete = true;
                   parsed[0].progress = { single: 13, melody: 1, levers: 1 };
                   localStorage.setItem('earpa_user_profiles_v1', JSON.stringify(parsed));
+                  localStorage.setItem('earpa_active_user_id_v1', parsed[0].id);
                 }
               }
             } catch (e) {}

@@ -50,6 +50,34 @@ export function WelcomeProfile({ onDone }: { onDone: () => void }) {
     onDone();
   };
 
+  const handleContinueAsGuest = () => {
+    const existingGuest = db.getAllProfiles().find((p) => p.username === 'guest_harper');
+    if (existingGuest) {
+      db.switchAccount(existingGuest.id);
+      if (!existingGuest.onboardingComplete) {
+        db.updateActiveProfile({ onboardingComplete: true });
+      }
+      TuningMatrixEngine.setActiveTuning(existingGuest.activeTuning || 'Eb_Major_Native');
+    } else {
+      db.createAccount({
+        username: 'guest_harper',
+        displayName: 'Guest',
+        avatarIcon: '',
+        avatarColor: '#c3a36d',
+        experienceLevel: 'Beginner Harper',
+        activeTuning: 'Eb_Major_Native',
+      });
+      db.updateActiveProfile({
+        avatarPhoto: '',
+        notationPreference: 'numbers',
+        onboardingComplete: true,
+        progress: { single: 1, melody: 1 },
+      });
+      TuningMatrixEngine.setActiveTuning('Eb_Major_Native');
+    }
+    onDone();
+  };
+
   const handleSelectExistingProfile = (profileId: string) => {
     const success = db.switchAccount(profileId);
     if (success) {
@@ -202,6 +230,18 @@ export function WelcomeProfile({ onDone }: { onDone: () => void }) {
               </View>
             )}
 
+            {/* One-tap guest access from Log In */}
+            <TouchableOpacity
+              nativeID="login-continue-as-guest-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Continue as Guest"
+              activeOpacity={0.78}
+              onPress={handleContinueAsGuest}
+              style={[s.guestBtn, { marginTop: 4 }]}
+            >
+              <Text style={s.guestBtnText}>Continue as Guest</Text>
+            </TouchableOpacity>
+
             {/* Switch back to sign up */}
             <TouchableOpacity
               accessibilityLabel="Switch to sign up"
@@ -337,6 +377,19 @@ export function WelcomeProfile({ onDone }: { onDone: () => void }) {
             </TouchableOpacity>
           )}
 
+          {step === 0 && (
+            <TouchableOpacity
+              nativeID="continue-as-guest-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Continue as Guest"
+              activeOpacity={0.78}
+              onPress={handleContinueAsGuest}
+              style={s.guestBtn}
+            >
+              <Text style={s.guestBtnText}>Continue as Guest</Text>
+            </TouchableOpacity>
+          )}
+
           {step > 0 && (
             <TouchableOpacity onPress={() => setStep(step - 1)}>
               <Text style={s.small}>‹ Back</Text>
@@ -435,6 +488,26 @@ const s = StyleSheet.create({
     borderColor: '#b39b70',
     padding: 16,
     fontSize: 24,
+    textAlign: 'center',
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : {}),
+  },
+  guestBtn: {
+    alignSelf: 'center',
+    minHeight: 42,
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(218, 197, 153, 0.30)',
+    backgroundColor: 'rgba(26, 44, 34, 0.42)',
+    marginTop: -4,
+  },
+  guestBtnText: {
+    color: '#dfd0b0',
+    fontSize: 13.5,
+    fontFamily: 'Inter-SemiBold',
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
   choice: {

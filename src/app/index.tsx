@@ -474,7 +474,12 @@ export default function EarpaMasterScreen() {
     return (
       <DeviceFramePreview>
         <SafeAreaView style={styles.hubSafeRoot}>
-          <WelcomeProfile onDone={() => setProfile({ ...accountDb.getActiveProfile() })} />
+          <WelcomeProfile
+            onDone={() => {
+              setIsAppLoading(false);
+              setProfile({ ...accountDb.getActiveProfile() });
+            }}
+          />
           {isAppLoading && (
             <AppLoadingScreen
               isAppReady={true}
