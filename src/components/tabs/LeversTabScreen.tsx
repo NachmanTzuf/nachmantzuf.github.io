@@ -16,7 +16,7 @@ export const LeversTabScreen: React.FC<LeversTabScreenProps> = ({
   const [levers, setLevers] = useState<boolean[]>([
     false, false, false, false, false, false, false, false,
   ]);
-  const [synth] = useState(() => new HarpSoundSynthesizer('celtic_nylon'));
+  const [synth] = useState(() => new HarpSoundSynthesizer('gut_string_warmth'));
 
   const stringLabels = [
     { num: 1, base: 'Eb4', sharp: 'E4', noteName: 'Eb' },

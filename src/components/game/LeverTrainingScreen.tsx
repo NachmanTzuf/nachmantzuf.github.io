@@ -51,7 +51,7 @@ export function LeverTrainingScreen({
   const keys = PLAYABLE_MAJOR_KEYS[tuning];
   const lessons = leverLessons(tuning);
   const canvas = useRef<CelticHarpCanvasRef>(null);
-  const synth = useRef(new HarpSoundSynthesizer('celtic_nylon'));
+  const synth = useRef(new HarpSoundSynthesizer('gut_string_warmth'));
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {

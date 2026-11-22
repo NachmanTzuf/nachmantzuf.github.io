@@ -16,7 +16,7 @@ export const ChordsTabScreen: React.FC<ChordsTabScreenProps> = ({
   onStartChordChallenge,
   onOpenRoadmap,
 }) => {
-  const [synth] = useState(() => new HarpSoundSynthesizer('celtic_nylon'));
+  const [synth] = useState(() => new HarpSoundSynthesizer('gut_string_warmth'));
   const [cadenceEngine] = useState(() => new CadenceEngine());
 
   // Sequence Training State: 2 notes, 3 notes, or 4 notes in a row

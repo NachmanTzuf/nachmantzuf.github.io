@@ -295,6 +295,27 @@ server.listen(PORT, async () => {
         await new Promise(r => setTimeout(r, 900));
         await captureAndMeasure('ARTISAN WORKSHOP CARVES PREVIEW', 'verified_v37_shop_carves_preview.png');
 
+        // 7. Switch to SOUND tab in Shop -> Verify Aged Velvet Gut is equipped by default
+        console.log('Switching to SOUND tab in Shop...');
+        await send('Runtime.evaluate', {
+          expression: `(() => {
+            const els = Array.from(document.querySelectorAll('*'));
+            const soundBtn = els.find(el => el.textContent && el.textContent.trim() === 'SOUND');
+            if (soundBtn) soundBtn.click();
+          })()`
+        });
+        await new Promise(r => setTimeout(r, 900));
+        const soundCheck = await send('Runtime.evaluate', {
+          expression: `(() => ({
+            equippedStorage: localStorage.getItem('earpa_equipped_cosmetics_v1'),
+            migratedFlag: localStorage.getItem('earpa_sound_default_v44_migrated'),
+            hasAgedVelvetGut: document.body.innerText.includes('Aged Velvet Gut')
+          }))()`,
+          returnByValue: true
+        });
+        console.log('Default Sound Check:', JSON.stringify(soundCheck?.result?.value));
+        await captureAndMeasure('ARTISAN WORKSHOP SOUND DEFAULT', 'verified_v44_shop_sound_default_aged_velvet_gut.png');
+
         // Check deltas
         console.log('\n================ DELTA AUDIT ================');
         console.log('Single Canvas (158px baseline):', singleMetrics.canvas);

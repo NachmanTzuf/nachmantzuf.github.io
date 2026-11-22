@@ -31,7 +31,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>('');
   
-  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('celtic_nylon'));
+  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('gut_string_warmth'));
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {

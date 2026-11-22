@@ -16,6 +16,7 @@ import { UserAccountDatabase } from '../account/UserAccountDatabase';
 
 const STORAGE_KEY_UNLOCKED = 'earpa_unlocked_cosmetics_v1';
 const STORAGE_KEY_EQUIPPED = 'earpa_equipped_cosmetics_v1';
+const STORAGE_KEY_SOUND_DEFAULT_V44 = 'earpa_sound_default_v44_migrated';
 
 export const INLAY_COLOR_PALETTE = [
   { id: 'gold', name: 'Sovereign Gold', hex: '#f5c76b' },
@@ -36,7 +37,7 @@ export class HarpGarageEngine {
   private equippedRosette: SoundboardRosetteId = 'none';
   private equippedInlays: SoundboardRosetteId[] = [];
   private equippedStrings: ResonanceStringShaderId = 'solar_flare_brass';
-  private equippedSound: SoundPackId = 'standard_celtic';
+  private equippedSound: SoundPackId = 'gut_string_warmth';
   private equippedLever: LeverFinishId = 'standard_brass';
   private equippedInlayColor: string = '#f5c76b';
 
@@ -232,28 +233,28 @@ export class HarpGarageEngine {
     // 4. ACOUSTIC TIMBRES & SOUND PACKS
     const soundList: CosmeticItem<SoundPackId>[] = [
       {
-        id: 'standard_celtic',
-        name: 'Natural Gut Celtic Harp',
-        category: 'SOUND',
-        lore: 'Smooth, warm hand-strung natural gut Celtic harp over a resonant Sitka spruce soundboard.',
-        unlockRequirement: 'Starter sound · Default',
-        isUnlocked: true,
-        shardCost: 0,
-        colorHex: '#eab308',
-        roughness: 0.3,
-        metalness: 0.5,
-      },
-      {
         id: 'gut_string_warmth',
         name: 'Aged Velvet Gut',
         category: 'SOUND',
         lore: 'Extra-mellow thumb-plucked vintage gut strings with deep woody body and singing fundamental.',
-        unlockRequirement: 'Artisan Luthier Workshop',
-        isUnlocked: false,
-        shardCost: 400,
+        unlockRequirement: 'Starter sound · Default',
+        isUnlocked: true,
+        shardCost: 0,
         colorHex: '#d97706',
         roughness: 0.4,
         metalness: 0.3,
+      },
+      {
+        id: 'standard_celtic',
+        name: 'Natural Gut Celtic Harp',
+        category: 'SOUND',
+        lore: 'Smooth, warm hand-strung natural gut Celtic harp over a resonant Sitka spruce soundboard.',
+        unlockRequirement: 'Artisan Luthier Workshop',
+        isUnlocked: false,
+        shardCost: 400,
+        colorHex: '#eab308',
+        roughness: 0.3,
+        metalness: 0.5,
       },
       {
         id: 'subtle_cathedral_reverb',
@@ -356,6 +357,18 @@ export class HarpGarageEngine {
           if (typeof eq.inlayColor === 'string' && eq.inlayColor.startsWith('#')) {
             this.equippedInlayColor = eq.inlayColor;
           }
+        }
+
+        // One-time migration: make Aged Velvet Gut ('gut_string_warmth') the automatic default sound
+        if (this.sounds.has('gut_string_warmth')) {
+          this.sounds.get('gut_string_warmth')!.isUnlocked = true;
+        }
+        if (localStorage.getItem(STORAGE_KEY_SOUND_DEFAULT_V44) !== 'true') {
+          if (this.equippedSound === 'standard_celtic') {
+            this.equippedSound = 'gut_string_warmth';
+            this.savePersistence();
+          }
+          localStorage.setItem(STORAGE_KEY_SOUND_DEFAULT_V44, 'true');
         }
 
         const isFounder =
@@ -461,7 +474,7 @@ export class HarpGarageEngine {
       timber: this.timbers.get(this.equippedTimber) || this.timbers.get('curly_maple')!,
       rosette: (this.equippedInlays[0] ? this.rosettes.get(this.equippedInlays[0]) : null) || noneRosette,
       strings: this.strings.get(this.equippedStrings) || this.strings.get('solar_flare_brass')!,
-      sound: this.sounds.get(this.equippedSound) || this.sounds.get('standard_celtic')!,
+      sound: this.sounds.get(this.equippedSound) || this.sounds.get('gut_string_warmth')!,
       lever: this.levers.get(this.equippedLever) || this.levers.get('standard_brass')!,
     };
   }

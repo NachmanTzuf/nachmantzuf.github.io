@@ -69,7 +69,7 @@ export class HarpSoundSynthesizer {
   private voices = new Set<AudioBufferSourceNode>();
   private activeByString = new Map<number, ActiveStringVoice>();
 
-  private currentTimbre: TimbreType = 'celtic_nylon';
+  private currentTimbre: TimbreType = 'gut_string_warmth';
   private bufferCache: Map<string, AudioBuffer> = new Map();
   private static sharedPreviewSynth: HarpSoundSynthesizer | null = null;
 
@@ -183,7 +183,7 @@ export class HarpSoundSynthesizer {
   }
 
   public static playWarmHarpChime(
-    timbre: TimbreType = 'celtic_nylon',
+    timbre: TimbreType = 'gut_string_warmth',
     freqHz: number = 329.63
   ): void {
     if (typeof window === 'undefined') return;
@@ -198,7 +198,7 @@ export class HarpSoundSynthesizer {
     });
   }
 
-  constructor(timbre: TimbreType = 'celtic_nylon') {
+  constructor(timbre: TimbreType = 'gut_string_warmth') {
     this.currentTimbre = timbre;
     if (typeof window !== 'undefined') {
       void HarpSoundSynthesizer.prefetchStudioSamples();
@@ -510,7 +510,7 @@ export class HarpSoundSynthesizer {
   public static generatePluckedStringSamples(
     frequencyHz: number,
     durationSec: number = 3.6,
-    timbre: TimbreType = 'celtic_nylon',
+    timbre: TimbreType = 'gut_string_warmth',
     sampleRate: number = 44100
   ): Float32Array {
     const f0 = Math.max(32, Math.min(3200, frequencyHz));

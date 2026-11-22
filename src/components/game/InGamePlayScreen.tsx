@@ -247,7 +247,7 @@ export const InGamePlayScreen: React.FC<InGamePlayScreenProps> = ({
   } | null>(null);
   const theme = REALM_THEMES[realm] || REALM_THEMES.single;
   const canvasRef = useRef<CelticHarpCanvasRef | null>(null);
-  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('celtic_nylon'));
+  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('gut_string_warmth'));
   const cadenceEngineRef = useRef<CadenceEngine>(new CadenceEngine());
 
   // Determine active level definition

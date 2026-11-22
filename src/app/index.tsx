@@ -203,7 +203,7 @@ export default function EarpaMasterScreen() {
 
   // Engine Refs
   const canvasRef = useRef<CelticHarpCanvasRef | null>(null);
-  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('celtic_nylon'));
+  const synthRef = useRef<HarpSoundSynthesizer>(new HarpSoundSynthesizer('gut_string_warmth'));
   const fsmRef = useRef<AudioStateMachine | null>(null);
   const bktRef = useRef<BayesianKnowledgeTracingEngine>(new BayesianKnowledgeTracingEngine());
   const feedbackEngineRef = useRef<ContextualFeedbackEngine>(new ContextualFeedbackEngine());
