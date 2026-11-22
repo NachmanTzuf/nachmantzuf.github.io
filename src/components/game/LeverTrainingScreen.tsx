@@ -279,7 +279,7 @@ export function LeverTrainingScreen({
     levelNumber: stage + 1,
     track: 'levers',
     title: pretty(lesson.title),
-    subtitle: 'Camac Lever Mastery',
+    subtitle: 'Lever Harp Practice',
     activeNotesMask: [true, true, true, true, true, true, true, true],
     isChromatic: false,
     rounds: totalRounds,
@@ -420,7 +420,7 @@ export function LeverTrainingScreen({
           <View style={styles.overviewContent}>
             <View style={styles.overviewHeader}>
               <Text style={styles.overviewEyebrow}>
-                CAMAC LEVER CIRCLE · {pretty(keys[0])} TUNING
+                LEVER HARP CIRCLE · {pretty(keys[0])} TUNING
               </Text>
               <Text style={styles.overviewTitle}>{pretty(lesson.title)}</Text>
               <Text style={styles.overviewSubtitle}>
@@ -485,6 +485,49 @@ export function LeverTrainingScreen({
                     <Text style={styles.scaleWalkText}>{pretty(n.label)}</Text>
                   </View>
                 ))}
+              </View>
+
+              {/* Full 8-Lever Verification Bar: Correct in Green, Wrong in Bold Red */}
+              <View style={styles.verdictLeverRow}>
+                {letters.map((l, i) => {
+                  const wantedUp = !!config[l];
+                  const userWasUp = (submittedStates ?? states)[i];
+                  const isRight = userWasUp === wantedUp;
+                  return (
+                    <View
+                      key={`vl-${i}`}
+                      style={[
+                        styles.verdictLeverCard,
+                        isRight ? styles.verdictLeverRight : styles.verdictLeverWrong,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.verdictLeverArrow,
+                          { color: isRight ? '#4ade80' : '#f87171' },
+                        ]}
+                      >
+                        {wantedUp ? '↑' : '↓'}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.verdictLeverLetter,
+                          { color: isRight ? '#ecfdf5' : '#fef2f2' },
+                        ]}
+                      >
+                        {l}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.verdictLeverStatus,
+                          { color: isRight ? '#86efac' : '#fca5a5' },
+                        ]}
+                      >
+                        {wantedUp ? 'UP' : 'DN'}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
 
@@ -764,6 +807,44 @@ const styles = StyleSheet.create({
     color: '#fef3c7',
     fontSize: 12.5,
     fontWeight: '800',
+  },
+  verdictLeverRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 5,
+    width: '100%',
+    maxWidth: 390,
+    marginTop: 6,
+  },
+  verdictLeverCard: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.8,
+    gap: 2,
+  },
+  verdictLeverRight: {
+    backgroundColor: 'rgba(22, 163, 74, 0.24)',
+    borderColor: '#22c55e',
+  },
+  verdictLeverWrong: {
+    backgroundColor: 'rgba(220, 38, 38, 0.34)',
+    borderColor: '#ef4444',
+  },
+  verdictLeverArrow: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  verdictLeverLetter: {
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  verdictLeverStatus: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
   unifiedInsightText: {
     fontFamily: 'Inter',
