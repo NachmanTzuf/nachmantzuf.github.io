@@ -14,6 +14,7 @@ import { NativeHarpTuning, TuningMatrixEngine } from '../../services/curriculum/
 import { PhotoPicker, ProfilePhoto } from './ProfilePhoto';
 import { Reveal } from '../common/Reveal';
 import { cloud, syncCloudAccount } from '../../services/account/CloudAccounts';
+import { useBackHandler } from '../../services/navigation/AppBackGuard';
 
 export function WelcomeProfile({ onDone }: { onDone: () => void }) {
   const db = UserAccountDatabase.getInstance();
@@ -30,6 +31,24 @@ export function WelcomeProfile({ onDone }: { onDone: () => void }) {
   const [cloudEmail, setCloudEmail] = useState('');
   const [loginMessage, setLoginMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
+
+  // Back gesture inside onboarding steps or Log In goes to previous step/view
+  useBackHandler(
+    'welcome-profile-back',
+    isLoginMode || step > 0,
+    () => {
+      if (isLoginMode) {
+        setIsLoginMode(false);
+        return true;
+      }
+      if (step > 0) {
+        setStep((s) => Math.max(0, s - 1));
+        return true;
+      }
+      return false;
+    },
+    60
+  );
 
   const save = () => {
     db.createAccount({

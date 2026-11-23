@@ -26,8 +26,41 @@ def main():
         with open(index_html, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Add PWA head links, high-res DOM icons, and immediate Service Worker registration
-        pwa_head = r"""    <link rel="manifest" href="/manifest.json" />
+        # Replace long title and noscript text for ultra-compact chat link previews
+        content = re.sub(r'<title>.*?</title>', '<title>Earpa</title>', content, flags=re.DOTALL)
+        content = re.sub(
+            r'<noscript>.*?</noscript>',
+            '<noscript>Earpa · Celtic Harp Ear Training</noscript>',
+            content,
+            flags=re.DOTALL,
+        )
+
+        # Add compact Open Graph / WhatsApp / iMessage / Twitter preview metadata,
+        # anti-edge-swipe overscroll lock, PWA head links, and Service Worker registration
+        pwa_head = r"""    <meta name="description" content="Celtic Harp Ear Training" />
+    <link rel="canonical" href="https://nachmantzuf.github.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://nachmantzuf.github.io/" />
+    <meta property="og:site_name" content="Earpa" />
+    <meta property="og:title" content="Earpa" />
+    <meta property="og:description" content="Celtic Harp Ear Training" />
+    <meta property="og:image" content="https://nachmantzuf.github.io/images/earpa_share_preview.jpg?v=v45" />
+    <meta property="og:image:secure_url" content="https://nachmantzuf.github.io/images/earpa_share_preview.jpg?v=v45" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="300" />
+    <meta property="og:image:alt" content="Earpa Celtic Harp" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Earpa" />
+    <meta name="twitter:description" content="Celtic Harp Ear Training" />
+    <meta name="twitter:image" content="https://nachmantzuf.github.io/images/earpa_share_preview.jpg?v=v45" />
+    <style id="earpa-nav-lock">
+      html, body, #root {
+        overscroll-behavior: none;
+        overscroll-behavior-x: none;
+      }
+    </style>
+    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/earpa_icon_192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/images/icons/earpa_icon_512.png" />
@@ -72,7 +105,8 @@ def main():
       });
     </script>
   </head>"""
-        # Remove any existing manifest block or SW script in head to ensure clean overwrite
+        # Remove any existing injected meta/manifest block or SW script in head to ensure clean overwrite
+        content = re.sub(r'\s*<meta name="description".*?</head>', '\n  </head>', content, flags=re.DOTALL)
         content = re.sub(r'\s*<link rel="manifest".*?</head>', '\n  </head>', content, flags=re.DOTALL)
         content = content.replace('</head>', pwa_head)
 

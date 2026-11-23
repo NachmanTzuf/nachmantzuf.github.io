@@ -15,6 +15,7 @@ import { ProfilePhoto } from '../account/ProfilePhoto';
 import { WelcomeProfile } from '../account/WelcomeProfile';
 import { TesterFeedback } from '../common/TesterFeedback';
 import { UnifiedPreferencesModal } from '../settings/UnifiedPreferencesModal';
+import { useBackHandler } from '../../services/navigation/AppBackGuard';
 
 interface ProfileTabScreenProps {
   levelNumber: number;
@@ -85,6 +86,36 @@ export function ProfileTabScreen({ onOpenRoadmap, onOpenGarage }: ProfileTabScre
   const [create, setCreate] = useState(false);
   const [selectedRealm, setSelectedRealm] = useState<'single' | 'melody' | 'levers'>('single');
   const [selectedPracticeVideo, setSelectedPracticeVideo] = useState<PracticeVideo | null>(null);
+
+  useBackHandler(
+    'profile-video-theater',
+    !!selectedPracticeVideo,
+    () => {
+      setSelectedPracticeVideo(null);
+      return true;
+    },
+    65
+  );
+
+  useBackHandler(
+    'profile-preferences-modal',
+    preferencesModalOpen,
+    () => {
+      setPreferencesModalOpen(false);
+      return true;
+    },
+    60
+  );
+
+  useBackHandler(
+    'profile-create-account',
+    create,
+    () => {
+      setCreate(false);
+      return true;
+    },
+    55
+  );
 
   useEffect(() => {
     if (!selectedPracticeVideo || Platform.OS !== 'web') return;

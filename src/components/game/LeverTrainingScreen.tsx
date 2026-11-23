@@ -31,6 +31,7 @@ import {
 import { SessionInsightsModal } from './SessionInsightsModal';
 import { LevelDefinition } from '../../services/curriculum/curriculumData';
 import { HarpGarageEngine } from '../../services/gamification/HarpGarageEngine';
+import { useBackHandler } from '../../services/navigation/AppBackGuard';
 
 const orders = {
   Eb_Major_Native: 'AEBFCGD',
@@ -101,6 +102,30 @@ export function LeverTrainingScreen({
   const [score, setScore] = useState(0);
   const [sessionLog, setSessionLog] = useState<SessionLogEntry | null>(null);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
+
+  // Back gesture during active lever practice returns to Circle of Fifths overview first
+  useBackHandler(
+    'lever-training-back',
+    practice || showVictoryModal,
+    () => {
+      timers.current.forEach(clearTimeout);
+      if (showVictoryModal) {
+        setShowVictoryModal(false);
+        onBackToHome();
+        return true;
+      }
+      if (practice) {
+        setPractice(false);
+        setResult(null);
+        setSubmittedStates(null);
+        setPlaying(false);
+        setPlayingNote(-1);
+        return true;
+      }
+      return false;
+    },
+    35
+  );
 
   const locked = useRef(false);
   const started = useRef(Date.now());

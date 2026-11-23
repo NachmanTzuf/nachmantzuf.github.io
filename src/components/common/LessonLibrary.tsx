@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, Platform, Linking, StyleSheet } from 'react-native';
 import { UserAccountDatabase } from '../../services/account/UserAccountDatabase';
 import { hasCompletedLessonMilestone, LessonTrack } from './lessonVisibility';
+import { useBackHandler } from '../../services/navigation/AppBackGuard';
 
 type Entry = {
   id: string;
@@ -90,6 +91,16 @@ export function LessonLibrary({
     setSelected(null);
     setError(false);
   };
+
+  useBackHandler(
+    `lesson-library-modal-${track}-${persistent ? 'p' : 'h'}`,
+    !!selected,
+    () => {
+      close();
+      return true;
+    },
+    65
+  );
 
   useEffect(() => {
     if (!selected || Platform.OS !== 'web') return;

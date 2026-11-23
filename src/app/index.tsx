@@ -71,6 +71,8 @@ import { InAppNotificationBanner } from '../components/notifications/InAppNotifi
 import { PracticeReminderService } from '../services/notifications/PracticeReminderService';
 import { PwaInstallModal, shouldShowFirstTimeDownloadGate } from '../components/pwa/PwaInstallModal';
 import { AppLoadingScreen } from '../components/loading/AppLoadingScreen';
+import { AppBackGuard, useBackHandler } from '../services/navigation/AppBackGuard';
+import { QuitConfirmOverlay } from '../components/navigation/QuitConfirmOverlay';
 import {
   LevelDefinition,
   SINGLE_NOTE_LEVELS,
@@ -107,6 +109,50 @@ export default function EarpaMasterScreen() {
   // Primary Navigation View State: Out-of-Game Hub vs In-Game Mini-Game vs 3D Studio
   const [viewMode, setViewMode] = useState<ScreenViewMode>('HUB');
   const [activeTab, setActiveTab] = useState<TabKey>('home');
+  const tabHistoryRef = useRef<TabKey[]>([]);
+  const [showBackHint, setShowBackHint] = useState<boolean>(false);
+  const [showQuitModal, setShowQuitModal] = useState<boolean>(false);
+  const lastRootBackTsRef = useRef<number>(0);
+  const backHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const navigateToTab = (nextTab: TabKey) => {
+    setActiveTab((prev) => {
+      if (prev !== nextTab) {
+        const hist = tabHistoryRef.current;
+        if (hist[hist.length - 1] !== prev) {
+          hist.push(prev);
+          if (hist.length > 25) hist.shift();
+        }
+      }
+      return nextTab;
+    });
+    AppBackGuard.notifyInAppNavigation();
+  };
+
+  useEffect(() => {
+    AppBackGuard.init();
+    AppBackGuard.setRootBackListener(() => {
+      const now = Date.now();
+      if (now - lastRootBackTsRef.current < 3000) {
+        lastRootBackTsRef.current = 0;
+        if (backHintTimerRef.current) clearTimeout(backHintTimerRef.current);
+        setShowBackHint(false);
+        setShowQuitModal(true);
+      } else {
+        lastRootBackTsRef.current = now;
+        setShowBackHint(true);
+        if (backHintTimerRef.current) clearTimeout(backHintTimerRef.current);
+        backHintTimerRef.current = setTimeout(() => {
+          setShowBackHint(false);
+          lastRootBackTsRef.current = 0;
+        }, 3000);
+      }
+    });
+    return () => {
+      if (backHintTimerRef.current) clearTimeout(backHintTimerRef.current);
+      AppBackGuard.setRootBackListener(null);
+    };
+  }, []);
 
   // Theory & Lever State
   const [activeRootPc, setActiveRootPc] = useState<PitchClass>(3); // Eb Major default
@@ -448,6 +494,87 @@ export default function EarpaMasterScreen() {
     shouldShowFirstTimeDownloadGate()
   );
 
+  const isOnboardingGateActive = !profile.onboardingComplete && profile.id === 'usr_default_bard';
+
+  // Priority 45: Close any active modal in Hub / Mini-Game before navigating tabs
+  useBackHandler(
+    'hub-modals',
+    !showDownloadGate &&
+      !isOnboardingGateActive &&
+      (diagnosticVisible ||
+        showGarageModal ||
+        showRoadmapModal ||
+        showReminderModal ||
+        showSocialModal ||
+        showSanctuaryModal ||
+        showLadderScreen ||
+        showJourneyScreen),
+    () => {
+      if (diagnosticVisible) { setDiagnosticVisible(false); return true; }
+      if (showGarageModal) { setShowGarageModal(false); return true; }
+      if (showRoadmapModal) { setShowRoadmapModal(false); return true; }
+      if (showReminderModal) { setShowReminderModal(false); return true; }
+      if (showSocialModal) { setShowSocialModal(false); return true; }
+      if (showSanctuaryModal) { setShowSanctuaryModal(false); return true; }
+      if (showLadderScreen) { setShowLadderScreen(false); return true; }
+      if (showJourneyScreen) { setShowJourneyScreen(false); return true; }
+      return false;
+    },
+    45
+  );
+
+  // Priority 25: Exit In-Game / Harp Studio / Mini-Game back to most recent Hub tab
+  useBackHandler(
+    'sub-view-to-hub',
+    !showDownloadGate && !isOnboardingGateActive && viewMode !== 'HUB',
+    () => {
+      setViewMode('HUB');
+      return true;
+    },
+    25
+  );
+
+  // Priority 10: Pop recent in-app tab history before triggering double-back quit dialog
+  useBackHandler(
+    'hub-tab-history',
+    !showDownloadGate && !isOnboardingGateActive && viewMode === 'HUB',
+    () => {
+      if (tabHistoryRef.current.length > 0) {
+        const prevTab = tabHistoryRef.current.pop()!;
+        setActiveTab(prevTab);
+        return true;
+      }
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        return true;
+      }
+      return false;
+    },
+    10
+  );
+
+  const handleStayInApp = () => {
+    lastRootBackTsRef.current = 0;
+    if (backHintTimerRef.current) clearTimeout(backHintTimerRef.current);
+    setShowBackHint(false);
+    setShowQuitModal(false);
+  };
+
+  const handleConfirmQuitApp = () => {
+    setShowQuitModal(false);
+    setShowBackHint(false);
+    AppBackGuard.confirmQuitApp();
+  };
+
+  const renderQuitOverlay = () => (
+    <QuitConfirmOverlay
+      showBackHint={showBackHint}
+      showQuitModal={showQuitModal}
+      onStay={handleStayInApp}
+      onConfirmQuit={handleConfirmQuitApp}
+    />
+  );
+
   // =========================================================================
   // VIEW 0: FIRST-TIME BROWSER LINK VISIT -> DOWNLOAD APP GATE (Before Sign-Up)
   // =========================================================================
@@ -462,6 +589,7 @@ export default function EarpaMasterScreen() {
               setIsAppLoading(false);
             }}
           />
+          {renderQuitOverlay()}
         </SafeAreaView>
       </DeviceFramePreview>
     );
@@ -470,7 +598,7 @@ export default function EarpaMasterScreen() {
   // =========================================================================
   // VIEW 1: MASTER OUT-OF-GAME MOBILE HUB (With Hybrid Tab Bar & Hero 3D Harp)
   // =========================================================================
-  if (!profile.onboardingComplete && profile.id === 'usr_default_bard') {
+  if (isOnboardingGateActive) {
     return (
       <DeviceFramePreview>
         <SafeAreaView style={styles.hubSafeRoot}>
@@ -487,6 +615,7 @@ export default function EarpaMasterScreen() {
               minDurationMs={1400}
             />
           )}
+          {renderQuitOverlay()}
         </SafeAreaView>
       </DeviceFramePreview>
     );
@@ -545,7 +674,7 @@ export default function EarpaMasterScreen() {
             currentXp={accountDb.getShards()}
             nextMilestoneXp={500}
             onOpenRoadmap={(theme) => handleOpenRoadmapWithTheme(theme || 'single')}
-            onOpenProfile={() => setActiveTab('profile')}
+            onOpenProfile={() => navigateToTab('profile')}
             onOpenSocial={() => setShowSocialModal(true)}
             onOpenReminders={() => setShowReminderModal(true)}
             onOpenGarage={() => setShowGarageModal(true)}
@@ -633,7 +762,7 @@ export default function EarpaMasterScreen() {
           {/* Floating Liquid Glass Bottom Navigation Bar */}
           <LiquidGlassTabBar
             activeTab={activeTab}
-            onTabChange={(t) => setActiveTab(t)}
+            onTabChange={(t) => navigateToTab(t)}
           />
 
           {/* Full Screen Roadmap Modal with Realm Theme */}
@@ -645,13 +774,13 @@ export default function EarpaMasterScreen() {
             currentXp={profile.totalTrialsAttempted*10}
             currentLevel={roadmapTheme==='levers' ? (profile.leverStage||0)+1 : profile.progress?.[roadmapTheme]||1}
             onSelectLevelDef={(lvl) => {
-              setActiveTab(roadmapTheme === 'melody' ? 'chords' : roadmapTheme === 'levers' ? 'levers' : 'home');
+              navigateToTab(roadmapTheme === 'melody' ? 'chords' : roadmapTheme === 'levers' ? 'levers' : 'home');
               setActiveCurriculumLevel(lvl);
               setShowRoadmapModal(false);
               setViewMode('IN_GAME');
             }}
             onSelectLevel={(stage, lvl) => {
-              setActiveTab(roadmapTheme === 'melody' ? 'chords' : roadmapTheme === 'levers' ? 'levers' : 'home');
+              navigateToTab(roadmapTheme === 'melody' ? 'chords' : roadmapTheme === 'levers' ? 'levers' : 'home');
               const list = roadmapTheme === 'melody' ? MELODY_LEVELS : SINGLE_NOTE_LEVELS;
               const globalIdx = (stage - 1) * 10 + (lvl - 1);
               if (list[globalIdx]) {
@@ -730,6 +859,7 @@ export default function EarpaMasterScreen() {
               minDurationMs={1600}
             />
           )}
+          {renderQuitOverlay()}
         </SafeAreaView>
       </DeviceFramePreview>
     );
@@ -760,10 +890,11 @@ export default function EarpaMasterScreen() {
             }}
             onOpenProfileInsights={() => {
               setViewMode('HUB');
-              setActiveTab('profile');
+              navigateToTab('profile');
             }}
           />}
           <InAppNotificationBanner />
+          {renderQuitOverlay()}
         </SafeAreaView>
       </DeviceFramePreview>
     );
@@ -944,6 +1075,7 @@ export default function EarpaMasterScreen() {
             setShowSanctuaryModal(true);
           }}
         />
+        {renderQuitOverlay()}
       </SafeAreaView>
     </DeviceFramePreview>
   );
